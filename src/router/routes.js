@@ -38,303 +38,332 @@ export class RouteRegistry {
                 {
                     cache: "no-cache"
                 }
-            )
-        ]);
+/**
+ * Aoi Route Registry
+ * Production Ready
+ */
 
-        const [
-            articlesResponse,
-            pagesResponse
-        ] = indexes;
+import { router } from "./router.js";
 
-        this.contentIndex =
-            articlesResponse.ok
-                ? await articlesResponse.json()
-                : [];
+import {
+    articleRenderer
+} from "../renderer/article.js";
 
-        this.pageIndex =
-            pagesResponse.ok
-                ? await pagesResponse.json()
-                : [];
-    }
+import {
+    pageRenderer
+} from "../renderer/page.js";
 
-    registerHomeRoute() {
+import {
+    template
+} from "../renderer/template.js";
 
-        this.router.register(
+import {
+    searchUI
+} from "../search/ui.js";
 
-            "/",
+export async function
+registerRoutes() {
 
-            async () => {
+    router.add(
 
-                return {
+        "/",
 
-                    html: `
-                        <section class="home-view">
-                            <div id="home-container"></div>
-                        </section>
-                    `,
-
-                    title:
-                        await this.resolveSiteTitle(),
-
-                    meta: {
-                        "og:title":
-                            await this.resolveSiteTitle(),
-
-                        "og:url":
-                            location.origin
-                    }
-                };
-            }
-        );
-    }
-
-    registerArticleRoutes() {
-
-        this.router.register(
-
-            "/article/:slug",
-
-            async context => {
-
-                const article =
-                    this.contentIndex.find(
-                        item =>
-                            item.slug ===
-                            context.params.slug
-                    );
-
-                if (!article) {
-
-                    return this.notFound();
-                }
-
-                return {
-
-                    html: `
-                        <article
-                            class="article-content"
-                            data-slug="${this.escape(article.slug)}"
-                        ></article>
-                    `,
-
-                    title:
-                        article.title,
-
-                    meta: {
-
-                        "og:title":
-                            article.title,
-
-                        "og:description":
-                            article.description ?? "",
-
-                        "og:url":
-                            `${location.origin}/article/${article.slug}`,
-
-                        "twitter:title":
-                            article.title,
-
-                        "twitter:description":
-                            article.description ?? ""
-                    }
-                };
-            }
-        );
-    }
-
-    registerPageRoutes() {
-
-        this.router.register(
-
-            "/page/:slug",
-
-            async context => {
-
-                const page =
-                    this.pageIndex.find(
-                        item =>
-                            item.slug ===
-                            context.params.slug
-                    );
-
-                if (!page) {
-
-                    return this.notFound();
-                }
-
-                return {
-
-                    html: `
-                        <section
-                            class="page-content"
-                            data-slug="${this.escape(page.slug)}"
-                        ></section>
-                    `,
-
-                    title:
-                        page.title,
-
-                    meta: {
-
-                        "og:title":
-                            page.title,
-
-                        "og:description":
-                            page.description ?? "",
-
-                        "og:url":
-                            `${location.origin}/page/${page.slug}`
-                    }
-                };
-            }
-        );
-    }
-
-    registerNotFoundRoute() {
-
-        this.router.setNotFound(
-            async () => {
-
-                const response =
-                    this.notFound();
-
-                this.router.render(
-                    response.html
-                );
-
-                document.title =
-                    response.title;
-            }
-        );
-    }
-
-    notFound() {
-
-        return {
-
-            html: `
-                <section
-                    class="not-found-view"
-                >
-                    <h1>
-                        404
-                    </h1>
-
-                    <p>
-                        Resource not found.
-                    </p>
-                </section>
-            `,
-
-            title:
-                "404 - Not Found",
-
-            meta: {
-
-                "og:title":
-                    "404 - Not Found"
-            }
-        };
-    }
-
-    async resolveSiteTitle() {
-
-        try {
+        async () => {
 
             const response =
                 await fetch(
-                    "/data/settings/site.json",
-                    {
-                        cache: "no-cache"
-                    }
+                    "/cache/home.json"
                 );
 
-            if (!response.ok) {
-
-                return "Website";
-            }
-
-            const settings =
+            const data =
                 await response.json();
 
-            return (
-                settings.title ??
-                "Website"
-            );
-
-        } catch {
-
-            return "Website";
-        }
-    }
-
-    generateSitemapEntries() {
-
-        const entries = [];
-
-        entries.push("/");
-
-        for (
-            const article
-            of this.contentIndex
-        ) {
-
-            entries.push(
-                `/article/${article.slug}`
+            renderHome(
+                data
             );
         }
+    );
 
-        for (
-            const page
-            of this.pageIndex
-        ) {
+    router.add(
 
-            entries.push(
-                `/page/${page.slug}`
-            );
+        "/article/:slug",
+
+        async context => {
+
+            const article =
+                await articleRenderer
+                    .loadArticle(
+                        context.params
+                            .slug
+                    );
+
+            await articleRenderer
+                .render(
+                    article
+                );
         }
+    );
 
-        return entries;
-    }
+    router.add(
 
-    getArticles() {
+        "/page/:slug",
 
-        return [
-            ...this.contentIndex
-        ];
-    }
+        async context => {
 
-    getPages() {
+            const page =
+                await pageRenderer
+                    .loadPage(
+                        context.params
+                            .slug
+                    );
 
-        return [
-            ...this.pageIndex
-        ];
-    }
+            await pageRenderer
+                .render(
+                    page
+                );
+        }
+    );
 
-    escape(value = "") {
+    router.add(
 
-        return String(value)
-            .replaceAll(
-                "&",
-                "&amp;"
-            )
-            .replaceAll(
-                "<",
-                "&lt;"
-            )
-            .replaceAll(
-                ">",
-                "&gt;"
-            )
-            .replaceAll(
-                `"`,
-                "&quot;"
-            )
-            .replaceAll(
-                "'",
-                "&#39;"
-            );
-    }
+        "/search",
+
+        async () => {
+
+            const root =
+                document
+                    .getElementById(
+                        "view"
+                    );
+
+            root.innerHTML = `
+
+<section
+class="search-page">
+
+<header>
+
+<h1>
+Search
+</h1>
+
+</header>
+
+<div
+id="search-overlay">
+
+<input
+id="search-input"
+type="search"
+placeholder="Search">
+
+<div
+id="search-suggestions">
+</div>
+
+<div
+id="search-results">
+</div>
+
+</div>
+
+</section>
+`;
+
+            searchUI.initialize();
+        }
+    );
+
+    router.add(
+
+        "/settings",
+
+        async () => {
+
+            const root =
+                document
+                    .getElementById(
+                        "view"
+                    );
+
+            root.innerHTML = `
+
+<section
+class="settings-page">
+
+<h1>
+Settings
+</h1>
+
+<div
+id="settings-root">
+</div>
+
+</section>
+`;
+        }
+    );
+
+    router.add(
+
+        "/about",
+
+        async () => {
+
+            const root =
+                document
+                    .getElementById(
+                        "view"
+                    );
+
+            root.innerHTML = `
+
+<section
+class="about-page">
+
+<h1>
+About
+</h1>
+
+<p>
+Aoi-Web
+</p>
+
+</section>
+`;
+        }
+    );
+
+    router.notFound(
+
+        () => {
+
+            const root =
+                document
+                    .getElementById(
+                        "view"
+                    );
+
+            root.innerHTML =
+                template.renderError(
+
+                    "404",
+
+                    "Page Not Found"
+                );
+        }
+    );
 }
 
-export default RouteRegistry; 
+function renderHome(
+    data = {}
+) {
+
+    const root =
+        document.getElementById(
+            "view"
+        );
+
+    const articles =
+        (
+            data.articles ||
+            []
+        )
+
+        .map(article => {
+
+            return `
+
+<article
+class="article-card">
+
+<h2>
+
+<a href="/article/${article.slug}">
+
+${escapeHtml(
+    article.title
+)}
+
+</a>
+
+</h2>
+
+<p>
+
+${escapeHtml(
+    article.description ||
+    ""
+)}
+
+</p>
+
+</article>
+`;
+        })
+
+        .join("");
+
+    root.innerHTML = `
+
+<section
+class="home-page">
+
+<header>
+
+<h1>
+
+${escapeHtml(
+    data.title ||
+    "Home"
+)}
+
+</h1>
+
+</header>
+
+<div
+class="article-grid">
+
+${articles}
+
+</div>
+
+</section>
+`;
+}
+
+function escapeHtml(
+    value = ""
+) {
+
+    return String(value)
+
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+
+        .replaceAll(
+            `"`,
+            "&quot;"
+        )
+
+        .replaceAll(
+            "'",
+            "&#39;"
+        );
+}
+
+export default
+registerRoutes;

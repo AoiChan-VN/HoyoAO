@@ -1,66 +1,66 @@
 export class Storage {
 
-    static VERSION = 1;
+    constructor(
+        namespace = "aoi"
+    ) {
 
-    static PREFIX = "aoi";
+        this.namespace =
+            namespace;
 
-    constructor() {
+        this.listeners =
+            new Set();
 
-        this.available =
-            this.checkAvailability();
+        this.boundStorageEvent =
+            this.handleStorageEvent
+                .bind(this);
 
-        this.memoryFallback =
-            new Map();
+        window.addEventListener(
+
+            "storage",
+
+            this.boundStorageEvent
+        );
     }
 
-    checkAvailability() {
+    createKey(
+        key
+    ) {
 
-        try {
+        return `${this.namespace}:${key}`;
+    }
 
-            const key =
-                "__aoi_test__";
+    serialize(
+        value,
+        ttl = null
+    ) {
 
-            localStorage.setItem(
-                key,
-                key
-            );
+        return JSON.stringify({
 
-            localStorage.removeItem(
-                key
-            );
+            value,
 
-            return true;
+            ttl,
 
-        } catch {
+            createdAt:
+                Date.now()
+        });
+    }
 
-            return false;
+    deserialize(
+        value
+    ) {
+
+        if (
+            value === null
+        ) {
+
+            return null;
         }
-    }
-
-    createKey(key) {
-
-        return [
-            Storage.PREFIX,
-            Storage.VERSION,
-            key
-        ].join(":");
-    }
-
-    now() {
-
-        return Date.now();
-    }
-
-    serialize(payload) {
-
-        return JSON.stringify(payload);
-    }
-
-    deserialize(payload) {
 
         try {
 
-            return JSON.parse(payload);
+            return JSON.parse(
+                value
+            );
 
         } catch {
 
@@ -68,87 +68,60 @@ export class Storage {
         }
     }
 
-    writeRaw(key, value) {
+    isExpired(
+        payload
+    ) {
 
-        if (!this.available) {
+        if (
+            !payload ||
+            payload.ttl === null
+        ) {
 
-            this.memoryFallback.set(
-                key,
-                value
-            );
-
-            return;
+            return false;
         }
 
-        localStorage.setItem(
-            key,
-            value
-        );
-    }
+        return (
 
-    readRaw(key) {
+            Date.now() >
 
-        if (!this.available) {
-
-            return (
-                this.memoryFallback.get(
-                    key
-                ) ?? null
-            );
-        }
-
-        return localStorage.getItem(
-            key
-        );
-    }
-
-    removeRaw(key) {
-
-        if (!this.available) {
-
-            this.memoryFallback.delete(
-                key
-            );
-
-            return;
-        }
-
-        localStorage.removeItem(
-            key
+            payload.createdAt +
+            payload.ttl
         );
     }
 
     set(
         key,
         value,
-        options = {}
+        ttl = null
     ) {
 
-        const namespacedKey =
-            this.createKey(key);
+        try {
 
-        const payload = {
+            localStorage.setItem(
 
-            version:
-                Storage.VERSION,
+                this.createKey(
+                    key
+                ),
 
-            createdAt:
-                this.now(),
+                this.serialize(
+                    value,
+                    ttl
+                )
+            );
 
-            expiresAt:
-                options.ttl
-                    ? this.now() + options.ttl
-                    : null,
+            return true;
 
-            value
-        };
+        } catch (
+            error
+        ) {
 
-        this.writeRaw(
-            namespacedKey,
-            this.serialize(payload)
-        );
+            console.error(
+                "[Storage]",
+                error
+            );
 
-        return true;
+            return false;
+        }
     }
 
     get(
@@ -156,35 +129,33 @@ export class Storage {
         fallback = null
     ) {
 
-        const namespacedKey =
-            this.createKey(key);
+        const payload =
+            this.deserialize(
 
-        const raw =
-            this.readRaw(
-                namespacedKey
+                localStorage.getItem(
+
+                    this.createKey(
+                        key
+                    )
+                )
             );
 
-        if (!raw) {
-
-            return fallback;
-        }
-
-        const payload =
-            this.deserialize(raw);
-
-        if (!payload) {
-
-            this.remove(key);
+        if (
+            !payload
+        ) {
 
             return fallback;
         }
 
         if (
-            payload.expiresAt &&
-            payload.expiresAt < this.now()
+            this.isExpired(
+                payload
+            )
         ) {
 
-            this.remove(key);
+            this.remove(
+                key
+            );
 
             return fallback;
         }
@@ -192,32 +163,33 @@ export class Storage {
         return payload.value;
     }
 
-    has(key) {
+    remove(
+        key
+    ) {
 
-        return this.get(
-            key,
-            Symbol("missing")
-        ) !== Symbol.for("missing");
+        localStorage.removeItem(
+
+            this.createKey(
+                key
+            )
+        );
     }
 
-    remove(key) {
+    has(
+        key
+    ) {
 
-        const namespacedKey =
-            this.createKey(key);
-
-        this.removeRaw(
-            namespacedKey
+        return (
+            this.get(
+                key
+            ) !== null
         );
     }
 
     clear() {
 
-        if (!this.available) {
-
-            this.memoryFallback.clear();
-
-            return;
-        }
+        const prefix =
+            `${this.namespace}:`;
 
         const keys = [];
 
@@ -228,16 +200,19 @@ export class Storage {
         ) {
 
             const key =
-                localStorage.key(i);
+                localStorage.key(
+                    i
+                );
 
             if (
-                key &&
-                key.startsWith(
-                    `${Storage.PREFIX}:`
+                key?.startsWith(
+                    prefix
                 )
             ) {
 
-                keys.push(key);
+                keys.push(
+                    key
+                );
             }
         }
 
@@ -252,16 +227,82 @@ export class Storage {
         }
     }
 
+    sessionSet(
+        key,
+        value
+    ) {
+
+        try {
+
+            sessionStorage.setItem(
+
+                this.createKey(
+                    key
+                ),
+
+                JSON.stringify(
+                    value
+                )
+            );
+
+            return true;
+
+        } catch {
+
+            return false;
+        }
+    }
+
+    sessionGet(
+        key,
+        fallback = null
+    ) {
+
+        try {
+
+            const value =
+                sessionStorage.getItem(
+
+                    this.createKey(
+                        key
+                    )
+                );
+
+            if (
+                value === null
+            ) {
+
+                return fallback;
+            }
+
+            return JSON.parse(
+                value
+            );
+
+        } catch {
+
+            return fallback;
+        }
+    }
+
+    sessionRemove(
+        key
+    ) {
+
+        sessionStorage.removeItem(
+
+            this.createKey(
+                key
+            )
+        );
+    }
+
     keys() {
 
-        const output = [];
+        const prefix =
+            `${this.namespace}:`;
 
-        if (!this.available) {
-
-            return [
-                ...this.memoryFallback.keys()
-            ];
-        }
+        const result = [];
 
         for (
             let i = 0;
@@ -270,199 +311,180 @@ export class Storage {
         ) {
 
             const key =
-                localStorage.key(i);
+                localStorage.key(
+                    i
+                );
 
             if (
-                key &&
-                key.startsWith(
-                    `${Storage.PREFIX}:`
+                key?.startsWith(
+                    prefix
                 )
             ) {
 
-                output.push(key);
+                result.push(
+
+                    key.replace(
+                        prefix,
+                        ""
+                    )
+                );
             }
         }
 
-        return output;
+        return result;
     }
 
-    entries() {
+    size() {
 
-        const entries = [];
-
-        for (
-            const key
-            of this.keys()
-        ) {
-
-            entries.push([
-                key,
-                this.readRaw(key)
-            ]);
-        }
-
-        return entries;
+        return this.keys()
+            .length;
     }
 
-    pruneExpired() {
-
-        const now =
-            this.now();
-
-        for (
-            const key
-            of this.keys()
-        ) {
-
-            const raw =
-                this.readRaw(key);
-
-            const payload =
-                this.deserialize(raw);
-
-            if (
-                !payload
-            ) {
-
-                this.removeRaw(key);
-
-                continue;
-            }
-
-            if (
-                payload.expiresAt &&
-                payload.expiresAt < now
-            ) {
-
-                this.removeRaw(key);
-            }
-        }
-    }
-
-    increment(
-        key,
-        amount = 1
+    subscribe(
+        callback
     ) {
-
-        const current =
-            Number(
-                this.get(
-                    key,
-                    0
-                )
-            );
-
-        const next =
-            current + amount;
-
-        this.set(
-            key,
-            next
-        );
-
-        return next;
-    }
-
-    decrement(
-        key,
-        amount = 1
-    ) {
-
-        return this.increment(
-            key,
-            -amount
-        );
-    }
-
-    push(
-        key,
-        value
-    ) {
-
-        const current =
-            this.get(
-                key,
-                []
-            );
 
         if (
-            !Array.isArray(
-                current
+            typeof callback !==
+            "function"
+        ) {
+
+            return () => {};
+        }
+
+        this.listeners.add(
+            callback
+        );
+
+        return () => {
+
+            this.listeners.delete(
+                callback
+            );
+        };
+    }
+
+    handleStorageEvent(
+        event
+    ) {
+
+        if (
+            !event.key
+        ) {
+
+            return;
+        }
+
+        const prefix =
+            `${this.namespace}:`;
+
+        if (
+            !event.key.startsWith(
+                prefix
             )
         ) {
 
-            throw new TypeError(
-                `${key} is not an array`
-            );
+            return;
         }
 
-        current.push(value);
+        const key =
+            event.key.replace(
+                prefix,
+                ""
+            );
 
-        this.set(
-            key,
-            current
-        );
-
-        return current;
-    }
-
-    touch(
-        key,
-        ttl
-    ) {
-
-        const value =
-            this.get(key);
-
-        if (
-            value === null
+        for (
+            const listener
+            of this.listeners
         ) {
 
-            return false;
+            try {
+
+                listener({
+
+                    key,
+
+                    oldValue:
+                        this.deserialize(
+                            event.oldValue
+                        ),
+
+                    newValue:
+                        this.deserialize(
+                            event.newValue
+                        )
+                });
+
+            } catch (
+                error
+            ) {
+
+                console.error(
+                    error
+                );
+            }
         }
+    }
+
+    remember(
+        key,
+        producer,
+        ttl = 60000
+    ) {
+
+        const cached =
+            this.get(
+                key
+            );
+
+        if (
+            cached !== null
+        ) {
+
+            return cached;
+        }
+
+        const value =
+            producer();
 
         this.set(
             key,
             value,
-            {
-                ttl
-            }
+            ttl
         );
 
-        return true;
+        return value;
     }
 
-    export() {
+    statistics() {
 
-        const output = {};
+        return {
 
-        for (
-            const [key, value]
-            of this.entries()
-        ) {
+            namespace:
+                this.namespace,
 
-            output[key] = value;
-        }
+            entries:
+                this.size(),
 
-        return output;
+            keys:
+                this.keys()
+        };
     }
 
-    import(data = {}) {
+    destroy() {
 
-        for (
-            const [
-                key,
-                value
-            ]
-            of Object.entries(data)
-        ) {
+        window.removeEventListener(
 
-            this.writeRaw(
-                key,
-                value
-            );
-        }
+            "storage",
+
+            this.boundStorageEvent
+        );
+
+        this.listeners.clear();
     }
 }
+
+export const storage =
+    new Storage();
 
 export default Storage; 

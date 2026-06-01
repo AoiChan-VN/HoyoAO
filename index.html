@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>4D Parallax Gyro World</title>
+
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: radial-gradient(circle at center, #0b0f2a, #000);
+        height: 100%;
+        font-family: Arial, sans-serif;
+        color: white;
+    }
+
+    .scene {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        perspective: 1200px;
+        overflow: hidden;
+    }
+
+    .layer {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform-style: preserve-3d;
+        will-change: transform;
+        transition: transform 0.05s linear;
+    }
+
+    .title {
+        font-size: 3rem;
+        font-weight: bold;
+        text-align: center;
+        transform: translate(-50%, -50%) translateZ(200px);
+        text-shadow: 0 0 20px rgba(0,255,255,0.5);
+    }
+
+    .ring {
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        border: 2px solid rgba(0,255,255,0.4);
+        transform: translate(-50%, -50%) translateZ(100px);
+        animation: spin 20s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: translate(-50%, -50%) rotateZ(0deg) translateZ(100px); }
+        to { transform: translate(-50%, -50%) rotateZ(360deg) translateZ(100px); }
+    }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+        background: cyan;
+        border-radius: 50%;
+        position: absolute;
+        box-shadow: 0 0 10px cyan;
+    }
+
+    #permissionBtn {
+        position: absolute;
+        z-index: 10;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 18px;
+        background: #00ffff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        color: black;
+    }
+
+    .hint {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0.7;
+        font-size: 14px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="scene" id="scene">
+
+    <div class="layer title" id="title">
+        4D GYRO PARALLAX
+    </div>
+
+    <div class="layer ring" id="ring"></div>
+
+    <div class="hint">Move phone / mouse to warp space</div>
+
+    <button id="permissionBtn">Enable Motion Control</button>
+
+</div>
+
+<script>
+let gyro = { x: 0, y: 0 };
+let target = { x: 0, y: 0 };
+
+const scene = document.getElementById("scene");
+const title = document.getElementById("title");
+const ring = document.getElementById("ring");
+const btn = document.getElementById("permissionBtn");
+
+// Smooth interpolation
+function lerp(a, b, t) {
+    return a + (b - a) * t;
+}
+
+// Apply transform loop
+function animate() {
+    target.x = lerp(target.x, gyro.x, 0.08);
+    target.y = lerp(target.y, gyro.y, 0.08);
+
+    const rotateX = target.y * 40;
+    const rotateY = target.x * 40;
+
+    scene.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+    title.style.transform =
+        `translate(-50%, -50%) translateZ(200px) rotateY(${rotateY * 0.5}deg)`;
+
+    ring.style.transform =
+        `translate(-50%, -50%) rotateZ(${rotateY}deg) translateZ(100px)`;
+
+    requestAnimationFrame(animate);
+}
+
+// Mouse fallback
+document.addEventListener("mousemove", (e) => {
+    gyro.x = (e.clientX / window.innerWidth - 0.5);
+    gyro.y = (e.clientY / window.innerHeight - 0.5);
+});
+
+// Gyroscope handler
+function startGyro() {
+    window.addEventListener("deviceorientation", (event) => {
+        const gamma = event.gamma || 0; // left-right
+        const beta = event.beta || 0;   // up-down
+
+        gyro.x = gamma / 45;
+        gyro.y = beta / 45;
+    });
+}
+
+// Permission request (iOS requirement)
+async function requestPermission() {
+    try {
+        if (typeof DeviceOrientationEvent !== "undefined" &&
+            typeof DeviceOrientationEvent.requestPermission === "function") {
+
+            const response = await DeviceOrientationEvent.requestPermission();
+            if (response === "granted") {
+                startGyro();
+                btn.style.display = "none";
+            } else {
+                alert("Permission denied. Using mouse control.");
+            }
+        } else {
+            // Android / normal browsers
+            startGyro();
+            btn.style.display = "none";
+        }
+    } catch (e) {
+        console.log(e);
+        alert("Gyro not available. Using mouse control.");
+    }
+}
+
+btn.addEventListener("click", requestPermission);
+
+animate();
+</script>
+
+</body>
+</html> 

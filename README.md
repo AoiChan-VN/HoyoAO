@@ -1,3 +1,4 @@
+```txt
 4d-cinematic-engine/
 │
 ├── public/
@@ -63,3 +64,4 @@
 │   │   ├── dreamscape.md
 │
 └── app.js 
+```

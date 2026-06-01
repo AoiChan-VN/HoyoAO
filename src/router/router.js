@@ -4,89 +4,501 @@ export class Router {
 
         this.routes = [];
 
-        this.currentRoute = null;
-
-        this.root =
-            document.getElementById(
-                "view"
-            );
-
-        this.beforeHooks = [];
-
-        this.afterHooks = [];
+        this.middlewares = [];
 
         this.notFoundHandler =
             null;
 
-        this.abortController =
-            new AbortController();
+        this.currentRoute =
+            null;
+
+        this.scrollPositions =
+            new Map();
+
+        this.started =
+            false;
+
+        this.boundPopState =
+            this.handlePopState
+                .bind(this);
     }
 
-    async initialize() {
+    start() {
 
-        this.attachListeners();
+        if (
+            this.started
+        ) {
 
-        await this.resolve(
-            location.pathname,
-            {
-                replace: true
-            }
-        );
-    }
+            return;
+        }
 
-    attachListeners() {
+        this.started = true;
 
         window.addEventListener(
-            "popstate",
-            () => {
 
-                this.resolve(
-                    location.pathname,
-                    {
-                        replace: true
-                    }
-                );
-            },
-            {
-                passive: true
-            }
+            "popstate",
+
+            this.boundPopState
         );
 
-        document.addEventListener(
-            "click",
-            event => {
+        this.resolve(
+            location.pathname
+        );
+    }
 
-                const anchor =
-                    event.target.closest(
-                        "a[href]"
-                    );
+    stop() {
 
-                if (!anchor) {
-                    return;
+        window.removeEventListener(
+
+            "popstate",
+
+            this.boundPopState
+        );
+
+        this.started = false;
+    }
+
+    add(
+        path,
+        handler,
+        options = {}
+    ) {
+
+        this.routes.push({
+
+            path,
+
+            handler,
+
+            lazy:
+                options.lazy ??
+                false,
+
+            middleware:
+                options.middleware ??
+                []
+        });
+
+        return this;
+    }
+
+    use(
+        middleware
+    ) {
+
+        if (
+            typeof middleware ===
+            "function"
+        ) {
+
+            this.middlewares.push(
+                middleware
+            );
+        }
+
+        return this;
+    }
+
+    notFound(
+        handler
+    ) {
+
+        this.notFoundHandler =
+            handler;
+
+        return this;
+    }
+
+    async navigate(
+        path,
+        state = {}
+    ) {
+
+        this.saveScroll();
+
+        history.pushState(
+
+            state,
+
+            "",
+
+            path
+        );
+
+        await this.resolve(
+            path
+        );
+    }
+
+    async replace(
+        path,
+        state = {}
+    ) {
+
+        history.replaceState(
+
+            state,
+
+            "",
+
+            path
+        );
+
+        await this.resolve(
+            path
+        );
+    }
+
+    async handlePopState() {
+
+        await this.resolve(
+            location.pathname
+        );
+
+        this.restoreScroll();
+    }
+
+    async resolve(
+        path
+    ) {
+
+        const match =
+            this.match(
+                path
+            );
+
+        if (
+            !match
+        ) {
+
+            return this.handle404(
+                path
+            );
+        }
+
+        const context = {
+
+            path,
+
+            params:
+                match.params,
+
+            route:
+                match.route
+        };
+
+        const allowed =
+            await this.runMiddlewares(
+                context
+            );
+
+        if (
+            !allowed
+        ) {
+
+            return;
+        }
+
+        this.currentRoute =
+            context;
+
+        document.dispatchEvent(
+
+            new CustomEvent(
+
+                "aoi:route-change",
+
+                {
+                    detail:
+                        context
                 }
+            )
+        );
 
-                const href =
-                    anchor.getAttribute(
-                        "href"
-                    );
+        try {
 
-                if (!href) {
-                    return;
-                }
+            if (
+                match.route.lazy
+            ) {
+
+                const module =
+                    await match.route
+                        .handler();
 
                 if (
-                    href.startsWith(
-                        "http"
+                    typeof module.default ===
+                    "function"
+                ) {
+
+                    await module.default(
+                        context
+                    );
+                }
+
+            } else {
+
+                await match.route
+                    .handler(
+                        context
+                    );
+            }
+
+        } catch (
+            error
+        ) {
+
+            console.error(
+                "[Router]",
+                error
+            );
+
+            this.handle404(
+                path
+            );
+        }
+
+        window.scrollTo(
+            0,
+            0
+        );
+    }
+
+    match(
+        path
+    ) {
+
+        for (
+            const route
+            of this.routes
+        ) {
+
+            const params =
+                {};
+
+            const pattern =
+                route.path
+
+                    .replace(
+                        /\//g,
+                        "\\/"
                     )
+
+                    .replace(
+
+                        /:([a-zA-Z0-9_]+)/g,
+
+                        (
+                            _,
+                            key
+                        ) => {
+
+                            params[
+                                key
+                            ] = null;
+
+                            return "([^\\/]+)";
+                        }
+                    );
+
+            const regex =
+                new RegExp(
+                    `^${pattern}$`
+                );
+
+            const result =
+                path.match(
+                    regex
+                );
+
+            if (
+                !result
+            ) {
+
+                continue;
+            }
+
+            let index = 1;
+
+            const finalParams =
+                {};
+
+            for (
+                const key
+                of Object.keys(
+                    params
+                )
+            ) {
+
+                finalParams[
+                    key
+                ] =
+                    decodeURIComponent(
+                        result[
+                            index++
+                        ]
+                    );
+            }
+
+            return {
+
+                route,
+
+                params:
+                    finalParams
+            };
+        }
+
+        return null;
+    }
+
+    async runMiddlewares(
+        context
+    ) {
+
+        const stack = [
+
+            ...this.middlewares,
+
+            ...(
+                context.route
+                    .middleware ||
+                []
+            )
+        ];
+
+        for (
+            const middleware
+            of stack
+        ) {
+
+            const result =
+                await middleware(
+                    context
+                );
+
+            if (
+                result === false
+            ) {
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    handle404(
+        path
+    ) {
+
+        document.dispatchEvent(
+
+            new CustomEvent(
+
+                "aoi:route-404",
+
+                {
+
+                    detail: {
+
+                        path
+                    }
+                }
+            )
+        );
+
+        if (
+            this.notFoundHandler
+        ) {
+
+            return this
+                .notFoundHandler(
+                    path
+                );
+        }
+    }
+
+    saveScroll() {
+
+        this.scrollPositions.set(
+
+            location.pathname,
+
+            {
+
+                x:
+                    window.scrollX,
+
+                y:
+                    window.scrollY
+            }
+        );
+    }
+
+    restoreScroll() {
+
+        const position =
+            this.scrollPositions.get(
+                location.pathname
+            );
+
+        if (
+            !position
+        ) {
+
+            return;
+        }
+
+        requestAnimationFrame(
+            () => {
+
+                window.scrollTo(
+
+                    position.x,
+
+                    position.y
+                );
+            }
+        );
+    }
+
+    link(
+        selector = "a"
+    ) {
+
+        document.addEventListener(
+
+            "click",
+
+            event => {
+
+                const target =
+                    event.target.closest(
+                        selector
+                    );
+
+                if (
+                    !target
                 ) {
 
                     return;
                 }
 
+                const href =
+                    target.getAttribute(
+                        "href"
+                    );
+
                 if (
+                    !href ||
+                    href.startsWith(
+                        "http"
+                    ) ||
                     href.startsWith(
                         "#"
-                    )
+                    ) ||
+                    target.target ===
+                    "_blank"
                 ) {
 
                     return;
@@ -94,423 +506,53 @@ export class Router {
 
                 event.preventDefault();
 
-                this.navigate(href);
-
-            },
-            {
-                passive: false
+                this.navigate(
+                    href
+                );
             }
         );
     }
 
-    register(
-        pattern,
-        handler,
-        options = {}
-    ) {
-
-        this.routes.push({
-
-            pattern,
-
-            handler,
-
-            options,
-
-            compiled:
-                this.compile(
-                    pattern
-                )
-        });
-    }
-
-    compile(pattern) {
-
-        const keys = [];
-
-        const regex =
-            pattern
-                .replace(
-                    /\/:([^/]+)/g,
-                    (_, key) => {
-
-                        keys.push(key);
-
-                        return "/([^/]+)";
-                    }
-                );
-
-        return {
-
-            regex:
-                new RegExp(
-                    `^${regex}$`
-                ),
-
-            keys
-        };
-    }
-
-    match(pathname) {
-
-        for (
-            const route
-            of this.routes
-        ) {
-
-            const result =
-                pathname.match(
-                    route.compiled.regex
-                );
-
-            if (!result) {
-                continue;
-            }
-
-            const params = {};
-
-            route.compiled.keys.forEach(
-                (
-                    key,
-                    index
-                ) => {
-
-                    params[key] =
-                        decodeURIComponent(
-                            result[
-                                index + 1
-                            ]
-                        );
-                }
-            );
-
-            return {
-
-                route,
-
-                params
-            };
-        }
-
-        return null;
-    }
-
-    async navigate(
-        path,
-        options = {}
-    ) {
-
-        const replace =
-            options.replace ??
-            false;
-
-        if (replace) {
-
-            history.replaceState(
-                {},
-                "",
-                path
-            );
-
-        } else {
-
-            history.pushState(
-                {},
-                "",
-                path
-            );
-        }
-
-        await this.resolve(
-            path,
-            options
-        );
-    }
-
-    async resolve(
-        path,
-        options = {}
-    ) {
-
-        try {
-
-            const match =
-                this.match(path);
-
-            if (!match) {
-
-                return this.render404();
-            }
-
-            const context = {
-
-                path,
-
-                params:
-                    match.params,
-
-                route:
-                    match.route,
-
-                metadata: {}
-            };
-
-            for (
-                const hook
-                of this.beforeHooks
-            ) {
-
-                const allowed =
-                    await hook(
-                        context
-                    );
-
-                if (
-                    allowed === false
-                ) {
-
-                    return;
-                }
-            }
-
-            const result =
-                await match.route.handler(
-                    context
-                );
-
-            this.currentRoute =
-                context;
-
-            if (
-                result?.html
-            ) {
-
-                this.render(
-                    result.html
-                );
-            }
-
-            if (
-                result?.title
-            ) {
-
-                this.updateTitle(
-                    result.title
-                );
-            }
-
-            if (
-                result?.meta
-            ) {
-
-                this.updateMeta(
-                    result.meta
-                );
-            }
-
-            if (
-                options.scroll !== false
-            ) {
-
-                this.restoreScroll();
-            }
-
-            for (
-                const hook
-                of this.afterHooks
-            ) {
-
-                await hook(
-                    context,
-                    result
-                );
-            }
-
-        } catch (error) {
-
-            console.error(
-                "[Router]",
-                error
-            );
-
-            this.renderError(
-                error
-            );
-        }
-    }
-
-    render(html) {
-
-        if (
-            !this.root
-        ) {
-            return;
-        }
-
-        this.root.innerHTML =
-            html;
-
-        this.root.focus?.();
-    }
-
-    render404() {
-
-        if (
-            this.notFoundHandler
-        ) {
-
-            return this.notFoundHandler();
-        }
-
-        this.render(`
-            <section class="not-found">
-                <h1>404</h1>
-                <p>Page not found.</p>
-            </section>
-        `);
-
-        document.title =
-            "404";
-    }
-
-    renderError(error) {
-
-        this.render(`
-            <section class="route-error">
-                <h1>Error</h1>
-                <p>
-                    ${
-                        error?.message ??
-                        "Unknown Error"
-                    }
-                </p>
-            </section>
-        `);
-    }
-
-    updateTitle(title) {
-
-        document.title =
-            title;
-    }
-
-    updateMeta(meta) {
-
-        Object.entries(meta)
-            .forEach(
-                (
-                    [name, value]
-                ) => {
-
-                    const element =
-                        document.querySelector(
-                            `[data-dynamic-meta="${name}"]`
-                        );
-
-                    if (
-                        element
-                    ) {
-
-                        element.setAttribute(
-                            "content",
-                            value
-                        );
-                    }
-                }
-            );
-    }
-
-    restoreScroll() {
-
-        requestAnimationFrame(
-            () => {
-
-                window.scrollTo({
-
-                    top: 0,
-
-                    left: 0,
-
-                    behavior:
-                        "instant"
-                });
-            }
-        );
-    }
-
-    beforeEach(fn) {
-
-        this.beforeHooks.push(
-            fn
-        );
-    }
-
-    afterEach(fn) {
-
-        this.afterHooks.push(
-            fn
-        );
-    }
-
-    setNotFound(fn) {
-
-        this.notFoundHandler =
-            fn;
-    }
-
-    prefetch(path) {
-
-        const link =
-            document.createElement(
-                "link"
-            );
-
-        link.rel =
-            "prefetch";
-
-        link.href =
-            path;
-
-        document.head.appendChild(
-            link
-        );
-    }
-
-    getCurrentRoute() {
+    current() {
 
         return this.currentRoute;
     }
 
-    isActive(path) {
+    emit(
+        event,
+        detail = {}
+    ) {
 
-        return (
-            location.pathname ===
-            path
-        );
-    }
+        document.dispatchEvent(
 
-    reload() {
+            new CustomEvent(
 
-        return this.resolve(
-            location.pathname,
-            {
-                replace: true
-            }
+                event,
+
+                {
+                    detail
+                }
+            )
         );
     }
 
     destroy() {
 
-        this.abortController.abort();
+        this.stop();
 
-        this.routes.length = 0;
+        this.routes = [];
 
-        this.beforeHooks.length = 0;
+        this.middlewares = [];
 
-        this.afterHooks.length = 0;
+        this.scrollPositions
+            .clear();
 
-        this.currentRoute = null;
+        this.currentRoute =
+            null;
     }
 }
+
+export const router =
+    new Router();
 
 export default Router; 

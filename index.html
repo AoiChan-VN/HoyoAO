@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pure Vanilla Experience</title>
   
-  <!-- Hệ thống Stylesheet CSS4+ -->
+  <!-- Hệ thống Stylesheet CSS4+ phục vụ phối cảnh 3D Camera -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
 
-  <!-- Thanh Điều Hướng (Data-Driven Render) -->
+  <!-- Thanh Điều Hướng Hệ Thống Multi-Page (Data-Driven Render) -->
   <header id="site-header" class="site-header">
     <div class="header-container">
-      <a href="#" id="site-logo" class="site-logo">PURE</a>
+      <a href="index.html" id="site-logo" class="site-logo">PURE</a>
       <nav class="main-navigation">
         <ul id="nav-list" class="nav-list">
           <!-- Item điều hướng sẽ được render tự động từ config.js -->
@@ -24,20 +24,20 @@
     </div>
   </header>
 
-  <!-- Bảng Cấu Hình Hệ Thống (Settings Panel) -->
+  <!-- Bảng Cấu Hình Hệ Thống Đồng Bộ Cấu Hình Xuyên Trang (Settings Panel) -->
   <aside id="settings-panel" class="settings-panel hidden">
     <div class="settings-content">
       <h3>Cài Đặt Hệ Thống</h3>
       
-      <!-- Lựa chọn Giao diện (Theme Selector) -->
+      <!-- Lựa chọn Giao diện Hệ Thống -->
       <div class="setting-group">
         <label for="theme-select">Giao diện:</label>
         <select id="theme-select">
-          <!-- Các option theme sẽ được render từ config.js -->
+          <!-- Các option theme được điều khiển động từ config.js -->
         </select>
       </div>
 
-      <!-- Bật/Tắt Con Quay Hồi Chuyển (Gyroscope cho Mobile) -->
+      <!-- Bật/Tắt Cảm biến Nghiêng Gyroscope cho Thiết Bị Di Động -->
       <div class="setting-group">
         <label for="gyro-switch" class="switch-label">
           <input type="checkbox" id="gyro-switch" checked>
@@ -47,34 +47,33 @@
     </div>
   </aside>
 
-  <!-- Khung Chứa Góc Nhìn Virtual Camera & Phối Cảnh 3D -->
+  <!-- Khung Chứa Góc Nhìn Virtual 3D Camera -->
   <main id="parallax-container" class="parallax-container">
     
-    <!-- Layer 1: Các Ngôi Sao (Nền xa nhất) -->
-    <section id="layer-bg-stars" class="parallax-layer layer-bg">
-      <div class="stars-generator"></div>
-    </section>
+    <!-- Layer 1: Nền trời sao thực tế (Nạp link động từ assets-manifest.json) -->
+    <section id="layer-bg-stars" class="parallax-layer layer-bg"></section>
 
-    <!-- Layer 2: Dãy Núi (Tầm trung) -->
-    <section id="layer-mg-mountains" class="parallax-layer layer-mg">
-      <div class="mountain-silhouette"></div>
-    </section>
+    <!-- Layer 2: Dãy núi trung cảnh thực tế (Nạp link động từ assets-manifest.json) -->
+    <section id="layer-mg-mountains" class="parallax-layer layer-mg"></section>
 
-    <!-- Layer 3: Khối Nội Dung (Tầm gần - Tiêu cự chính) -->
+    <!-- Layer 3: Khối Tiền Cảnh Chứa Giao Diện Tương Tác Kính Mờ (Glassmorphism) -->
     <section id="layer-fg-content" class="parallax-layer layer-fg">
       <div class="hero-content">
         <h1 id="hero-title">Pure Vanilla Experience</h1>
         <p id="hero-subtitle">Sức mạnh nguyên bản của Web Standards không phụ thuộc Framework.</p>
+        
         <div class="cta-actions">
           <a href="about.html" class="btn btn-primary">Khám Phá Ngay</a>
           <button id="hardware-auth-btn" class="btn btn-secondary">Kích Hoạt Cảm Biến</button>
         </div>
+
+        <!-- Vùng hiển thị danh sách bài viết động và nội dung dịch từ file .md sẽ được chèn tự động tại đây -->
       </div>
     </section>
 
   </main>
 
-  <!-- Khởi tạo Native ESM Modules -->
+  <!-- Khởi tạo Native ESM Modules Điều Phối Toàn Ứng Dụng -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

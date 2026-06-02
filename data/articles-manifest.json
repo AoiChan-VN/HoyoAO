@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-06-02",
+  "articles": [
+    {
+      "id": "pure-philosophy",
+      "title": "Triết lý thiết kế mã nguồn PURE",
+      "slug": "triet-ly-pure",
+      "filePath": "content/pure-philosophy.md",
+      "description": "Tìm hiểu lý do tại sao tối giản hóa thư viện lại giúp tăng tốc độ phản hồi và trải nghiệm người dùng."
+    },
+    {
+      "id": "performance-web-standards",
+      "title": "Tối ưu hóa hiệu năng bằng Web Standards",
+      "slug": "toi-uu-hieu-nang",
+      "filePath": "content/performance.md",
+      "description": "Phương pháp tận dụng tối đa sức mạnh của phần cứng thông qua các API tiêu chuẩn của trình duyệt."
+    }
+  ]
+}
+ 

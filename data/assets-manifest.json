@@ -3,12 +3,12 @@
   "environment": "production",
   "parallaxImages": {
     "bg-stars": {
-      "url": "assets/bg-stars.webp",
+      "url": "images/bg-stars.webp",
       "alt": "Lớp ảnh nền trời sao nội bộ của người dùng",
       "format": "webp"
     },
     "mg-mountains": {
-      "url": "assets/mg-mountains.webp",
+      "url": "images/mg-mountains.webp",
       "alt": "Lớp ảnh trung cảnh dãy núi nội bộ của người dùng",
       "format": "webp"
     },

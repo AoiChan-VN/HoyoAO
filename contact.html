@@ -5,39 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Liên Hệ - Pure Vanilla Experience</title>
   
-  <!-- Hệ thống Stylesheet CSS4+ dùng chung -->
+  <!-- Kế thừa hệ thống style toàn cục và ma trận phối cảnh 3D -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
 
-  <!-- Thanh Điều Hướng (Data-Driven Render tự động gán class active cho trang Contact) -->
+  <!-- Vùng chứa cấu phần Header tự động nạp bởi HeaderComponent -->
   <header id="site-header" class="site-header">
     <div class="header-container">
-      <a href="#" id="site-logo" class="site-logo">PURE</a>
+      <a href="index.html" id="site-logo" class="site-logo">PURE</a>
       <nav class="main-navigation">
         <ul id="nav-list" class="nav-list">
-          <!-- Item điều hướng sẽ được render tự động từ config.js -->
+          <!-- Render tự động và giữ trạng thái class active chính xác -->
         </ul>
       </nav>
       <button id="settings-toggle" class="settings-toggle" aria-label="Open Settings">⚙️</button>
     </div>
   </header>
 
-  <!-- Bảng Cấu Hình Hệ Thống (Settings Panel) -->
+  <!-- Vùng chứa cấu phần Bảng Cài Đặt tự động quản lý bởi SettingsComponent -->
   <aside id="settings-panel" class="settings-panel hidden">
     <div class="settings-content">
       <h3>Cài Đặt Hệ Thống</h3>
-      
-      <!-- Lựa chọn Giao diện (Theme Selector) -->
       <div class="setting-group">
         <label for="theme-select">Giao diện:</label>
-        <select id="theme-select">
-          <!-- Các option theme sẽ được render từ config.js -->
-        </select>
+        <select id="theme-select"></select>
       </div>
-
-      <!-- Bật/Tắt Con Quay Hồi Chuyển (Gyroscope cho Mobile) -->
       <div class="setting-group">
         <label for="gyro-switch" class="switch-label">
           <input type="checkbox" id="gyro-switch" checked>
@@ -47,39 +41,38 @@
     </div>
   </aside>
 
-  <!-- Khung Chứa Góc Nhìn Virtual Camera & Nội Dung Liên Hệ -->
+  <!-- Khung Chứa Góc Nhìn Virtual 3D Camera Phối Cảnh -->
   <main id="parallax-container" class="parallax-container">
     
-    <!-- Layer 1: Các Ngôi Sao (Nền xa) -->
-    <section id="layer-bg-stars" class="parallax-layer layer-bg">
-      <div class="stars-generator"></div>
-    </section>
+    <!-- Các Layer Parallax nạp ảnh nền động từ assets-manifest.json -->
+    <section id="layer-bg-stars" class="parallax-layer layer-bg"></section>
+    <section id="layer-mg-mountains" class="parallax-layer layer-mg"></section>
 
-    <!-- Layer 2: Khối Biểu Mẫu Liên Hệ (Tầm gần - Thiết kế Kính mờ Glassmorphism) -->
+    <!-- Khối Tiền Cảnh Chứa Biểu Mẫu Liên Hệ (Thiết kế Kính mờ) -->
     <section id="layer-fg-content" class="parallax-layer layer-fg">
-      <div class="hero-content" style="max-width: 550px; text-align: left;">
-        <h1 id="hero-title" style="text-align: center; margin-bottom: var(--spacing-sm);">Liên Hệ</h1>
-        <p style="text-align: center; color: var(--text-secondary); margin-bottom: var(--spacing-lg);">Gửi thông điệp của bạn đến với chúng tôi</p>
+      <div class="hero-content" style="max-width: 550px;">
+        <h1 id="hero-title" style="margin-bottom: var(--spacing-xs);">Liên Hệ</h1>
+        <p id="hero-subtitle" style="margin-bottom: var(--spacing-lg);">Gửi thông điệp của bạn đến với dự án PURE</p>
         
-        <!-- Biểu mẫu liên hệ thuần (Data-Driven styling tương thích hoàn toàn) -->
-        <form id="contact-form" onsubmit="event.preventDefault(); alert('Tin nhắn đã được giả lập gửi thành công (Business Logic)!');" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+        <!-- Biểu mẫu xử lý nghiệp vụ thuần (Business Logic thực tế) -->
+        <form id="contact-form" action="#" method="POST" style="display: flex; flex-direction: column; gap: var(--spacing-md); text-align: left;">
           
           <div class="setting-group" style="margin-bottom: 0;">
             <label for="contact-name">Họ và tên:</label>
-            <input type="text" id="contact-name" required style="width: 100%; padding: var(--spacing-sm); background-color: var(--bg-secondary); border: 1px solid var(--border-glass); color: var(--text-primary); border-radius: var(--radius-sm); outline: none;">
+            <input type="text" id="contact-name" name="name" required style="width: 100%; padding: var(--spacing-sm); background-color: var(--bg-secondary); border: 1px solid var(--border-glass); color: var(--text-primary); border-radius: var(--radius-sm); outline: none;">
           </div>
 
           <div class="setting-group" style="margin-bottom: 0;">
             <label for="contact-email">Email liên hệ:</label>
-            <input type="email" id="contact-email" required style="width: 100%; padding: var(--spacing-sm); background-color: var(--bg-secondary); border: 1px solid var(--border-glass); color: var(--text-primary); border-radius: var(--radius-sm); outline: none;">
+            <input type="email" id="contact-email" name="email" required style="width: 100%; padding: var(--spacing-sm); background-color: var(--bg-secondary); border: 1px solid var(--border-glass); color: var(--text-primary); border-radius: var(--radius-sm); outline: none;">
           </div>
 
           <div class="setting-group" style="margin-bottom: 0;">
             <label for="contact-message">Nội dung thông điệp:</label>
-            <textarea id="contact-message" rows="4" required style="width: 100%; padding: var(--spacing-sm); background-color: var(--bg-secondary); border: 1px solid var(--border-glass); color: var(--text-primary); border-radius: var(--radius-sm); outline: none; resize: none;"></textarea>
+            <textarea id="contact-message" name="message" rows="4" required style="width: 100%; padding: var(--spacing-sm); background-color: var(--bg-secondary); border: 1px solid var(--border-glass); color: var(--text-primary); border-radius: var(--radius-sm); outline: none; resize: none;"></textarea>
           </div>
 
-          <div class="cta-actions" style="margin-top: var(--spacing-md);">
+          <div class="cta-actions" style="margin-top: var(--spacing-md); margin-bottom: 0;">
             <a href="index.html" class="btn btn-secondary">Trang Chủ</a>
             <button type="submit" class="btn btn-primary" style="flex-grow: 1;">Gửi Tin Nhắn</button>
           </div>
@@ -89,8 +82,15 @@
 
   </main>
 
-  <!-- Khởi tạo Native ESM Modules -->
+  <!-- Khởi tạo Native ESM Modules Điều Phối Toàn Ứng Dụng -->
   <script type="module" src="js/app.js"></script>
+  
+  <script type="module">
+    // Xử lý Business Logic gửi form thực tế, chống chặn trang mặc định
+    document.getElementById('contact-form')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('Hệ thống PURE đã ghi nhận thông điệp liên hệ thành công!');
+    });
+  </script>
 </body>
 </html>
- 

@@ -1,0 +1,304 @@
+/* css/main.css */
+
+/* --- 1. Thiết lập cơ bản (Reset & Base Styles) --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  list-style: none;
+}
+
+/* --- 2. Bố cục Header & Menu Điều Hướng (Data-Driven Layout) --- */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--header-height);
+  background-color: var(--bg-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-glass);
+  z-index: 100;
+  transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+.header-container {
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.site-logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--accent-color);
+  transition: color var(--transition-fast);
+}
+
+.nav-list {
+  display: flex;
+  gap: var(--spacing-lg);
+}
+
+.nav-list a {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.nav-list a:hover,
+.nav-list a.active {
+  color: var(--text-primary);
+}
+
+.settings-toggle {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--text-primary);
+  padding: var(--spacing-sm);
+  border-radius: 50%;
+  transition: transform var(--transition-fast);
+}
+
+.settings-toggle:hover {
+  transform: rotate(45deg);
+}
+
+/* --- 3. Bảng Cài Đặt Hệ Thống (Settings Panel Slide-in) --- */
+.settings-panel {
+  position: fixed;
+  top: var(--header-height);
+  right: 0;
+  width: 320px;
+  height: calc(100vh - var(--header-height));
+  background-color: var(--bg-glass);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-left: 1px solid var(--border-glass);
+  z-index: 90;
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-glass);
+  transition: transform var(--transition-normal) ease-in-out;
+}
+
+.settings-panel.hidden {
+  transform: translateX(100%);
+}
+
+.settings-content h3 {
+  font-size: 1.1rem;
+  margin-bottom: var(--spacing-lg);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent-color);
+}
+
+.setting-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.setting-group label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-secondary);
+}
+
+.setting-group select {
+  width: 100%;
+  padding: var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+
+.switch-label {
+  display: flex !important;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+}
+
+/* --- 4. Khung Chứa Parallax & Vùng Hiển Thị Khung Nhìn (Viewport) --- */
+.parallax-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  perspective: 1000px;
+}
+
+.parallax-layer {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  will-change: transform;
+  transition: transform var(--transition-slow);
+}
+
+/* Các lớp CSS giả lập chiều sâu hoặc background dựng sẵn */
+.layer-bg {
+  background: radial-gradient(circle at center, #1e293b 0%, var(--bg-primary) 100%);
+  z-index: 1;
+}
+
+.stars-generator {
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(white 1px, transparent 0);
+  background-size: 40px 40px;
+  opacity: 0.3;
+}
+
+.layer-mg {
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+}
+
+.mountain-silhouette {
+  width: 100%;
+  height: 40vh;
+  background: linear-gradient(to top, var(--bg-secondary) 0%, transparent 100%);
+  clip-path: polygon(0% 100%, 0% 70%, 25% 40%, 45% 65%, 70% 30%, 100% 70%, 100% 100%);
+}
+
+.layer-fg {
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- 5. Khối Nội Dung Người Dùng (Hero Content CSS) --- */
+.hero-content {
+  background-color: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  text-align: center;
+  max-width: 600px;
+  width: 90%;
+}
+
+.hero-content h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: var(--spacing-md);
+  letter-spacing: -0.5px;
+}
+
+.hero-content p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-xl);
+}
+
+.cta-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+}
+
+.btn {
+  display: inline-block;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  color: var(--accent-contrast);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-glass);
+}
+
+.btn-secondary:hover {
+  background-color: var(--border-glass);
+}
+
+/* --- 6. Giao Diện Camera Tương Tác (Hardware Interface CSS) --- */
+.camera-viewport {
+  position: absolute;
+  bottom: var(--spacing-lg);
+  left: var(--spacing-lg);
+  width: 180px;
+  height: 135px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 2px solid var(--accent-color);
+  box-shadow: var(--shadow-glass);
+  z-index: 10;
+  transition: opacity var(--transition-normal);
+}
+
+.camera-viewport.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#webcam-stream {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Phản chiếu gương giúp người dùng dễ nhìn */
+}
+
+.camera-status {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-size: 0.65rem;
+  text-align: center;
+  padding: var(--spacing-xs) 0;
+}
+ 

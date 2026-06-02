@@ -1,6 +1,6 @@
 /* css/main.css */
 
-/* --- 1. Reset & Base Styles --- */
+/* --- 1. Thiết lập cơ bản (Reset & Base Styles) --- */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -25,7 +25,7 @@ ul {
   list-style: none;
 }
 
-/* --- 2. Bố cục Header & Menu Điều Hướng (Data-Driven Layout) --- */
+/* --- 2. Bố cục Header & Định dạng Thẻ Ảnh Logo Thật (Sửa lỗi số 3 & 4) --- */
 .site-header {
   position: fixed;
   top: 0;
@@ -50,12 +50,28 @@ ul {
   justify-content: space-between;
 }
 
+/* Định dạng cho khung chứa Logo */
 .site-logo {
+  display: flex;
+  align-items: center;
+  height: 100%;
   font-size: 1.5rem;
   font-weight: 800;
   letter-spacing: 2px;
   color: var(--accent-color);
-  transition: color var(--transition-fast);
+}
+
+/* Style chuyên biệt cho Thẻ ảnh ảnh thật của Logo (Sửa lỗi số 3) */
+.site-logo-img {
+  max-height: calc(var(--header-height) - 30px);
+  width: auto;
+  object-fit: contain;
+  display: block;
+  transition: transform var(--transition-fast);
+}
+
+.site-logo-img:hover {
+  transform: scale(1.05);
 }
 
 .nav-list {
@@ -147,13 +163,12 @@ ul {
   cursor: pointer;
 }
 
-/* --- 4. Khung Chứa Cấu Trúc Khung Nhìn Virtual Camera 3D --- */
+/* --- 4. Khung Chứa Phối Cảnh Camera Ảo 3D & Parallax --- */
 .parallax-container {
   position: relative;
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  /* Kích hoạt không gian Phối cảnh Camera ảo và triệt tiêu lỗi khử răng cưa hình ảnh */
   transform-style: preserve-3d;
   will-change: transform;
 }
@@ -167,7 +182,6 @@ ul {
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
-  /* Kích hoạt tăng tốc phần cứng tối đa, chống nghẽn CPU theo Điều 8 */
   transform-style: preserve-3d;
   backface-visibility: hidden;
   will-change: transform;
@@ -180,12 +194,12 @@ ul {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow-y: auto; /* Cho phép cuộn nội dung bài viết dài bên trong lớp tiền cảnh */
+  overflow-y: auto;
   padding-top: calc(var(--header-height) + var(--spacing-lg));
   padding-bottom: var(--spacing-xl);
 }
 
-/* --- 5. Khối Nội Dung Người Dùng & Giao Diện Kính Mờ (Glassmorphism) --- */
+/* --- 5. Khối Nội Dung Diện Kính Mờ (Glassmorphism) --- */
 .hero-content {
   background-color: var(--bg-glass);
   border: 1px solid var(--border-glass);
@@ -195,7 +209,7 @@ ul {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   text-align: center;
-  max-width: 650px;
+  max-width: 700px;
   width: 90%;
   transition: background-color var(--transition-normal);
 }
@@ -250,32 +264,154 @@ ul {
   background-color: var(--border-glass);
 }
 
-/* --- 6. Giao Diện Định Dạng Văn Bản Markdown Bài Viết (.MD Styles) --- */
-#md-content-viewport {
+/* --- 6. Hệ Thống Khối Giao Diện Card Bài Viết Riêng Biệt (Sửa lỗi số 2 & 4) --- */
+.pure-articles-section {
+  margin-top: var(--spacing-xl);
   text-align: left;
-  line-height: 1.7;
-  color: var(--text-primary);
+  border-top: 1px solid var(--border-glass);
+  padding-top: var(--spacing-lg);
 }
 
-#md-content-viewport h1, 
-#md-content-viewport h2, 
-#md-content-viewport h3 {
+.section-title {
+  font-size: 1.25rem;
+  margin-bottom: var(--spacing-md);
+  color: var(--accent-color);
+  letter-spacing: 0.5px;
+}
+
+.articles-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+/* Thiết kế cấu trúc Card Bài Viết Riêng Biệt */
+.pure-article-card {
+  position: relative;
+  cursor: pointer;
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.pure-article-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-glass);
+}
+
+.card-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background-color: var(--accent-color);
+  color: var(--accent-contrast);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 0 0 0 var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.card-title {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  padding-right: var(--spacing-xl);
+}
+
+.card-excerpt {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: var(--spacing-md);
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.read-more-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+/* --- 7. Khung Hiển Thị Nội Dung Bài Viết Markdown Tải Động (Viewport Box) --- */
+#md-content-viewport {
+  position: relative;
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--bg-glass);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+.md-viewport-hidden {
+  display: none;
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.md-viewport-visible {
+  display: block;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.viewport-close-btn {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: background-color var(--transition-fast);
+  z-index: 5;
+}
+
+.viewport-close-btn:hover {
+  background-color: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+/* Định dạng typography thẻ con bên trong công cụ Render Markdown */
+#md-render-target {
+  line-height: 1.7;
+}
+
+#md-render-target h1, 
+#md-render-target h2, 
+#md-render-target h3 {
   color: var(--accent-color);
   margin-top: var(--spacing-lg);
   margin-bottom: var(--spacing-sm);
   font-weight: 700;
 }
 
-#md-content-viewport h1 { font-size: 1.6rem; border-bottom: 1px solid var(--border-glass); padding-bottom: var(--spacing-xs); }
-#md-content-viewport h2 { font-size: 1.3rem; }
-#md-content-viewport h3 { font-size: 1.1rem; }
+#md-render-target h1 { font-size: 1.5rem; border-bottom: 1px solid var(--border-glass); padding-bottom: var(--spacing-xs); }
+#md-render-target h2 { font-size: 1.25rem; }
+#md-render-target h3 { font-size: 1.1rem; }
+#md-render-target p { color: var(--text-secondary); margin-bottom: var(--spacing-md); }
 
-#md-content-viewport p {
-  color: var(--text-secondary);
-  margin-bottom: var(--spacing-md);
-}
-
-#md-content-viewport blockquote {
+#md-render-target blockquote {
   border-left: 4px solid var(--accent-color);
   background-color: var(--bg-secondary);
   padding: var(--spacing-sm) var(--spacing-md);
@@ -284,27 +420,17 @@ ul {
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
-#md-content-viewport ul {
+#md-render-target ul {
   list-style-type: disc;
   padding-left: var(--spacing-lg);
   margin-bottom: var(--spacing-md);
   color: var(--text-secondary);
 }
 
-#md-content-viewport li {
-  margin-bottom: var(--spacing-xs);
-}
+#md-render-target li { margin-bottom: var(--spacing-xs); }
+#md-render-target strong { color: var(--text-primary); }
 
-#md-content-viewport strong {
-  color: var(--text-primary);
-}
-
-.error-msg {
-  color: #ef4444;
-  padding: var(--spacing-md);
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: var(--radius-sm);
-  font-size: 0.9rem;
-}
+/* --- 8. Tối Ưu Hóa Responsive Grid Cho Thiết Bị Di Động --- */
+@media (min-width: 600px) {
+  .articles-grid {
  

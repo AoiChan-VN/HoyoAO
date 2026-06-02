@@ -5,39 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pure Vanilla Experience</title>
   
-  <!-- Hệ thống Stylesheet CSS4+ phục vụ phối cảnh 3D Camera -->
+  <!-- Hệ thống Stylesheet cấu trúc không gian phối cảnh VR 3D -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
 
-  <!-- Thanh Điều Hướng Hệ Thống Multi-Page (Data-Driven Render) -->
+  <!-- Thanh Điều Hướng Hệ Thống (Data-Driven Render độc lập qua header.js) -->
   <header id="site-header" class="site-header">
     <div class="header-container">
       <a href="index.html" id="site-logo" class="site-logo">PURE</a>
       <nav class="main-navigation">
         <ul id="nav-list" class="nav-list">
-          <!-- Item điều hướng sẽ được render tự động từ config.js -->
+          <!-- Các thẻ liên kết điều hướng được render tự động -->
         </ul>
       </nav>
       <button id="settings-toggle" class="settings-toggle" aria-label="Open Settings">⚙️</button>
     </div>
   </header>
 
-  <!-- Bảng Cấu Hình Hệ Thống Đồng Bộ Cấu Hình Xuyên Trang (Settings Panel) -->
+  <!-- Bảng Cấu Hình Hệ Thống Đồng Bộ Xuyên Trang (Quản lý bởi settings.js) -->
   <aside id="settings-panel" class="settings-panel hidden">
     <div class="settings-content">
       <h3>Cài Đặt Hệ Thống</h3>
       
-      <!-- Lựa chọn Giao diện Hệ Thống -->
+      <!-- Lựa chọn Giao diện -->
       <div class="setting-group">
         <label for="theme-select">Giao diện:</label>
-        <select id="theme-select">
-          <!-- Các option theme được điều khiển động từ config.js -->
-        </select>
+        <select id="theme-select"></select>
       </div>
 
-      <!-- Bật/Tắt Cảm biến Nghiêng Gyroscope cho Thiết Bị Di Động -->
+      <!-- Bật/Tắt Cảm biến Nghiêng Gyroscope -->
       <div class="setting-group">
         <label for="gyro-switch" class="switch-label">
           <input type="checkbox" id="gyro-switch" checked>
@@ -47,33 +45,35 @@
     </div>
   </aside>
 
-  <!-- Khung Chứa Góc Nhìn Virtual 3D Camera -->
+  <!-- Khung Chứa Góc Nhìn Phối Cảnh Mắt Người (Perspective Box) -->
   <main id="parallax-container" class="parallax-container">
     
-    <!-- Layer 1: Nền trời sao thực tế (Nạp link động từ assets-manifest.json) -->
-    <section id="layer-bg-stars" class="parallax-layer layer-bg"></section>
+    <!-- 
+      Sân Khấu Lập Thể VR Thực Thụ (Sửa lỗi lia chậm và hở viền)
+      Mọi tác động ma trận xoay/dịch chuyển từ chuột và cảm biến nghiêng sẽ áp trực tiếp lên thẻ này
+    -->
+    <div class="vr-stage">
+      
+      <!-- Layer 1: Hậu cảnh nền trời sao nội bộ (Đẩy lùi sâu -400px trên trục Z) -->
+      <section id="layer-bg-stars" class="parallax-layer layer-bg"></section>
 
-    <!-- Layer 2: Dãy núi trung cảnh thực tế (Nạp link động từ assets-manifest.json) -->
-    <section id="layer-mg-mountains" class="parallax-layer layer-mg"></section>
+      <!-- Layer 2: Trung cảnh dãy núi nội bộ (Đẩy lùi -200px trên trục Z) -->
+      <section id="layer-mg-mountains" class="parallax-layer layer-mg"></section>
 
-    <!-- Layer 3: Khối Tiền Cảnh Chứa Giao Diện Tương Tác Kính Mờ (Glassmorphism) -->
-    <section id="layer-fg-content" class="parallax-layer layer-fg">
-      <div class="hero-content">
-        <h1 id="hero-title">Pure Vanilla Experience</h1>
-        <p id="hero-subtitle">Sức mạnh nguyên bản của Web Standards không phụ thuộc Framework.</p>
-        
-        <div class="cta-actions">
-          <a href="about.html" class="btn btn-primary">Khám Phá Ngay</a>
-          <button id="hardware-auth-btn" class="btn btn-secondary">Kích Hoạt Cảm Biến</button>
-        </div>
+      <!-- Layer 3: Tiền cảnh chứa khối thông tin kính mờ (Nằm ở tiêu cự 0px trục Z) -->
+      <section id="layer-fg-content" class="parallax-layer layer-fg">
+        <article class="hero-content">
+          <h1>Pure Experience</h1>
+          <p>Không gian chuẩn tương tác 3D Web Standards không phụ thuộc Framework đồ họa nặng nề.</p>
+          
+          <!-- Khối bọc Grid chứa các Card bài viết riêng biệt (.md) sẽ được article-card.js tự động chèn vào đây -->
+        </article>
+      </section>
 
-        <!-- Vùng hiển thị danh sách bài viết động và nội dung dịch từ file .md sẽ được chèn tự động tại đây -->
-      </div>
-    </section>
-
+    </div>
   </main>
 
-  <!-- Khởi tạo Native ESM Modules Điều Phối Toàn Ứng Dụng -->
+  <!-- Khởi tạo Native ESM Modules Điều Phối Toàn Hệ Thống -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

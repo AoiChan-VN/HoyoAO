@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giới Thiệu - Pure Vanilla Experience</title>
+  
+  <!-- Hệ thống Stylesheet CSS4+ dùng chung -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+  <!-- Thanh Điều Hướng (Data-Driven Render tự động gán class active cho trang About) -->
+  <header id="site-header" class="site-header">
+    <div class="header-container">
+      <a href="#" id="site-logo" class="site-logo">PURE</a>
+      <nav class="main-navigation">
+        <ul id="nav-list" class="nav-list">
+          <!-- Item điều hướng sẽ được render tự động từ config.js -->
+        </ul>
+      </nav>
+      <button id="settings-toggle" class="settings-toggle" aria-label="Open Settings">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Bảng Cấu Hình Hệ Thống (Settings Panel) -->
+  <aside id="settings-panel" class="settings-panel hidden">
+    <div class="settings-content">
+      <h3>Cài Đặt Hệ Thống</h3>
+      
+      <!-- Lựa chọn Giao diện (Theme Selector) -->
+      <div class="setting-group">
+        <label for="theme-select">Giao diện:</label>
+        <select id="theme-select">
+          <!-- Các option theme sẽ được render từ config.js -->
+        </select>
+      </div>
+
+      <!-- Bật/Tắt Con Quay Hồi Chuyển (Gyroscope cho Mobile) -->
+      <div class="setting-group">
+        <label for="gyro-switch" class="switch-label">
+          <input type="checkbox" id="gyro-switch" checked>
+          Sử dụng Cảm biến Nghiêng (Gyroscope)
+        </label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Khung Chứa Góc Nhìn Virtual Camera & Nội Dung Giới Thiệu -->
+  <main id="parallax-container" class="parallax-container">
+    
+    <!-- Layer 1: Các Ngôi Sao (Nền xa) -->
+    <section id="layer-bg-stars" class="parallax-layer layer-bg">
+      <div class="stars-generator"></div>
+    </section>
+
+    <!-- Layer 2: Khối Nội Dung Giới Thiệu (Tầm gần - Thiết kế Kính mờ Glassmorphism) -->
+    <section id="layer-fg-content" class="parallax-layer layer-fg">
+      <div class="hero-content" style="max-width: 800px; text-align: left;">
+        <h1 id="hero-title" style="text-align: center; margin-bottom: var(--spacing-lg);">Về Dự Án PURE</h1>
+        
+        <p style="margin-bottom: var(--spacing-md);">
+          Dự án này là minh chứng cho sức mạnh nguyên bản của các công nghệ Web tiêu chuẩn (Web Standards). Bằng cách loại bỏ hoàn toàn các thư viện cồng kềnh, hệ thống tối ưu hóa tốc độ tải và hiệu năng xử lý đồ họa trên mọi thiết bị.
+        </p>
+
+        <h2 style="font-size: 1.3rem; margin: var(--spacing-lg) 0 var(--spacing-sm) 0; color: var(--accent-color);">Đặc tính kỹ thuật:</h2>
+        <ul style="list-style: disc; padding-left: var(--spacing-lg); color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--spacing-xl);">
+          <li><strong>Native ESM Modules:</strong> Quản lý mã nguồn theo dạng module tách biệt mà không cần qua trình biên dịch (Build Tools).</li>
+          <li><strong>CSS4+ Variables:</strong> Thiết lập giao diện linh hoạt, thay đổi đa Theme (Light/Dark/Cyberpunk) tức thì bằng mã thuần.</li>
+          <li><strong>Virtual 3D Camera:</strong> Tạo góc nhìn Camera chiều sâu mô phỏng không gian thực thông qua thuật toán ma trận phối cảnh.</li>
+        </ul>
+
+        <div class="cta-actions" style="justify-content: flex-start;">
+          <a href="index.html" class="btn btn-secondary">Quay Lại Trang Chủ</a>
+          <a href="contact.html" class="btn btn-primary">Liên Hệ Ngay</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Khởi tạo Native ESM Modules (Tự động áp dụng logic đồng bộ dữ liệu) -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
+ 

@@ -5,26 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Giới Thiệu - Pure Vanilla Experience</title>
   
-  <!-- Kế thừa trọn vẹn hệ thống style và ma trận phối cảnh 3D -->
+  <!-- Kế thừa trọn vẹn hệ thống style và ma trận phối cảnh VR 3D mới -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
 
-  <!-- Vùng chứa cấu phần Header tự động nạp bởi HeaderComponent (Sửa lỗi số 4) -->
+  <!-- Thanh Điều Hướng Hệ Thống (Quản lý tự động qua header.js) -->
   <header id="site-header" class="site-header">
     <div class="header-container">
       <a href="index.html" id="site-logo" class="site-logo">PURE</a>
       <nav class="main-navigation">
         <ul id="nav-list" class="nav-list">
-          <!-- Render tự động, giữ trạng thái class active theo trang hiện tại -->
+          <!-- Render tự động và giữ trạng thái active theo trang -->
         </ul>
       </nav>
       <button id="settings-toggle" class="settings-toggle" aria-label="Open Settings">⚙️</button>
     </div>
   </header>
 
-  <!-- Vùng chứa cấu phần Bảng Cài Đặt tự động quản lý bởi SettingsComponent -->
+  <!-- Bảng Cấu Hình Hệ Thống Đồng Bộ Xuyên Trang (Quản lý qua settings.js) -->
   <aside id="settings-panel" class="settings-panel hidden">
     <div class="settings-content">
       <h3>Cài Đặt Hệ Thống</h3>
@@ -41,28 +41,33 @@
     </div>
   </aside>
 
-  <!-- Khung Chứa Góc Nhìn Virtual 3D Camera Phối Cảnh -->
+  <!-- Khung Chứa Góc Nhìn Phối Cảnh Mắt Người (Perspective Box) -->
   <main id="parallax-container" class="parallax-container">
     
-    <!-- Các Layer Parallax nạp ảnh nền động từ assets-manifest.json -->
-    <section id="layer-bg-stars" class="parallax-layer layer-bg"></section>
-    <section id="layer-mg-mountains" class="parallax-layer layer-mg"></section>
+    <!-- Sân Khấu Lập Thể VR Thực Thụ (Đồng bộ cấu trúc ma trận chuyển động) -->
+    <div class="vr-stage">
+      
+      <!-- Layer 1: Hậu cảnh nền trời sao nội bộ (Trục Z: -400px) -->
+      <section id="layer-bg-stars" class="parallax-layer layer-bg"></section>
 
-    <!-- Khối Tiền Cảnh Chứa Thông Tin Giới Thiệu (Thiết kế Kính mờ) -->
-    <section id="layer-fg-content" class="parallax-layer layer-fg">
-      <div class="hero-content">
-        <h1 id="hero-title">Về Dự Án PURE</h1>
-        <p id="hero-subtitle">Giải pháp kiến trúc Web Standards thuần khiết, tối ưu tuyệt đối cho môi trường GitHub Pages tĩnh.</p>
-        
-        <div class="cta-actions">
-          <a href="index.html" class="btn btn-secondary">Quay Lại Trang Chủ</a>
-          <a href="contact.html" class="btn btn-primary">Liên Hệ Ngay</a>
-        </div>
+      <!-- Layer 2: Trung cảnh dãy núi nội bộ (Trục Z: -200px) -->
+      <section id="layer-mg-mountains" class="parallax-layer layer-mg"></section>
 
-        <!-- Khối chứa danh sách Card bài viết riêng biệt sẽ được ArticleCardComponent tự động chèn vào đây -->
-      </div>
-    </section>
+      <!-- Layer 3: Tiền cảnh chứa khối thông tin giới thiệu (Trục Z: 0px) -->
+      <section id="layer-fg-content" class="parallax-layer layer-fg">
+        <article class="hero-content">
+          <h1>Về Dự Án PURE</h1>
+          <p>Giải pháp thiết kế giao diện hướng cấu phần (Component-Driven) tối giản, loại bỏ hoàn toàn mã gộp bừa bãi và tương thích tự nhiên với phần cứng thiết bị.</p>
+          
+          <div class="cta-actions" style="margin-top: var(--spacing-sm); margin-bottom: 0;">
+            <a href="index.html" class="btn btn-secondary" style="width: 100%;">Quay Lại Trang Chủ</a>
+          </div>
+          
+          <!-- Khối chứa danh sách Card bài viết riêng biệt sẽ được tự động render vào đây nếu cần -->
+        </article>
+      </section>
 
+    </div>
   </main>
 
   <!-- Khởi tạo Native ESM Modules Điều Phối Toàn Ứng Dụng -->

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "intro",
+    "name": "Giới thiệu",
+    "description": "Trang giới thiệu",
+    "image": "",
+    "file": "./posts/info/gioithieu.md",
+    "link": "/intro"
+  }
+] 

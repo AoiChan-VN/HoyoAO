@@ -1,15 +1,15 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "environment": "production",
   "parallaxImages": {
     "bg-stars": {
-      "url": "https://unsplash.com",
-      "alt": "Lớp vũ trụ sao đêm xa xăm cho phông nền Parallax",
+      "url": "assets/bg-stars.webp",
+      "alt": "Lớp ảnh nền trời sao nội bộ của người dùng",
       "format": "webp"
     },
     "mg-mountains": {
-      "url": "https://unsplash.com",
-      "alt": "Dãy núi phủ tuyết trung cảnh tạo chiều sâu không gian",
+      "url": "assets/mg-mountains.webp",
+      "alt": "Lớp ảnh trung cảnh dãy núi nội bộ của người dùng",
       "format": "webp"
     },
     "fg-content": {
@@ -22,9 +22,9 @@
     "settings": "⚙️",
     "close": "✕",
     "logoImage": {
-      "url": "./images/logo.webp",
-      "alt": "Logo",
-      "format": "png"
+      "url": "assets/logo.webp",
+      "alt": "Aoi-Logo",
+      "format": "webp"
     }
   }
 }

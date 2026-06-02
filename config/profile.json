@@ -1,0 +1,10 @@
+{
+  "folders": [
+    {
+      "id": "info",
+      "file": "./posts/info",
+      "title": "Information Folder",
+      "folder": "./posts/info"
+    }
+  ]
+} 

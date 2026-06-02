@@ -1,6 +1,6 @@
 /* css/main.css */
 
-/* --- 1. Thiết lập cơ bản (Reset & Base Styles) --- */
+/* --- 1. Reset & Base Styles --- */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -147,13 +147,15 @@ ul {
   cursor: pointer;
 }
 
-/* --- 4. Khung Chứa Parallax & Vùng Hiển Thị Khung Nhìn (Viewport) --- */
+/* --- 4. Khung Chứa Cấu Trúc Khung Nhìn Virtual Camera 3D --- */
 .parallax-container {
   position: relative;
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  perspective: 1000px;
+  /* Kích hoạt không gian Phối cảnh Camera ảo và triệt tiêu lỗi khử răng cưa hình ảnh */
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .parallax-layer {
@@ -162,60 +164,44 @@ ul {
   left: -10%;
   width: 120%;
   height: 120%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  /* Kích hoạt tăng tốc phần cứng tối đa, chống nghẽn CPU theo Điều 8 */
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
   will-change: transform;
-  transition: transform var(--transition-slow);
 }
 
-/* Các lớp CSS giả lập chiều sâu hoặc background dựng sẵn */
-.layer-bg {
-  background: radial-gradient(circle at center, #1e293b 0%, var(--bg-primary) 100%);
-  z-index: 1;
-}
-
-.stars-generator {
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(white 1px, transparent 0);
-  background-size: 40px 40px;
-  opacity: 0.3;
-}
-
-.layer-mg {
-  z-index: 2;
-  display: flex;
-  align-items: flex-end;
-}
-
-.mountain-silhouette {
-  width: 100%;
-  height: 40vh;
-  background: linear-gradient(to top, var(--bg-secondary) 0%, transparent 100%);
-  clip-path: polygon(0% 100%, 0% 70%, 25% 40%, 45% 65%, 70% 30%, 100% 70%, 100% 100%);
-}
-
-.layer-fg {
-  z-index: 3;
+.layer-bg { z-index: 1; }
+.layer-mg { z-index: 2; }
+.layer-fg { 
+  z-index: 3; 
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-y: auto; /* Cho phép cuộn nội dung bài viết dài bên trong lớp tiền cảnh */
+  padding-top: calc(var(--header-height) + var(--spacing-lg));
+  padding-bottom: var(--spacing-xl);
 }
 
-/* --- 5. Khối Nội Dung Người Dùng (Hero Content CSS) --- */
+/* --- 5. Khối Nội Dung Người Dùng & Giao Diện Kính Mờ (Glassmorphism) --- */
 .hero-content {
   background-color: var(--bg-glass);
   border: 1px solid var(--border-glass);
   padding: var(--spacing-xl) var(--spacing-lg);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-glass);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   text-align: center;
-  max-width: 600px;
+  max-width: 650px;
   width: 90%;
+  transition: background-color var(--transition-normal);
 }
 
 .hero-content h1 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 800;
   margin-bottom: var(--spacing-md);
   letter-spacing: -0.5px;
@@ -224,13 +210,14 @@ ul {
 .hero-content p {
   color: var(--text-secondary);
   line-height: 1.6;
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
 }
 
 .cta-actions {
   display: flex;
   gap: var(--spacing-md);
   justify-content: center;
+  margin-bottom: var(--spacing-lg);
 }
 
 .btn {
@@ -263,42 +250,61 @@ ul {
   background-color: var(--border-glass);
 }
 
-/* --- 6. Giao Diện Camera Tương Tác (Hardware Interface CSS) --- */
-.camera-viewport {
-  position: absolute;
-  bottom: var(--spacing-lg);
-  left: var(--spacing-lg);
-  width: 180px;
-  height: 135px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 2px solid var(--accent-color);
-  box-shadow: var(--shadow-glass);
-  z-index: 10;
-  transition: opacity var(--transition-normal);
+/* --- 6. Giao Diện Định Dạng Văn Bản Markdown Bài Viết (.MD Styles) --- */
+#md-content-viewport {
+  text-align: left;
+  line-height: 1.7;
+  color: var(--text-primary);
 }
 
-.camera-viewport.hidden {
-  opacity: 0;
-  pointer-events: none;
+#md-content-viewport h1, 
+#md-content-viewport h2, 
+#md-content-viewport h3 {
+  color: var(--accent-color);
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+  font-weight: 700;
 }
 
-#webcam-stream {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scaleX(-1); /* Phản chiếu gương giúp người dùng dễ nhìn */
+#md-content-viewport h1 { font-size: 1.6rem; border-bottom: 1px solid var(--border-glass); padding-bottom: var(--spacing-xs); }
+#md-content-viewport h2 { font-size: 1.3rem; }
+#md-content-viewport h3 { font-size: 1.1rem; }
+
+#md-content-viewport p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
 }
 
-.camera-status {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: #fff;
-  font-size: 0.65rem;
-  text-align: center;
-  padding: var(--spacing-xs) 0;
+#md-content-viewport blockquote {
+  border-left: 4px solid var(--accent-color);
+  background-color: var(--bg-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  font-style: italic;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+#md-content-viewport ul {
+  list-style-type: disc;
+  padding-left: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
+}
+
+#md-content-viewport li {
+  margin-bottom: var(--spacing-xs);
+}
+
+#md-content-viewport strong {
+  color: var(--text-primary);
+}
+
+.error-msg {
+  color: #ef4444;
+  padding: var(--spacing-md);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
 }
  

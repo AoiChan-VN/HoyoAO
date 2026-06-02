@@ -1,44 +1,45 @@
 // data/config.js
 
 export const SITE_CONFIG = {
+  // Lấy domain hoặc cấu hình từ môi trường/đường dẫn chạy thực tế của GitHub Pages
+  baseEndpoint: window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, ''),
+
   brand: {
     logoText: "PURE",
-    logoUrl: "#",
+    logoUrl: "index.html",
     title: "Pure Vanilla Experience"
   },
   
-  // Điều hướng hệ thống Multi-Page Application (MPA)
   navigation: [
     { label: "Trang Chủ", path: "index.html" },
     { label: "Giới Thiệu", path: "about.html" },
     { label: "Liên Hệ", path: "contact.html" }
   ],
 
-  // Cấu hình mặc định cho Menu Settings
   settings: {
     themes: ["light", "dark", "cyberpunk"],
     defaultTheme: "dark",
-    motionReduction: false // Giảm hiệu ứng cho người dùng nhạy cảm
+    motionReduction: false
   },
 
-  // Dữ liệu và tham số điều khiển hiệu ứng Parallax / Gyroscope / Camera
+  // Cấu hình tham số điều khiển hiệu ứng - TUYỆT ĐỐI KHÔNG CHỨA LINK ẢNH HARDCODE
   parallaxLayers: [
-    { id: "bg-stars", speedX: 0.05, speedY: 0.05, depth: 1, color: "#0b0f19" },
-    { id: "mg-mountains", speedX: 0.2, speedY: 0.1, depth: 3, color: "#1f2937" },
-    { id: "fg-content", speedX: 0.4, speedY: 0.3, depth: 5, color: "transparent" }
+    { id: "bg-stars", speedX: 0.1, speedY: 0.1, depth: 1 },
+    { id: "mg-mountains", speedX: 0.25, speedY: 0.15, depth: 3 },
+    { id: "fg-content", speedX: 0.5, speedY: 0.3, depth: 5 }
   ],
 
-  // Thiết lập phần cứng nhạy cảm
   hardware: {
     gyroscope: {
       enabled: true,
-      sensitivityX: 15,
-      sensitivityY: 15
-    },
-    camera: {
-      enabled: false, // Mặc định tắt, chỉ bật khi user cấp quyền
-      constraints: { video: { facingMode: "user" } }
+      sensitivityX: 12,
+      sensitivityY: 12
     }
+  },
+
+  // Đường dẫn nạp dữ liệu động tập trung (Data-Driven Architecture)
+  manifestSources: {
+    assets: "data/assets-manifest.json",  // Nơi quản lý toàn bộ link ảnh thật theo phiên bản
+    articles: "data/articles-manifest.json" // Nơi quản lý danh mục bài viết .md thực tế
   }
 };
- 

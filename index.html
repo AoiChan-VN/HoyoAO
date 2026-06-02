@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pure Vanilla Experience</title>
   
-  <!-- Nhúng hệ thống Stylesheet CSS4+ -->
+  <!-- Hệ thống Stylesheet CSS4+ -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
 
-  <!-- Khung Header Chứa Logo và Menu Điều Hướng (Data-Driven Render) -->
+  <!-- Thanh Điều Hướng (Data-Driven Render) -->
   <header id="site-header" class="site-header">
     <div class="header-container">
       <a href="#" id="site-logo" class="site-logo">PURE</a>
@@ -37,14 +37,6 @@
         </select>
       </div>
 
-      <!-- Bật/Tắt Camera Tương Tác -->
-      <div class="setting-group">
-        <label for="camera-switch" class="switch-label">
-          <input type="checkbox" id="camera-switch">
-          Tương tác bằng Camera (Face Tracking)
-        </label>
-      </div>
-
       <!-- Bật/Tắt Con Quay Hồi Chuyển (Gyroscope cho Mobile) -->
       <div class="setting-group">
         <label for="gyro-switch" class="switch-label">
@@ -55,40 +47,34 @@
     </div>
   </aside>
 
-  <!-- Khu Vực Trải Nghiệm Parallax & Tương Tác Phần Cứng -->
+  <!-- Khung Chứa Góc Nhìn Virtual Camera & Phối Cảnh 3D -->
   <main id="parallax-container" class="parallax-container">
     
-    <!-- Camera Viewport (Ẩn mặc định, hiển thị dạng overlay nhỏ khi bật) -->
-    <div id="camera-viewport" class="camera-viewport hidden">
-      <video id="webcam-stream" autoplay playsinline muted></video>
-      <div class="camera-status">Chế độ tracking đang chạy...</div>
-    </div>
-
-    <!-- Các Layer Parallax (Sẽ được tạo động hoặc ánh xạ từ config.js) -->
-    <section id="layer-bg-stars" class="parallax-layer layer-bg" data-depth="1">
+    <!-- Layer 1: Các Ngôi Sao (Nền xa nhất) -->
+    <section id="layer-bg-stars" class="parallax-layer layer-bg">
       <div class="stars-generator"></div>
     </section>
 
-    <section id="layer-mg-mountains" class="parallax-layer layer-mg" data-depth="3">
+    <!-- Layer 2: Dãy Núi (Tầm trung) -->
+    <section id="layer-mg-mountains" class="parallax-layer layer-mg">
       <div class="mountain-silhouette"></div>
     </section>
 
-    <!-- Layer Nội Dung Chính (Kính mờ - Glassmorphism) -->
-    <section id="layer-fg-content" class="parallax-layer layer-fg" data-depth="5">
+    <!-- Layer 3: Khối Nội Dung (Tầm gần - Tiêu cự chính) -->
+    <section id="layer-fg-content" class="parallax-layer layer-fg">
       <div class="hero-content">
         <h1 id="hero-title">Pure Vanilla Experience</h1>
         <p id="hero-subtitle">Sức mạnh nguyên bản của Web Standards không phụ thuộc Framework.</p>
         <div class="cta-actions">
           <a href="about.html" class="btn btn-primary">Khám Phá Ngay</a>
-          <button id="hardware-auth-btn" class="btn btn-secondary">Cấp Quyền Cảm Biến</button>
+          <button id="hardware-auth-btn" class="btn btn-secondary">Kích Hoạt Cảm Biến</button>
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- Khởi tạo Native ESM Modules cho Ứng Dụng -->
+  <!-- Khởi tạo Native ESM Modules -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
- 

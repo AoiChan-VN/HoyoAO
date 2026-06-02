@@ -22,7 +22,7 @@
     "settings": "⚙️",
     "close": "✕",
     "logoImage": {
-      "url": "assets/logo.webp",
+      "url": "images/logo.webp",
       "alt": "Aoi-Logo",
       "format": "webp"
     }

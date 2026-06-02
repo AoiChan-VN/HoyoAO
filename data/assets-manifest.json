@@ -22,8 +22,8 @@
     "settings": "⚙️",
     "close": "✕",
     "logoImage": {
-      "url": "https://githubusercontent.com",
-      "alt": "Logo chính thức của dự án PURE phiên bản ảnh thật",
+      "url": "./images/logo.webp",
+      "alt": "Logo",
       "format": "png"
     }
   }

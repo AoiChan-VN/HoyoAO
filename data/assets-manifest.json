@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "environment": "production",
   "parallaxImages": {
     "bg-stars": {
@@ -20,7 +20,11 @@
   },
   "uiIcons": {
     "settings": "⚙️",
-    "close": "✕"
+    "close": "✕",
+    "logoImage": {
+      "url": "https://githubusercontent.com",
+      "alt": "Logo chính thức của dự án PURE phiên bản ảnh thật",
+      "format": "png"
+    }
   }
 }
- 

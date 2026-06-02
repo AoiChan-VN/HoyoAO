@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "environment": "production",
+  "parallaxImages": {
+    "bg-stars": {
+      "url": "https://unsplash.com",
+      "alt": "Lớp vũ trụ sao đêm xa xăm cho phông nền Parallax",
+      "format": "webp"
+    },
+    "mg-mountains": {
+      "url": "https://unsplash.com",
+      "alt": "Dãy núi phủ tuyết trung cảnh tạo chiều sâu không gian",
+      "format": "webp"
+    },
+    "fg-content": {
+      "url": "",
+      "alt": "Lớp tiền cảnh rỗng tích hợp giao diện kính mờ",
+      "format": "none"
+    }
+  },
+  "uiIcons": {
+    "settings": "⚙️",
+    "close": "✕"
+  }
+}
+ 

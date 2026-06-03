@@ -1,0 +1,140 @@
+/* css/article-card.css */
+
+/* --- Hệ Thống Khối Giao Diện Card Bài Viết Biệt Lập VR --- */
+.pure-article-card {
+  position: absolute; /* Bắt buộc để tính toán tọa độ kéo thả tịnh tiến */
+  width: 280px;
+  background-color: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  padding: var(--spacing-md);
+  cursor: grab; /* Tạo icon bàn tay cầm nắm vật thể VR */
+  transform-style: preserve-3d;
+  will-change: transform;
+  z-index: 10;
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+.pure-article-card:active {
+  cursor: grabbing;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);
+}
+
+/* Vùng ghim tiêu đề card đóng vai trò làm điểm tựa để kéo vật thể */
+.card-header-drag {
+  border-bottom: 1px solid var(--border-glass);
+  padding-bottom: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none; /* Để sự kiện click/touch ăn thẳng xuống card nền */
+}
+
+.card-badge {
+  font-size: 0.6rem;
+  background: var(--accent-color);
+  color: var(--accent-contrast);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.card-excerpt {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: var(--spacing-sm) 0;
+}
+
+.read-more-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
+  color: var(--accent-color);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.read-more-btn:hover {
+  background-color: var(--border-glass);
+  border-color: var(--accent-color);
+}
+
+/* --- Khung Viewport Đọc Bài Viết Kiểu Modal VR Bay Tự Do --- */
+#md-content-viewport {
+  position: absolute;
+  width: 320px;
+  max-height: 55vh;
+  background-color: rgba(10, 15, 25, 0.92);
+  border: 1px solid var(--accent-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow-y: auto;
+  z-index: 50;
+  cursor: grab;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+.md-viewport-hidden {
+  display: none;
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.md-viewport-visible {
+  display: block;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.viewport-close-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
+  color: #ef4444;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.75rem;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-fast);
+  pointer-events: auto;
+}
+
+.viewport-close-btn:hover {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+/* --- Cơ chế ẩn toàn bộ UI Card để giải phóng tầm nhìn VR --- */
+.ui-elements-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: scale(0.9) !important;
+}
+ 

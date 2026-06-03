@@ -1,0 +1,36 @@
+{
+  "system": {
+    "version": "1.0.0",
+    "storageKey": "portfolio_vr_state",
+    "dbName": "PortfolioVR_DB",
+    "dbVersion": 1
+  },
+  "vr": {
+    "fov": 75,
+    "near": 0.1,
+    "far": 1000,
+    "gyroscopeEnabled": true,
+    "mouseSensitivity": 0.15,
+    "inertiaDamping": 0.92,
+    "defaultPosition": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  "ui": {
+    "defaultTheme": "dark",
+    "animationSpeed": "normal",
+    "panels": {
+      "menu": {
+        "visible": true,
+        "position": "bottom"
+      },
+      "settings": {
+        "visible": false,
+        "position": "right"
+      }
+    }
+  }
+}
+ 

@@ -9,13 +9,14 @@ export class SettingsComponent {
    */
   constructor(config, eventCallbacks = {}) {
     this.config = config;
-    this.callbacks = eventCallbacks; // Chứa onGyroChange, onSensitivityChange, onLangChange
+    this.callbacks = eventCallbacks; // Chứa onGyroChange, onSensitivityChange, onToggleUI
     this.dom = {};
+    this.isUiHidden = false; // Trạng thái theo dõi việc ẩn/hiện hệ thống Card bài viết
     
     // Kho dữ liệu từ điển ngôn ngữ nội bộ tĩnh (Data-Driven Dictionary)
     this.i18n = {
-      vi: { title: "Cài Đặt Hệ Thống", theme: "Giao diện:", gyro: "Cảm biến Nghiêng (Gyro)", sens: "Độ nhạy Camera VR:", motion: "Chế độ tiết kiệm (Giảm VR)" },
-      en: { title: "System Dashboard", theme: "Theme Control:", gyro: "Motion Sensor (Gyro)", sens: "VR Cam Sensitivity:", motion: "Battery Saver (Reduce VR)" }
+      vi: { title: "Cài Đặt Hệ Thống", theme: "Giao diện:", gyro: "Cảm biến Nghiêng (Gyro)", sens: "Độ nhạy Camera VR:", motion: "Chế độ tiết kiệm (Giảm VR)", hideUi: "Ẩn Toàn Bộ Card Giao Diện", showUi: "Hiện Tất Cả Giao Diện" },
+      en: { title: "System Dashboard", theme: "Theme Control:", gyro: "Motion Sensor (Gyro)", sens: "VR Cam Sensitivity:", motion: "Battery Saver (Reduce VR)", hideUi: "Hide All Card Interface", showUi: "Show All Card Interface" }
     };
 
     this.init();
@@ -28,7 +29,7 @@ export class SettingsComponent {
     this.bindEvents();
   }
 
-  // Định vị chính xác toàn bộ vùng tương tác của Dashboard
+  // Định vị chính xác phần tử DOM cố định thuộc phạm vi quản lý của Settings
   cacheElements() {
     this.dom = {
       html: document.documentElement,
@@ -37,14 +38,14 @@ export class SettingsComponent {
     };
   }
 
-  // Tạo lập toàn bộ giao diện chức năng hoàn thiện bên trong bảng trượt (Sửa lỗi số 1)
+  // Dựng toàn bộ giao diện chức năng hoàn thiện bên trong bảng trượt
   renderDynamicDashboard() {
     if (!this.dom.panel) return;
 
     const currentLang = StateManager.load('lang', 'vi');
     const t = this.i18n[currentLang];
 
-    // Bơm cấu trúc HTML chứa đầy đủ slider độ nhạy, select ngôn ngữ, checkbox chuyển động
+    // Bơm cấu trúc HTML chứa đầy đủ các nhóm thiết lập và nút bấm ẩn UI mới
     this.dom.panel.innerHTML = `
       <div class="settings-content">
         <h3 id="lbl-dash-title">${t.title}</h3>
@@ -80,25 +81,29 @@ export class SettingsComponent {
           </label>
         </div>
 
-        <!-- 5. Nút gạt Giảm chuyển động cho máy yếu (Điều 8) -->
+        <!-- 5. Nút gạt Giảm chuyển động cho máy yếu -->
         <div class="setting-group">
           <label for="motion-switch" class="switch-label">
             <input type="checkbox" id="motion-switch">
             <span id="lbl-motion">${t.motion}</span>
           </label>
         </div>
+
+        <!-- 6. NÚT BẤM MỚI: Ẩn/Hiện toàn bộ hệ thống Card bài viết lơ lửng (Sửa lỗi số 2) -->
+        <button id="toggle-ui-btn" class="toggle-ui-btn">${t.hideUi}</button>
       </div>
     `;
 
-    // Lưu lại DOM của các input vừa tạo động
+    // Lưu lại DOM của các trường tương tác động vừa chèn
     this.dom.themeSelect = document.getElementById('theme-select');
     this.dom.langSelect = document.getElementById('lang-select');
     this.dom.sensSlider = document.getElementById('sens-slider');
     this.dom.gyroSwitch = document.getElementById('gyro-switch');
     this.dom.motionSwitch = document.getElementById('motion-switch');
+    this.dom.toggleUiBtn = document.getElementById('toggle-ui-btn');
   }
 
-  // Khôi phục trạng thái bộ nhớ an toàn xuyên trang, không reset khi chuyển MPA
+  // Khôi phục trạng thái bộ nhớ an toàn xuyên trang, tránh lỗi reset cấu hình
   applyInitialState() {
     const theme = StateManager.load('theme', this.config.settings.defaultTheme);
     const lang = StateManager.load('lang', 'vi');
@@ -106,14 +111,14 @@ export class SettingsComponent {
     const gyro = StateManager.load('gyro_enabled', this.config.hardware.gyroscope.enabled);
     const motion = StateManager.load('motion_reduction', this.config.settings.motionReduction);
 
-    // Đồng bộ giá trị lên cấu hình chung
+    // Đồng bộ giá trị vào object cấu hình hệ thống
     this.config.settings.currentTheme = theme;
     this.config.settings.motionReduction = motion;
     this.config.hardware.gyroscope.enabled = gyro;
     this.config.hardware.gyroscope.sensitivityX = sens;
     this.config.hardware.gyroscope.sensitivityY = sens;
 
-    // Đồng bộ lên UI thực tế
+    // Phản ánh trạng thái lên các thành phần giao diện
     if (this.dom.html) this.dom.html.setAttribute('data-theme', theme);
     if (this.dom.themeSelect) this.dom.themeSelect.value = theme;
     if (this.dom.langSelect) this.dom.langSelect.value = lang;
@@ -122,9 +127,9 @@ export class SettingsComponent {
     if (this.dom.motionSwitch) this.dom.motionSwitch.checked = motion;
   }
 
-  // Lắng nghe và điều phối chuỗi hành vi tương tác nâng cao
+  // Lắng nghe và xử lý toàn bộ luồng hành vi tương tác trên Dashboard
   bindEvents() {
-    // Đóng mở Panel trượt
+    // Đóng mở Panel trượt cài đặt
     this.dom.toggleBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
       this.dom.panel?.classList.toggle('hidden');
@@ -136,22 +141,21 @@ export class SettingsComponent {
       }
     });
 
-    // Thay đổi Giao diện
+    // Sự kiện thay đổi Theme
     this.dom.themeSelect?.addEventListener('change', (e) => {
       const val = e.target.value;
       this.dom.html?.setAttribute('data-theme', val);
       StateManager.save('theme', val);
     });
 
-    // Thay đổi Ngôn ngữ (Cơ chế dịch thuật trực tiếp không load lại trang)
+    // Sự kiện thay đổi Ngôn ngữ
     this.dom.langSelect?.addEventListener('change', (e) => {
       const lang = e.target.value;
       StateManager.save('lang', lang);
       this.translateUI(lang);
-      if (typeof this.callbacks.onLangChange === 'function') this.callbacks.onLangChange(lang);
     });
 
-    // Kéo thả Slider tinh chỉnh độ nhạy biên độ VR Camera
+    // Sự kiện kéo thanh trượt tinh chỉnh độ nhạy Camera 3D
     this.dom.sensSlider?.addEventListener('input', (e) => {
       const sens = parseInt(e.target.value);
       StateManager.save('sens', sens);
@@ -163,25 +167,37 @@ export class SettingsComponent {
       }
     });
 
-    // Bật tắt Gyro
+    // Sự kiện bật tắt cảm biến hướng Gyro
     this.dom.gyroSwitch?.addEventListener('change', (e) => {
       const chk = e.target.checked;
       StateManager.save('gyro_enabled', chk);
       if (typeof this.callbacks.onGyroChange === 'function') this.callbacks.onGyroChange(chk);
     });
 
-    // Bật tắt Chế độ tiết kiệm / Giảm chuyển động đồ họa (Bảo vệ phần cứng)
+    // Sự kiện bật tắt chế độ tiết kiệm năng lượng hệ thống
     this.dom.motionSwitch?.addEventListener('change', (e) => {
       const chk = e.target.checked;
       StateManager.save('motion_reduction', chk);
       this.config.settings.motionReduction = chk;
-      
-      // Nếu bật tiết kiệm, tự động trả camera về gốc tọa độ phẳng cố định
       if (typeof this.callbacks.onGyroChange === 'function') this.callbacks.onGyroChange(!chk);
+    });
+
+    // SỰ KIỆN CLICK NÚT MỚI: Kích hoạt ẩn/hiện toàn diện hệ thống Card
+    this.dom.toggleUiBtn?.addEventListener('click', () => {
+      this.isUiHidden = !this.isUiHidden;
+      
+      // Thực thi đổi văn bản chữ trên nút bấm tương ứng với ngôn ngữ hiện tại
+      const lang = StateManager.load('lang', 'vi');
+      this.dom.toggleUiBtn.textContent = this.isUiHidden ? this.i18n[lang].showUi : this.i18n[lang].hideUi;
+
+      // Gọi callback thông báo sang bộ điều phối app.js xử lý thêm/xóa class ẩn của Card
+      if (typeof this.callbacks.onToggleUI === 'function') {
+        this.callbacks.onToggleUI(this.isUiHidden);
+      }
     });
   }
 
-  // Dịch thuật thời gian thực toàn bộ các nhãn văn bản chữ trong Dashboard
+  // Dịch thuật thời gian thực toàn bộ các nhãn chữ trong Dashboard
   translateUI(lang) {
     const t = this.i18n[lang];
     document.getElementById('lbl-dash-title').textContent = t.title;
@@ -189,5 +205,8 @@ export class SettingsComponent {
     document.getElementById('lbl-sens').textContent = t.sens;
     document.getElementById('lbl-gyro').textContent = t.gyro;
     document.getElementById('lbl-motion').textContent = t.motion;
+    if (this.dom.toggleUiBtn) {
+      this.dom.toggleUiBtn.textContent = this.isUiHidden ? t.showUi : t.hideUi;
+    }
   }
 }

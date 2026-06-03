@@ -9,30 +9,38 @@ class AppOrchestrator {
     this.config = SITE_CONFIG;
     this.components = {};
     this.parallaxEngine = null;
-    this.isHomePage = false;
+    this.currentPage = ''; // Quản lý chu trình trang hiện tại
   }
 
   // Khởi chạy vòng đời toàn hệ thống ứng dụng Multi-Page
   async bootstrap() {
-    this.checkCurrentPage(); // 1. Xác định trang hiện tại trước khi dựng UI
-    this.initCoreComponents(); // 2. Khởi tạo cấu phần theo từng trang biệt lập
+    this.routePageDetect(); // 1. Nhận diện chính xác trang người dùng đang đứng
+    this.initCoreComponents(); // 2. Khởi tạo cấu phần phân vùng nhiệm vụ (Trang nào ra trang đó)
     await this.loadDynamicManifests();
     await this.initParallaxEngine();
   }
 
-  // Thuật toán kiểm tra định tuyến URL thực tế của GitHub Pages (Sửa lỗi lộn xộn xuyên trang)
-  checkCurrentPage() {
+  // Thuật toán định tuyến phân tách trang (Sửa lỗi lộn xộn nội dung)
+  routePageDetect() {
     const path = window.location.pathname;
-    // Trang chủ là khi path kết thúc bằng index.html, hoặc chạy ở root '/' trên GitHub Pages
-    this.isHomePage = path.endsWith('index.html') || path.endsWith('/') || path === '';
+    
+    if (path.endsWith('about.html')) {
+      this.currentPage = 'about';
+    } else if (path.endsWith('contact.html')) {
+      this.currentPage = 'contact';
+    } else if (path.endsWith('404.html')) {
+      this.currentPage = '404';
+    } else {
+      // Mặc định là trang chủ khi chạy root '/' hoặc index.html trên GitHub Pages
+      this.currentPage = 'home';
+    }
   }
 
-  // Khởi tạo các cấu phần giao diện biệt lập (Phân rõ nhiệm vụ quản lý - Sửa lỗi số 4)
+  // Khởi tạo các cấu phần giao diện biệt lập (Tuân thủ Điều 4 và Điều 10)
   initCoreComponents() {
-    // 1. Khởi tạo cấu phần Header & Menu điều hướng (Xuất hiện ở mọi trang)
+    // Header và Settings Panel xuất hiện đồng bộ ở mọi trang để giữ cấu trúc ứng dụng
     this.components.header = new HeaderComponent(this.config);
 
-    // 2. Khởi tạo cấu phần Settings Dashboard nâng cao (Xuất hiện ở mọi trang)
     this.components.settings = new SettingsComponent(this.config, {
       onGyroChange: (isEnabled) => {
         if (this.parallaxEngine) this.parallaxEngine.toggleGyroscope(isEnabled);
@@ -43,55 +51,69 @@ class AppOrchestrator {
           this.parallaxEngine.config.hardware.gyroscope.sensitivityY = newSensitivity;
         }
       },
-      // HÀM MỚI: Xử lý nút bấm Ẩn/Hiện toàn bộ UI Card từ Dashboard cài đặt
+      // Xử lý nút gạt Ẩn/Hiện UI khi người dùng muốn ngắm không gian 3D thuần túy
       onToggleUI: (isHideAll) => {
-        const cards = document.querySelectorAll('.pure-article-card, #md-content-viewport');
-        cards.forEach(card => {
+        const dashboard = document.querySelector('.hero-content, .pure-articles-section, #md-content-viewport');
+        if (dashboard) {
           if (isHideAll) {
-            card.classList.add('ui-elements-hidden');
+            dashboard.classList.add('ui-elements-hidden');
           } else {
-            card.classList.remove('ui-elements-hidden');
+            dashboard.classList.remove('ui-elements-hidden');
           }
-        });
+        }
       }
     });
 
-    // 3. KIỂM TRA ĐỊNH TUYẾN: Chỉ khởi tạo cấu phần Card bài viết tại Trang Chủ (Sửa lỗi trang nào cũng hiện)
-    if (this.isHomePage) {
+    // SỬA ĐỔI QUAN TRỌNG: Phân tách rạch ròi vị trí xuất hiện cấu phần (Trang nào ra trang đó)
+    if (this.currentPage === 'home') {
+      // Trang chủ SẠCH TUYỆT ĐỐI - Dọn sạch vùng nội dung để lộ không gian VR 360° đắm chìm
+      this.cleanHomeContent();
+    } else if (this.currentPage === 'about') {
+      // CHỈ KHỞI TẠO CẤU PHẦN CARD BÀI VIẾT TẠI TRANG GIỚI THIỆU (ABOUT PAGE)
       this.components.articleCard = new ArticleCardComponent(this.config);
     }
   }
 
-  // Tải dữ liệu bất đồng bộ từ các tệp Manifest nội bộ (Tách biệt dữ liệu môi trường theo Điều 5)
+  // Hàm dọn sạch ruột trang chủ, chỉ giữ lại câu chào lơ lửng tối giản
+  cleanHomeContent() {
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+      heroContent.innerHTML = `
+        <h1>${this.config.brand.title}</h1>
+        <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 5px;">Xoay thiết bị hoặc di chuột để khám phá không gian 360° VR</p>
+      `;
+    }
+  }
+
+  // Tải dữ liệu bất đồng bộ từ các tệp Manifest nội bộ (Tách biệt nợ kỹ thuật theo Điều 5)
   async loadDynamicManifests() {
     try {
-      // Thiết lập danh sách gọi fetch bất đồng bộ
       const fetchPromises = [
         fetch(`${this.config.baseEndpoint}/${this.config.manifestSources.assets}`)
       ];
 
-      // CHỈ TẢI MANIFEST BÀI VIẾT KHI ĐANG Ở TRANG CHỦ (Tiết kiệm băng thông, bảo vệ hạ tầng theo Điều 8)
-      if (this.isHomePage) {
+      // Chỉ gọi fetch manifest bài viết .md khi người dùng truy cập trang GIỚI THIỆU (ABOUT)
+      if (this.currentPage === 'about') {
         fetchPromises.push(fetch(`${this.config.baseEndpoint}/${this.config.manifestSources.articles}`));
       }
 
       const responses = await Promise.all(fetchPromises);
 
-      // Xử lý nạp Manifest tài nguyên ảnh thật (Áp dụng cho tất cả các trang)
+      // Nạp và xử lý Manifest tài nguyên ảnh thật (Áp dụng cho mọi trang)
       if (responses[0].ok) {
         const assetsData = await responses[0].json();
         this.components.header.updateDynamicLogo(assetsData);
         this.applyParallaxImages(assetsData);
       }
 
-      // Xử lý nạp danh mục bài viết Markdown (Chỉ thực thi tại Trang Chủ)
-      if (this.isHomePage && responses[1] && responses[1].ok) {
+      // Nạp dữ liệu và tiến hành render danh sách Card bài viết riêng biệt (Chỉ chạy tại trang ABOUT)
+      if (this.currentPage === 'about' && responses[1] && responses[1].ok) {
         const articlesData = await responses[1].json();
         this.components.articleCard.render(articlesData);
       }
 
     } catch (error) {
-      console.error("Lỗi nghẽn luồng trong tiến trình nạp dữ liệu Manifest:", error);
+      console.error("Lỗi luồng trong tiến trình nạp dữ liệu Manifest cấu phần:", error);
     }
   }
 
@@ -132,3 +154,4 @@ document.addEventListener('DOMContentLoaded', () => {
   const app = new AppOrchestrator();
   app.bootstrap();
 });
+ 

@@ -9,11 +9,11 @@
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
 
-  <!-- 2. Hệ thống Stylesheet Phân rã độc lập theo từng Cấu phần -->
+  <!-- 2. Hệ thống Stylesheet mô-đun hóa phân rã độc lập theo từng Cấu phần -->
   <link rel="stylesheet" href="css/settings.css">
   <link rel="stylesheet" href="css/article-card.css">
 
-  <!-- 3. Bộ lọc Responsive điều chỉnh ma trận và bóp gọn giao diện Mobile -->
+  <!-- 3. Bộ lọc Responsive bóp gọn UI và chống lệch trục hở ảnh nền trên Mobile -->
   <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
@@ -24,7 +24,7 @@
       <a href="index.html" id="site-logo" class="site-logo">PURE</a>
       <nav class="main-navigation">
         <ul id="nav-list" class="nav-list">
-          <!-- Các thẻ liên kết điều hướng được render tự động -->
+          <!-- Các thẻ liên kết điều hướng được render tự động dựa trên Data-Driven -->
         </ul>
       </nav>
       <button id="settings-toggle" class="settings-toggle" aria-label="Open Settings">⚙️</button>
@@ -36,24 +36,23 @@
     <!-- Cấu trúc các nhóm chức năng Slider, Ngôn ngữ, Ẩn UI sẽ được tự động chèn vào đây -->
   </aside>
 
-  <!-- Khung Chứa Góc Nhìn Phối Cảnh Mắt Người (Perspective Box) -->
+  <!-- Khung Chứa Góc Nhìn Phối Cảnh Mắt Người (Perspective Viewport Master) -->
   <main id="parallax-container" class="parallax-container">
     
-    <!-- Sân Khấu Lập Thể VR Quay 360 Độ (Khóa chặt tâm ma trận) -->
+    <!-- Sân Khấu Lập Thể VR Quay 360 Độ (Khóa chặt tâm ma trận đồng tâm trục 0,0,0) -->
     <div class="vr-stage">
       
-      <!-- Layer 1: Hậu cảnh nền trời sao nội bộ (Trục Z: -300px, Overscan 1.6x trên Mobile) -->
+      <!-- Layer 1: Hậu cảnh nền trời sao nội bộ (Trục Z: -300px, Overscan 1.6x cố định tâm trên Mobile) -->
       <section id="layer-bg-stars" class="parallax-layer layer-bg"></section>
 
-      <!-- Layer 2: Trung cảnh dãy núi nội bộ (Trục Z: -150px, Overscan 1.3x trên Mobile) -->
+      <!-- Layer 2: Trung cảnh dãy núi nội bộ (Trục Z: -150px, Overscan 1.3x cố định tâm trên Mobile) -->
       <section id="layer-mg-mountains" class="parallax-layer layer-mg"></section>
 
-      <!-- Layer 3: Tiền cảnh chứa hệ thống Card lơ lửng VR (Bóp gọn tỷ lệ scale 0.72x trên Mobile) -->
+      <!-- Layer 3: Tiền cảnh lơ lửng tối giản của Trang Chủ (SẠCH SẼ TUYỆT ĐỐI) -->
       <section id="layer-fg-content" class="parallax-layer layer-fg">
         <!-- 
-          Bảng Dashboard chính diện tối giản diện tích.
-          Hệ thống Card bài viết độc lập (.md) và Modal đọc bài viết 
-          sẽ được ArticleCardComponent tự động chèn lơ lửng tại đây.
+          Bảng Dashboard chính diện lơ lửng, chỉ chứa thông tin tiêu đề và câu chào thu gọn.
+          Toàn bộ hệ thống Card bài viết và Modal đọc tệp .md đã được bốc gỡ 100% sang trang about.html
         -->
         <article class="hero-content">
           <h1>Pure Experience</h1>

@@ -1,26 +1,36 @@
 /* css/main.css */
 
-/* --- 1. Reset & Base Styles --- */
+/* ==========================================================================
+   1. THIẾT LẬP NỀN TẢNG TOÀN CỤC (CORE SYSTEM RESET)
+   ========================================================================== */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  user-select: none; /* Khóa chọn văn bản để khi người dùng kéo thả card không bị bôi xanh chữ */
+  user-select: none; /* Khóa bôi xanh chữ khi người dùng kéo thả vật thể VR */
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #000000;
+  background-color: #000000; /* Nền đen tuyệt đối tiêu chuẩn của phòng VR */
   color: var(--text-primary);
-  overflow: hidden; /* Khóa cứng màn hình để phục vụ tương tác xoay và kéo thả VR */
+  overflow: hidden; /* Khóa chết thanh cuộn trình duyệt để giữ không gian 3D ổn định */
   width: 100vw;
   height: 100vh;
 }
 
-a { color: inherit; text-decoration: none; }
-ul { list-style: none; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
 
-/* --- 2. Header & Logo (Thiết kế tinh gọn) --- */
+ul {
+  list-style: none;
+}
+
+/* ==========================================================================
+   2. BỐ CỤC HEADER ĐIỀU HƯỚNG TINH GỌN (MPA SITE HEADER)
+   ========================================================================== */
 .site-header {
   position: fixed;
   top: 0;
@@ -28,81 +38,94 @@ ul { list-style: none; }
   width: 100%;
   height: var(--header-height);
   background-color: var(--bg-glass);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-glass);
-  z-index: 100;
+  z-index: 200; /* Nằm trên cùng toàn hệ thống */
+  transition: background-color var(--transition-normal);
 }
 
 .header-container {
   max-width: 1200px;
   height: 100%;
   margin: 0 auto;
-  padding: 0 var(--spacing-md);
+  padding: 0 var(--spacing-lg);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.site-logo-img { max-height: calc(var(--header-height) - 35px); width: auto; object-fit: contain; }
-.nav-list { display: flex; gap: var(--spacing-md); }
-.nav-list a { font-weight: 500; font-size: 0.85rem; color: var(--text-secondary); }
-.nav-list a.active { color: var(--text-primary); }
-.settings-toggle { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-primary); }
-
-/* --- 3. Settings Dashboard Hoàn Thiện (Sửa lỗi số 1) --- */
-.settings-panel {
-  position: fixed;
-  top: var(--header-height);
-  right: 0;
-  width: 300px;
-  height: calc(100vh - var(--header-height));
-  background-color: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-left: 1px solid var(--border-glass);
-  z-index: 95;
-  padding: var(--spacing-md);
-  box-shadow: var(--shadow-glass);
-  transition: transform var(--transition-normal) ease-in-out;
+/* Khung chứa logo ảnh thật nội bộ */
+.site-logo {
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
-.settings-panel.hidden { transform: translateX(100%); }
-.settings-content h3 { font-size: 0.95rem; margin-bottom: var(--spacing-md); text-transform: uppercase; color: var(--accent-color); letter-spacing: 1px; }
-.setting-group { margin-bottom: var(--spacing-md); }
-.setting-group label { display: block; font-size: 0.8rem; margin-bottom: var(--spacing-xs); color: var(--text-secondary); }
-
-/* Range Slider tinh chỉnh biên độ Camera VR */
-.vr-slider {
-  width: 100%;
-  height: 4px;
-  background: var(--border-glass);
-  border-radius: var(--radius-sm);
-  outline: none;
-  accent-color: var(--accent-color);
+.site-logo-img {
+  max-height: calc(var(--header-height) - 30px);
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 
-.setting-group select { width: 100%; padding: var(--spacing-sm); background-color: var(--bg-secondary); border: 1px solid var(--border-glass); color: var(--text-primary); border-radius: var(--radius-sm); font-size: 0.8rem; outline: none; }
-.switch-label { display: flex; align-items: center; gap: var(--spacing-xs); cursor: pointer; font-size: 0.8rem; }
+.nav-list {
+  display: flex;
+  gap: var(--spacing-lg);
+}
 
-/* --- 4. Thiết lập Khung Không Gian Phối Cảnh Lập Thể VR --- */
+.nav-list a {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.nav-list a:hover,
+.nav-list a.active {
+  color: var(--text-primary);
+}
+
+.settings-toggle {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--text-primary);
+  padding: var(--spacing-sm);
+  border-radius: 50%;
+  transition: transform var(--transition-fast);
+}
+
+.settings-toggle:hover {
+  transform: rotate(45deg);
+}
+
+/* ==========================================================================
+   3. KIẾN TRÚC PHÒNG PHỐI CẢNH 3D VR (VR STAGE PERSPECTIVE)
+   ========================================================================== */
 .parallax-container {
   position: relative;
   width: 100vw;
   height: 100vh;
-  perspective: 600px; /* Tiêu cự tạo chiều sâu rõ rệt cho mắt người nhìn */
+  overflow: hidden;
+  /* Thiết lập tiêu cự góc nhìn Camera mắt người sâu vào tâm không gian */
+  perspective: 500px;
   perspective-origin: 50% 50%;
 }
 
+/* Sân khấu 3D tổng - Nơi nhận ma trận xoay 360 độ từ Gyroscope/Chuột */
 .vr-stage {
   position: absolute;
   width: 100%;
   height: 100%;
+  top: 0;
+  left: 0;
   transform-style: preserve-3d;
   will-change: transform;
 }
 
-/* Ép kích cỡ lớp nền 140% chống hở viền tuyệt đối */
+/* Các bức tường không gian bao vây tầm mắt người dùng (Overscan 1.4x mặc định) */
 .parallax-layer {
   position: absolute;
   top: -20%;
@@ -110,105 +133,66 @@ ul { list-style: none; }
   width: 140%;
   height: 140%;
   background-repeat: no-repeat;
-  background-position: center;
   background-size: cover;
+  background-position: center;
   transform-style: preserve-3d;
   backface-visibility: hidden;
 }
 
-#layer-bg-stars { transform: translateZ(-300px) scale(1.4); z-index: 1; }
-#layer-mg-mountains { transform: translateZ(-150px) scale(1.2); z-index: 2; }
+/* Phân rã cao độ vật lý thực tế bằng Trục Z, triệt tiêu lỗi bảng phẳng trực diện */
+#layer-bg-stars {
+  transform: translateZ(-350px) scale(1.8); /* Đẩy lùi sâu nhất về hậu cảnh */
+  z-index: 1;
+}
 
-/* 
- * Lớp Tiền cảnh chứa Dashboard lơ lửng VR (Sửa lỗi số 4)
- * Ép tỷ lệ scale nhỏ lại (0.75x) trên di động để nhìn tổng quát, không bị che khuất phông nền 3D
- */
+#layer-mg-mountains {
+  transform: translateZ(-180px) scale(1.4); /* Lớp trung cảnh núi đồi lơ lửng */
+  z-index: 2;
+}
+
+/* Lớp tiền cảnh chứa Dashboard thông tin lơ lửng */
 #layer-fg-content {
   transform: translateZ(0px);
   z-index: 3;
-  display: block; /* Tháo bỏ Flex center để các card có thể bay tự do khắp màn hình */
   width: 100%;
   height: 100%;
   top: 0;
   left: 0;
 }
 
-/* --- 5. Kiến Trúc Khối Card Bài Viết Riêng Biệt & Kéo Thả 3D (Sửa lỗi số 2 & 3) --- */
-.pure-article-card {
-  position: absolute; /* Bắt buộc để tính toán tọa độ kéo thả tịnh tiến */
-  width: 280px;
+/* ==========================================================================
+   4. KHỐI NỘI DUNG TRUNG TÂM KÍNH MỜ (FLOATING HERO CARD)
+   ========================================================================== */
+.hero-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) translateZ(40px); /* Đẩy khối kính nổi lên sườn trước mắt */
   background-color: var(--bg-glass);
   border: 1px solid var(--border-glass);
+  padding: var(--spacing-xl) var(--spacing-lg);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: var(--spacing-md);
-  cursor: grab; /* Tạo icon bàn tay cầm nắm vật thể VR */
-  transform-style: preserve-3d;
-  will-change: transform;
-  z-index: 10;
-  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
-}
-
-.pure-article-card:active { cursor: grabbing; border-color: var(--accent-color); box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
-
-/* Vùng ghim tiêu đề card đóng vai trò làm điểm tựa để kéo vật thể */
-.card-header-drag {
-  border-bottom: 1px solid var(--border-glass);
-  padding-bottom: var(--spacing-xs);
-  margin-bottom: var(--spacing-sm);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-badge { font-size: 0.6rem; background: var(--accent-color); color: var(--accent-contrast); padding: 2px 6px; border-radius: var(--radius-sm); text-transform: uppercase; font-weight: 700; }
-.card-title { font-size: 0.9rem; font-weight: 800; color: var(--text-primary); }
-.card-excerpt { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; margin: var(--spacing-sm) 0; }
-.read-more-btn { background: var(--bg-secondary); border: 1px solid var(--border-glass); color: var(--accent-color); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-size: 0.7rem; font-weight: 600; cursor: pointer; width: 100%; text-align: center; }
-
-/* --- 6. Khung Viewport Đọc Bài Viết Kiểu Modal VR Bay --- */
-#md-content-viewport {
-  position: absolute;
-  width: 320px;
-  max-height: 60vh;
-  background-color: rgba(10, 15, 25, 0.9);
-  border: 1px solid var(--accent-color);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
   box-shadow: var(--shadow-glass);
   backdrop-filter: blur(15px);
-  overflow-y: auto;
-  z-index: 50;
-  cursor: grab;
+  -webkit-backdrop-filter: blur(15px);
+  text-align: center;
+  width: 500px;
+  max-width: 90%;
+  transition: opacity var(--transition-normal);
 }
 
-.md-viewport-hidden { display: none; }
-.md-viewport-visible { display: block; }
-.viewport-close-btn { float: right; background: none; border: none; color: #ef4444; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
-#md-render-target { font-size: 0.75rem; line-height: 1.5; text-align: left; margin-top: var(--spacing-sm); }
-#md-render-target h1 { font-size: 1rem; color: var(--accent-color); margin-bottom: var(--spacing-xs); }
-#md-render-target p { color: var(--text-secondary); margin-bottom: var(--spacing-xs); }
-
-/* --- 7. Bộ Lọc Responsive Ép Nhỏ Không Gian Trên Mobile (Sửa lỗi số 4) --- */
-@media (max-width: 768px) {
-  /* Ép tỷ lệ thu nhỏ toàn diện khối Tiền cảnh chứa Card để không chiếm không gian */
-  #layer-fg-content {
-    transform: scale(0.78) translateZ(20px);
-    transform-origin: center center;
-  }
-  
-  .pure-article-card {
-    width: 250px; /* Thu hẹp chiều ngang card trên điện thoại */
-    padding: var(--spacing-sm);
-  }
-  
-  .card-title { font-size: 0.8rem; }
-  .card-excerpt { font-size: 0.7rem; }
+.hero-content h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent-color);
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: -0.5px;
 }
 
-/* Định dạng lưới phân bổ ban đầu cho Desktop */
-@media (min-width: 992px) {
-  .pure-article-card { width: 300px; }
+.hero-content p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
+
+/* TUYỆT ĐỐI KHÔNG CHỨA CODE SETTINGS, CARD BÀI VIẾT HOẶC @MEDIA RESPONSIVE TẠI ĐÂY */

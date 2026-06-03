@@ -1,0 +1,121 @@
+/* css/settings.css */
+
+/* --- Cấu Phần Bảng Điều Khiển Dashboard Settings Bản Thu Gọn VR --- */
+.settings-panel {
+  position: fixed;
+  top: var(--header-height);
+  right: 0;
+  width: 280px; /* Thu hẹp chiều ngang chuẩn mực để không bao giờ chiếm dụng không gian sườn */
+  height: calc(100vh - var(--header-height));
+  background-color: var(--bg-glass);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-left: 1px solid var(--border-glass);
+  z-index: 150; /* Đảm bảo nổi lên trên các khối vật thể kéo thả */
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-glass);
+  transition: transform var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(0);
+}
+
+/* Trạng thái ẩn trượt gọn gàng ra ngoài rìa màn hình */
+.settings-panel.hidden {
+  transform: translateX(100%);
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.settings-content h3 {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  letter-spacing: 1.5px;
+  border-bottom: 1px solid var(--border-glass);
+  padding-bottom: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.setting-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Định dạng cấu trúc cho thanh trượt Slider ma trận */
+.vr-slider {
+  width: 100%;
+  height: 4px;
+  background: var(--border-glass);
+  border-radius: var(--radius-sm);
+  outline: none;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+.setting-group select {
+  width: 100%;
+  padding: var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.setting-group select:focus {
+  border-color: var(--accent-color);
+}
+
+.switch-label {
+  display: flex !important;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.switch-label input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+/* Nút bấm Đóng/Mở khẩn cấp hệ thống Card nội dung trên Dashboard */
+.toggle-ui-btn {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  margin-top: var(--spacing-sm);
+}
+
+.toggle-ui-btn:hover {
+  background-color: var(--border-glass);
+  border-color: var(--accent-color);
+}
+ 

@@ -5,13 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pure Vanilla Experience</title>
   
-  <!-- Hệ thống Stylesheet cấu trúc không gian phối cảnh VR 3D -->
+  <!-- 1. Hệ thống Style cốt lõi và Biến số màu sắc CSS4+ -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
+
+  <!-- 2. Hệ thống Stylesheet Phân rã độc lập theo từng Cấu phần -->
+  <link rel="stylesheet" href="css/settings.css">
+  <link rel="stylesheet" href="css/article-card.css">
+
+  <!-- 3. Bộ lọc Responsive điều chỉnh ma trận và bóp gọn giao diện Mobile -->
+  <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
 
-  <!-- Thanh Điều Hướng Hệ Thống (Data-Driven Render độc lập qua header.js) -->
+  <!-- Thanh Điều Hướng Hệ Thống Multi-Page (Quản lý tự động qua header.js) -->
   <header id="site-header" class="site-header">
     <div class="header-container">
       <a href="index.html" id="site-logo" class="site-logo">PURE</a>
@@ -24,49 +31,33 @@
     </div>
   </header>
 
-  <!-- Bảng Cấu Hình Hệ Thống Đồng Bộ Xuyên Trang (Quản lý bởi settings.js) -->
+  <!-- Bảng Cấu Hình Hệ Thống Đồng Bộ Xuyên Trang (Nạp động qua settings.js) -->
   <aside id="settings-panel" class="settings-panel hidden">
-    <div class="settings-content">
-      <h3>Cài Đặt Hệ Thống</h3>
-      
-      <!-- Lựa chọn Giao diện -->
-      <div class="setting-group">
-        <label for="theme-select">Giao diện:</label>
-        <select id="theme-select"></select>
-      </div>
-
-      <!-- Bật/Tắt Cảm biến Nghiêng Gyroscope -->
-      <div class="setting-group">
-        <label for="gyro-switch" class="switch-label">
-          <input type="checkbox" id="gyro-switch" checked>
-          Sử dụng Cảm biến Nghiêng (Gyroscope)
-        </label>
-      </div>
-    </div>
+    <!-- Cấu trúc các nhóm chức năng Slider, Ngôn ngữ, Ẩn UI sẽ được tự động chèn vào đây -->
   </aside>
 
   <!-- Khung Chứa Góc Nhìn Phối Cảnh Mắt Người (Perspective Box) -->
   <main id="parallax-container" class="parallax-container">
     
-    <!-- 
-      Sân Khấu Lập Thể VR Thực Thụ (Sửa lỗi lia chậm và hở viền)
-      Mọi tác động ma trận xoay/dịch chuyển từ chuột và cảm biến nghiêng sẽ áp trực tiếp lên thẻ này
-    -->
+    <!-- Sân Khấu Lập Thể VR Quay 360 Độ (Khóa chặt tâm ma trận) -->
     <div class="vr-stage">
       
-      <!-- Layer 1: Hậu cảnh nền trời sao nội bộ (Đẩy lùi sâu -400px trên trục Z) -->
+      <!-- Layer 1: Hậu cảnh nền trời sao nội bộ (Trục Z: -300px, Overscan 1.6x trên Mobile) -->
       <section id="layer-bg-stars" class="parallax-layer layer-bg"></section>
 
-      <!-- Layer 2: Trung cảnh dãy núi nội bộ (Đẩy lùi -200px trên trục Z) -->
+      <!-- Layer 2: Trung cảnh dãy núi nội bộ (Trục Z: -150px, Overscan 1.3x trên Mobile) -->
       <section id="layer-mg-mountains" class="parallax-layer layer-mg"></section>
 
-      <!-- Layer 3: Tiền cảnh chứa khối thông tin kính mờ (Nằm ở tiêu cự 0px trục Z) -->
+      <!-- Layer 3: Tiền cảnh chứa hệ thống Card lơ lửng VR (Bóp gọn tỷ lệ scale 0.72x trên Mobile) -->
       <section id="layer-fg-content" class="parallax-layer layer-fg">
+        <!-- 
+          Bảng Dashboard chính diện tối giản diện tích.
+          Hệ thống Card bài viết độc lập (.md) và Modal đọc bài viết 
+          sẽ được ArticleCardComponent tự động chèn lơ lửng tại đây.
+        -->
         <article class="hero-content">
           <h1>Pure Experience</h1>
-          <p>Không gian chuẩn tương tác 3D Web Standards không phụ thuộc Framework đồ họa nặng nề.</p>
-          
-          <!-- Khối bọc Grid chứa các Card bài viết riêng biệt (.md) sẽ được article-card.js tự động chèn vào đây -->
+          <p>Không gian chuẩn tương tác 3D Web Standards.</p>
         </article>
       </section>
 

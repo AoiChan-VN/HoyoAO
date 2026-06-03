@@ -1,81 +1,110 @@
-/* css/variables.css */
+/* css/responsive.css */
 
-/* Định nghĩa các biến toàn cục mặc định (Root - Dark Theme) */
-:root {
-  /* Hệ thống lưới và khoảng cách */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 2rem;
-  --spacing-xl: 4rem;
-  --header-height: 70px;
+/* ==============================================================
+   BỘ LỌC RESPONSIVE ĐỘC LẬP - TỐI ƯU KHÔNG GIAN VR TRÊN DI ĐỘNG
+   ============================================================== */
 
-  /* Hiệu ứng chuyển động (Transitions) */
-  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.8s cubic-bezier(0.1, 0.8, 0.2, 1);
+@media (max-width: 768px) {
+  /* 
+   * 1. Sửa lỗi lệch trục hở viền đen trên Chrome Mobile
+   * Ép rộng biên độ ảnh nền nội bộ lên 160% và khóa chặt tâm ma trận
+   */
+  .parallax-layer {
+    top: -30% !important;
+    left: -30% !important;
+    width: 160% !important;
+    height: 160% !important;
+    transform-origin: center center !important;
+  }
 
-  /* Bo góc và đổ bóng (Border Radius & Shadows) */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  /* Tách biệt thông số tỷ lệ scale chiều sâu Z cho phông nền di động */
+  #layer-bg-stars {
+    transform: translateZ(-250px) scale(1.6) !important;
+  }
+  #layer-mg-mountains {
+    transform: translateZ(-120px) scale(1.3) !important;
+  }
 
-  /* Hệ màu sắc hệ thống - Giao diện Tối (Dark - Mặc định) */
-  --bg-primary: #0b0f19;
-  --bg-secondary: #111827;
-  --bg-glass: rgba(17, 24, 39, 0.7);
-  --border-glass: rgba(255, 255, 255, 0.1);
-  
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  /* 
+   * 2. Bóp nhỏ toàn diện diện tích bảng điều khiển tiền cảnh (Sửa lỗi số 4)
+   * Giúp thu nhỏ chữ, cô lập card để không che khuất phông nền lập thể phía sau
+   */
+  #layer-fg-content {
+    transform: scale(0.72) translateZ(10px) !important;
+    transform-origin: top center !important;
+    padding-top: calc(var(--header-height) + var(--spacing-sm)) !important;
+  }
 
-  --accent-color: #3b82f6;
-  --accent-hover: #2563eb;
-  --accent-contrast: #ffffff;
-}
+  /* Bóp nhỏ kích thước Card bài viết độc lập trên màn hình dọc điện thoại */
+  .pure-article-card {
+    width: 240px !important;
+    padding: var(--spacing-sm) !important;
+  }
 
-/* Định nghĩa cấu hình Giao diện Sáng (Light Theme) */
-html[data-theme="light"] {
-  --bg-primary: #f3f4f6;
-  --bg-secondary: #ffffff;
-  --bg-glass: rgba(255, 255, 255, 0.7);
-  --border-glass: rgba(0, 0, 0, 0.1);
+  .card-title {
+    font-size: 0.8rem !important;
+    line-height: 1.2 !important;
+  }
 
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-muted: #9ca3af;
+  .card-excerpt {
+    font-size: 0.68rem !important;
+    margin: var(--spacing-xs) 0 !important;
+  }
 
-  --accent-color: #2563eb;
-  --accent-hover: #1d4ed8;
-  --accent-contrast: #ffffff;
-  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-}
+  /* Khung đọc nội dung bài viết .md cũng được bóp gọn để vừa vặn tầm mắt di động */
+  #md-content-viewport {
+    width: 260px !important;
+    max-height: 45vh !important;
+    padding: var(--spacing-sm) !important;
+  }
 
-/* Định nghĩa cấu hình Giao diện Tương lai (Cyberpunk Theme) */
-html[data-theme="cyberpunk"] {
-  --bg-primary: #001219;
-  --bg-secondary: #1a002c;
-  --bg-glass: rgba(26, 0, 44, 0.75);
-  --border-glass: rgba(0, 245, 212, 0.2);
+  /* 3. Tối ưu hóa thu gọn kích thước của Header Menu để nhường chỗ cho VR */
+  .site-header {
+    height: 50px !important;
+  }
+  .header-container {
+    padding: 0 var(--spacing-sm) !important;
+  }
+  .site-logo-img {
+    max-height: 24px !important;
+  }
+  .nav-list {
+    gap: var(--spacing-sm) !important;
+  }
+  .nav-list a {
+    font-size: 0.75rem !important;
+  }
 
-  --text-primary: #00f5d4;
-  --text-secondary: #9b5de5;
-  --text-muted: #f15bb5;
-
-  --accent-color: #fee440;
-  --accent-hover: #f15bb5;
-  --accent-contrast: #001219;
-  --shadow-glass: 0 0 20px rgba(0, 245, 212, 0.4);
-}
-
-/* Tối ưu hóa hệ thống giảm hiệu ứng cho phần cứng yếu hoặc do user cấu hình */
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --transition-fast: 0s;
-    --transition-normal: 0s;
-    --transition-slow: 0s;
+  /* 4. Ép phẳng Bảng cài đặt Settings để tuyệt đối không đè chết 60% màn hình */
+  .settings-panel {
+    top: 50px !important;
+    width: 220px !important; /* Thu nhỏ hết cỡ bảng trượt trên điện thoại */
+    height: calc(100vh - 50px) !important;
+    padding: var(--spacing-sm) !important;
+  }
+  .settings-content h3 {
+    font-size: 0.75rem !important;
+  }
+  .setting-group label,
+  .switch-label {
+    font-size: 0.7rem !important;
+  }
+  .setting-group select {
+    padding: var(--spacing-xs) !important;
+    font-size: 0.7rem !important;
   }
 }
- 
+
+/* ==========================================================================
+   PHÂN BỔ LƯỚI TỰ ĐỘNG KHI HIỂN THỊ TRÊN MÀN HÌNH MÁY TÍNH LỚN (DESKTOP)
+   ========================================================================== */
+@media (min-width: 992px) {
+  .pure-article-card {
+    width: 290px !important;
+  }
+  
+  #md-content-viewport {
+    width: 450px !important;
+    max-height: 65vh !important;
+  }
+}

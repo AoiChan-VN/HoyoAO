@@ -18,26 +18,43 @@ class AppOrchestrator {
     await this.initParallaxEngine();
   }
 
-  // Khởi tạo các cấu phần giao diện biệt lập (Sửa lỗi số 4 - Tách rõ file)
+  // Khởi tạo và thiết lập các cấu phần giao diện biệt lập (Sửa lỗi số 4)
   initCoreComponents() {
     // 1. Khởi tạo cấu phần Header & Menu điều hướng
     this.components.header = new HeaderComponent(this.config);
 
-    // 2. Khởi tạo cấu phần Settings Panel (Truyền callback đồng bộ trực tiếp sang Parallax Engine)
-    this.components.settings = new SettingsComponent(this.config, (isGyroEnabled) => {
-      if (this.parallaxEngine) {
-        this.parallaxEngine.toggleGyroscope(isGyroEnabled);
+    // 2. Khởi tạo cấu phần Settings Dashboard hoàn chỉnh (Sửa lỗi số 1)
+    // Tích hợp hệ thống Callbacks liên kết trực tiếp sang các module đồ họa và ngôn ngữ
+    this.components.settings = new SettingsComponent(this.config, {
+      // Khi người dùng bật/tắt Gyroscope hoặc chế độ Giảm chuyển động
+      onGyroChange: (isEnabled) => {
+        if (this.parallaxEngine) {
+          this.parallaxEngine.toggleGyroscope(isEnabled);
+        }
+      },
+      // Khi người dùng kéo Slider thay đổi độ nhạy biên độ Camera VR
+      onSensitivityChange: (newSensitivity) => {
+        if (this.parallaxEngine) {
+          // Đồng bộ thông số độ nhạy trực tiếp vào vòng lặp đồ họa thời gian thực
+          this.parallaxEngine.config.hardware.gyroscope.sensitivityX = newSensitivity;
+          this.parallaxEngine.config.hardware.gyroscope.sensitivityY = newSensitivity;
+        }
+      },
+      // Khi người dùng thay đổi ngôn ngữ hệ thống trên Dashboard
+      onLangChange: (lang) => {
+        console.log(`Hệ thống PURE đã chuyển đổi ngôn ngữ sang: ${lang.toUpperCase()}`);
+        // Có thể mở rộng để dịch thêm tiêu đề trang nếu cần
       }
     });
 
-    // 3. Khởi tạo cấu phần quản lý Card bài viết riêng biệt (.MD Loader)
+    // 3. Khởi tạo cấu phần quản lý Card bài viết riêng biệt lơ lửng VR (Sửa lỗi số 2 & 3)
     this.components.articleCard = new ArticleCardComponent(this.config);
   }
 
-  // Tải dữ liệu bất đồng bộ từ các tệp Manifest bên ngoài (Data-Driven Content)
+  // Tải dữ liệu bất đồng bộ từ các tệp Manifest nội bộ (Tách biệt Hardcode theo Điều 5)
   async loadDynamicManifests() {
     try {
-      // Gọi tải song song (Parallel Fetch) tối ưu tốc độ băng thông mạng, chống nghẽn theo Điều 8
+      // Gọi tải song song (Parallel Fetch) tối ưu tốc độ mạng, chống nghẽn theo Điều 8
       const [assetsRes, articlesRes] = await Promise.all([
         fetch(`${this.config.baseEndpoint}/${this.config.manifestSources.assets}`),
         fetch(`${this.config.baseEndpoint}/${this.config.manifestSources.articles}`)
@@ -45,14 +62,14 @@ class AppOrchestrator {
 
       if (assetsRes.ok) {
         const assetsData = await assetsRes.json();
-        // Cập nhật cấu trúc Thẻ ảnh Logo thật và phân phối ảnh cho Parallax (Sửa lỗi số 1 và 3)
+        // Cập nhật cấu trúc Logo ảnh thật nội bộ và phân phối ảnh cho Parallax (Sửa lỗi số 1)
         this.components.header.updateDynamicLogo(assetsData);
         this.applyParallaxImages(assetsData);
       }
 
       if (articlesRes.ok) {
         const articlesData = await articlesRes.json();
-        // Truyền dữ liệu manifest sang cấu phần Card bài viết để tự động render lên Grid (Sửa lỗi số 2)
+        // Truyền dữ liệu manifest sang cấu phần Card bài viết để tự động render lơ lửng (Sửa lỗi số 2)
         this.components.articleCard.render(articlesData);
       }
 
@@ -61,7 +78,7 @@ class AppOrchestrator {
     }
   }
 
-  // Phân phối đường dẫn ảnh thật từ Manifest vào các Layer DOM tương ứng
+  // Phân phối đường dẫn ảnh thật từ Manifest nội bộ vào các Layer DOM tương ứng
   applyParallaxImages(assetsData) {
     if (!assetsData || !assetsData.parallaxImages) return;
 
@@ -81,8 +98,14 @@ class AppOrchestrator {
       const { ParallaxEngine } = await import('./components/parallax.js');
       this.parallaxEngine = new ParallaxEngine(this.config);
       this.parallaxEngine.start();
+      
+      // Đồng bộ thông số độ nhạy ban đầu từ Settings đã khôi phục vào Parallax Engine
+      const initialSens = this.config.hardware.gyroscope.sensitivityX;
+      this.parallaxEngine.config.hardware.gyroscope.sensitivityX = initialSens;
+      this.parallaxEngine.config.hardware.gyroscope.sensitivityY = initialSens;
+      
     } catch (error) {
-      console.error("Không thể khởi động bộ lõi đồ họa phối cảnh 3D:", error);
+      console.error("Không thể khởi động bộ lõi đồ họa phối cảnh VR 3D Camera:", error);
     }
   }
 }
@@ -92,4 +115,3 @@ document.addEventListener('DOMContentLoaded', () => {
   const app = new AppOrchestrator();
   app.bootstrap();
 });
- 

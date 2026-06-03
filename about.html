@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
 
-  <!-- 2. Hệ thống Stylesheet mô-đun hóa phân rã độc lập (Sửa lỗi rà soát) -->
+  <!-- 2. Hệ thống Stylesheet mô-đun hóa phân rã độc lập theo từng Cấu phần -->
   <link rel="stylesheet" href="css/settings.css">
   <link rel="stylesheet" href="css/article-card.css">
 
@@ -39,7 +39,7 @@
   <!-- Khung Chứa Góc Nhìn Phối Cảnh Mắt Người (Perspective Box) -->
   <main id="parallax-container" class="parallax-container">
     
-    <!-- Sân Khấu Lập Thể VR Quay 360 Độ (Khóa chặt tâm ma trận) -->
+    <!-- Sân Khấu Lập Thể VR Quay 360 Độ (Khóa chặt tâm ma trận đồng tâm) -->
     <div class="vr-stage">
       
       <!-- Layer 1: Hậu cảnh nền trời sao nội bộ (Trục Z: -300px, Overscan 1.6x trên Mobile) -->
@@ -48,19 +48,24 @@
       <!-- Layer 2: Trung cảnh dãy núi nội bộ (Trục Z: -150px, Overscan 1.3x trên Mobile) -->
       <section id="layer-mg-mountains" class="parallax-layer layer-mg"></section>
 
-      <!-- Layer 3: Tiền cảnh chứa khối nội dung kính mờ lơ lửng -->
+      <!-- Layer 3: Tiền cảnh lơ lửng chuyên biệt của Trang Giới Thiệu (CHỖ XEM BÀI VIẾT THỰC TẾ) -->
       <section id="layer-fg-content" class="parallax-layer layer-fg">
-        <!-- 
-          Bảng Dashboard Giới thiệu tối giản diện tích (Rút gọn về 340px-560px).
-          Nội dung bài viết .md sẽ KHÔNG BỊ tràn sang trang này nhờ logic định tuyến mới.
-        -->
+        
+        <!-- Khối tiêu đề thông tin nền của trang About -->
         <article class="hero-content">
-          <h1>Về Dự Án PURE</h1>
-          <p>Giải pháp thiết kế tối ưu.</p>
+          <h1>Kho Bài Viết PURE</h1>
+          <p>Nơi lưu trữ và hiển thị toàn bộ các tài liệu kỹ thuật viết bằng định dạng Markdown (.md) nội bộ.</p>
           <div class="cta-actions" style="margin-top: var(--spacing-sm); margin-bottom: 0;">
-            <a href="index.html" class="btn btn-secondary" style="width: 100%;">Quay Lại Trang Chủ</a>
+            <a href="index.html" class="btn btn-secondary" style="width: 100%; padding: var(--spacing-xs) var(--spacing-md); font-size: 0.8rem;">Quay Lại Trang Chủ</a>
           </div>
         </article>
+
+        <!-- 
+          CỔNG HỨNG DỮ LIỆU CHÍ CHÓT: 
+          Khối bọc Grid chứa các Card bài viết độc lập kéo thả và khung Viewport Modal đọc bài viết 
+          sẽ được ArticleCardComponent tự động chèn trực tiếp vào lớp layer-fg này khi chạy ở trang about.html
+        -->
+
       </section>
 
     </div>

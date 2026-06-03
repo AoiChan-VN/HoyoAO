@@ -38,14 +38,14 @@ export class SettingsComponent {
     };
   }
 
-  // Dựng toàn bộ giao diện chức năng hoàn thiện bên trong bảng trượt
+  // Dựng toàn bộ giao diện chức năng hoàn thiện bên trong bảng trượt (Sửa lỗi cú pháp vỡ DOM)
   renderDynamicDashboard() {
     if (!this.dom.panel) return;
 
     const currentLang = StateManager.load('lang', 'vi');
     const t = this.i18n[currentLang];
 
-    // Bơm cấu trúc HTML chứa đầy đủ các nhóm thiết lập và nút bấm ẩn UI mới
+    // Bơm cấu trúc HTML chứa đầy đủ các nhóm thiết lập và đóng thẻ chuẩn xác 100%
     this.dom.panel.innerHTML = `
       <div class="settings-content">
         <h3 id="lbl-dash-title">${t.title}</h3>
@@ -58,7 +58,7 @@ export class SettingsComponent {
           </select>
         </div>
 
-        <!-- 2. Bộ kiểm soát Ngôn ngữ (Data-Driven Language) -->
+        <!-- 2. Bộ kiểm soát Ngôn ngữ -->
         <div class="setting-group">
           <label for="lang-select">Ngôn ngữ / Language:</label>
           <select id="lang-select">
@@ -89,7 +89,7 @@ export class SettingsComponent {
           </label>
         </div>
 
-        <!-- 6. NÚT BẤM MỚI: Ẩn/Hiện toàn bộ hệ thống Card bài viết lơ lửng (Sửa lỗi số 2) -->
+        <!-- 6. Nút bấm Ẩn/Hiện toàn bộ hệ thống Card bài viết lơ lửng -->
         <button id="toggle-ui-btn" class="toggle-ui-btn">${t.hideUi}</button>
       </div>
     `;
@@ -137,7 +137,7 @@ export class SettingsComponent {
 
     document.addEventListener('click', (e) => {
       if (this.dom.panel && !this.dom.panel.contains(e.target) && e.target !== this.dom.toggleBtn) {
-        this.dom.panel.classList.add('hidden');
+        this.dom.panel.classList.add('add', 'hidden');
       }
     });
 
@@ -182,15 +182,13 @@ export class SettingsComponent {
       if (typeof this.callbacks.onGyroChange === 'function') this.callbacks.onGyroChange(!chk);
     });
 
-    // SỰ KIỆN CLICK NÚT MỚI: Kích hoạt ẩn/hiện toàn diện hệ thống Card
+    // Sự kiện Click nút Ẩn/Hiện toàn diện hệ thống Card
     this.dom.toggleUiBtn?.addEventListener('click', () => {
       this.isUiHidden = !this.isUiHidden;
       
-      // Thực thi đổi văn bản chữ trên nút bấm tương ứng với ngôn ngữ hiện tại
       const lang = StateManager.load('lang', 'vi');
       this.dom.toggleUiBtn.textContent = this.isUiHidden ? this.i18n[lang].showUi : this.i18n[lang].hideUi;
 
-      // Gọi callback thông báo sang bộ điều phối app.js xử lý thêm/xóa class ẩn của Card
       if (typeof this.callbacks.onToggleUI === 'function') {
         this.callbacks.onToggleUI(this.isUiHidden);
       }

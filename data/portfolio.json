@@ -1,0 +1,39 @@
+{
+  "profile": {
+    "name": "Creative Developer",
+    "title": "WebGL & Frontend Architect",
+    "bio": "Chuyên gia phát triển ứng dụng web tương tác hiệu năng cao."
+  },
+  "scenes": [
+    {
+      "id": "scene_home",
+      "title": "Không gian chính",
+      "description": "Điểm khởi đầu của hành trình trải nghiệm thực tế ảo 3D.",
+      "assets": {
+        "px": "./assets/images/skybox/px.jpg",
+        "nx": "./assets/images/skybox/nx.jpg",
+        "py": "./assets/images/skybox/py.jpg",
+        "ny": "./assets/images/skybox/ny.jpg",
+        "pz": "./assets/images/skybox/pz.jpg",
+        "nz": "./assets/images/skybox/nz.jpg"
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "project_01",
+      "category": "work",
+      "title": "Hệ thống WebGL Engine",
+      "summary": "Trình kết xuất đồ họa 3D tương tác kiến trúc sạch.",
+      "content": "# WebGL Engine\n\n## 🚀 Tổng quan dự án\nĐược xây dựng hoàn toàn bằng **WebGL2** nguyên bản, không phụ thuộc vào bất kỳ thư viện bên ngoài nào như Three.js hay Babylon.js.\n\n### 🛠️ Tính năng kỹ thuật\n* **0 Runtime Dependencies**: Tối ưu hóa dung lượng tải trang cực thấp.\n* **Native Matrix 3D**: Tính toán ma trận quay và camera bằng thuật toán thuần.\n* **Gyroscope Integration**: Đồng bộ hóa hướng nhìn thời gian thực thông qua API thiết bị di động.\n\n```javascript\n// Minh họa luồng khởi tạo WebGL2\nconst gl = canvas.getContext('webgl2');\nif (!gl) throw new Error('WebGL2 không được hỗ trợ');\n```\n\n### 🔒 Tiêu chuẩn bảo mật\nMọi luồng dữ liệu đầu vào đều được quét qua bộ lọc XSS trước khi đưa vào cây DOM thực tế."
+    },
+    {
+      "id": "about_me",
+      "category": "about",
+      "title": "Tiểu sử & Kỹ năng",
+      "summary": "Thông tin chi tiết về kinh nghiệm và triết lý lập trình.",
+      "content": "# Về tôi\n\n## 🎯 Triết lý thiết kế\nÁp dụng các tiêu chuẩn thiết kế phần mềm bền vững, hạn chế tối đa nợ kỹ thuật và tối ưu trải nghiệm người dùng cuối.\n\n### 🧱 Khối kỹ năng cốt lõi\n1. **Core Web**: HTML5, CSS4 (Nesting & Variables), ES6+ Modules.\n2. **Graphics**: WebGL2, GLSL Shaders, Matrix Transformations.\n3. **Architecture**: Component-Driven, Event-Driven, State-Driven."
+    }
+  ]
+}
+ 

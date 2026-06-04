@@ -1,0 +1,28 @@
+{
+  "short_name": "PortfolioVR",
+  "name": "Portfolio 3D VR Spaces PWA",
+  "icons": [
+    {
+      "src": "./assets/images/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/images/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#0a0a0c",
+  "theme_color": "#000000",
+  "display": "standalone",
+  "orientation": "any",
+  "categories": [
+    "education",
+    "developer"
+  ]
+}
+ 

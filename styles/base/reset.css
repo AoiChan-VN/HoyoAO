@@ -1,0 +1,66 @@
+/* Toàn bộ hệ thống: Triệt tiêu margin, padding và ép tính toán box-sizing chuẩn */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Cố định môi trường hiển thị, cấm scroll chuột làm vỡ không gian VR */
+html, 
+body {
+    width: 100vw;
+    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #000000;
+    color: #ffffff;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.5;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    touch-action: none; /* Cấm thao tác zoom/pan mặc định của mobile để nhường cho Gyroscope */
+}
+
+/* Đồng bộ định dạng cho các phần tử tương tác */
+a, 
+button {
+    cursor: pointer;
+    color: inherit;
+    text-decoration: none;
+    background: none;
+    border: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+img, 
+video, 
+canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Đồng bộ danh sách cho các menu hoặc panel danh mục */
+ol, 
+ul {
+    list-style: none;
+}
+
+/* Đảm bảo các phần tử nhập liệu không phá vỡ cấu trúc font */
+input, 
+textarea, 
+select, 
+button {
+    font: inherit;
+}
+ 

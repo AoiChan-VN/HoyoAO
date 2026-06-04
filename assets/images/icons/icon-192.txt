@@ -1,9 +1,0 @@
-    './assets/images/logo.svg',
-    './assets/images/skybox/px.jpg',
-    './assets/images/skybox/nx.jpg',
-    './assets/images/skybox/py.jpg',
-    './assets/images/skybox/ny.jpg',
-    './assets/images/skybox/pz.jpg',
-    './assets/images/skybox/nz.jpg',
-    './assets/images/icons/icon-192.png',
-    './assets/images/icons/icon-512.png'

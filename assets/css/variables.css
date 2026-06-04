@@ -1,0 +1,58 @@
+/* ==========================================================================
+   DESIGN SYSTEM & CSS VARIABLES (CSS4+)
+   ========================================================================== */
+:root {
+    /* Color Palette - Dark Mode Defaults */
+    --bg-primary: #0a0a0c;
+    --bg-surface: rgba(18, 18, 24, 0.75);
+    --bg-surface-hover: rgba(30, 30, 40, 0.9);
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --accent: #6366f1;
+    --accent-hover: #4f46e5;
+    --accent-glow: rgba(99, 102, 241, 0.3);
+    --danger: #ef4444;
+    --border-color: rgba(255, 255, 255, 0.08);
+
+    /* Typography Definitions */
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+    /* Layout Spacing Scales */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+
+    /* Visual Effects & Performance Metrics */
+    --blur-radius: 12px;
+    --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+
+    /* Layer Management (Z-Index Architecture) */
+    --z-vr-canvas: 1;
+    --z-app-shell: 2;
+    --z-panel: 10;
+    --z-menu: 20;
+    --z-modal: 30;
+    --z-toast: 40;
+}
+
+/* Light Theme Variables Override */
+[data-theme="light"] {
+    --bg-primary: #f3f4f6;
+    --bg-surface: rgba(255, 255, 255, 0.8);
+    --bg-surface-hover: rgba(255, 255, 255, 0.95);
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #9ca3af;
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --accent-glow: rgba(79, 70, 229, 0.15);
+    --border-color: rgba(0, 0, 0, 0.08);
+}
+ 

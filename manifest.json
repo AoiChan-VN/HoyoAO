@@ -1,0 +1,17 @@
+{
+  "short_name": "VRPortfolio",
+  "name": "Interactive 360 VR Portfolio",
+  "icons": [
+    {
+      "src": "./assets/icons/app-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
+  "display": "standalone",
+  "orientation": "any"
+} 

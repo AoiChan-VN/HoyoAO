@@ -47,7 +47,7 @@ export class Mat4 {
     let b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
     out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
     out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-    out[2] = b0 * a02 + b1 * a12 + b2 * a20 + b3 * a32;
+    out[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
     out[3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
 
     b0 = b[4]; b1 = b[5]; b2 = b[6]; b3 = b[7];
@@ -161,7 +161,6 @@ export class VRCameraController {
     this.hasGyro = false;
     this.gyroMatrix = Mat4.create();
     this.screenMatrix = Mat4.create();
-    this.alignMatrix = Mat4.create();
     
     this.onDeviceOrientation = this.onDeviceOrientation.bind(this);
     this.onScreenOrientation = this.onScreenOrientation.bind(this);
@@ -224,4 +223,4 @@ export class VRCameraController {
     window.removeEventListener('deviceorientation', this.onDeviceOrientation, true);
     window.removeEventListener('orientationchange', this.onScreenOrientation, true);
   }
-}
+  } 

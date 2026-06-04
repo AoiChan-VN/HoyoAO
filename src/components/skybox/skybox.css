@@ -16,26 +16,30 @@
     height: var(--skybox-size, 2000px);
     top: calc(var(--skybox-negative-half-size, -1000px));
     left: calc(var(--skybox-negative-half-size, -1000px));
+    backface-visibility: var(--bg-surface-blur, visible);
 }
 
 .face {
     position: absolute;
+    top: 0;
+    left: 0;
     width: var(--skybox-size, 2000px);
     height: var(--skybox-size, 2000px);
-    background-size: 100% 100%;
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    backface-visibility: hidden;
+    /* Đổi sang visible hoặc loại bỏ hoàn toàn hidden để mắt nhìn từ trong tâm khối hộp không bị triệt tiêu mặt ảnh */
+    backface-visibility: visible; 
 }
 
 /* 
-Đường dẫn được tính trực tiếp từ tệp chạy index.html (Không dùng dấu gạch chéo '/' ở đầu).
-Trình duyệt khi nạp CSS vào Shadow DOM sẽ tự động ghép nối chính xác tên repository 
-vào trước chuỗi 'src/assets/textures/...' bất kể web chạy ở local hay GitHub Pages.
+Đảo ngược góc quay ma trận (thêm dấu âm hoặc đảo trục) kết hợp hoán đổi mặt 
+Ép bề mặt có ảnh của khối lập phương lộn ngược xoay thẳng vào tâm camera (0,0,0)
+Đường dẫn dùng tiền tố cấu trúc nội bộ linh hoạt cho cả Local và subfolder của GitHub Pages.
 */
-.front  { transform: rotateY(180deg) translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/pz.webp"); }
-.back   { transform: rotateY(0deg)   translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/nz.webp"); }
-.left   { transform: rotateY(90deg)  translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/px.webp"); }
-.right  { transform: rotateY(-90deg) translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/nx.webp"); }
-.top    { transform: rotateX(-90deg) translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/py.webp"); }
-.bottom { transform: rotateX(90deg)  translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/ny.webp"); }
+.front  { transform: rotateY(0deg)    translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/pz.webp"); }
+.back   { transform: rotateY(180deg)  translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/nz.webp"); }
+.left   { transform: rotateY(-90deg) translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/px.webp"); }
+.right  { transform: rotateY(90deg)  translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/nx.webp"); }
+.top    { transform: rotateX(90deg)  translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/py.webp"); }
+.bottom { transform: rotateX(-90deg) translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/ny.webp"); }

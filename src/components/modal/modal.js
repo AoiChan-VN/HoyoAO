@@ -41,7 +41,20 @@ export class VRStatusModal extends HTMLElement {
         if (!type || !contentContainer) return;
 
         try {
-            const response = await fetch(`./src/assets/content/${type}.md`);
+            const isGitHubPages = window.location.hostname.includes('github.io');
+            let basePath = '';
+            
+            if (isGitHubPages) {
+                const pathSegments = window.location.pathname.split('/');
+                const repoName = pathSegments[1];
+                basePath = `/${repoName}/`;
+            } else {
+                basePath = '/';
+            }
+
+            const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
+            const response = await fetch(`${window.location.origin}${cleanBasePath}src/assets/content/${type}.md`);
+            
             if (!response.ok) throw new Error();
             const markdown = await response.text();
             contentContainer.innerHTML = this.parser.parse(markdown);
@@ -75,4 +88,3 @@ export class VRStatusModal extends HTMLElement {
         });
     }
 }
- 

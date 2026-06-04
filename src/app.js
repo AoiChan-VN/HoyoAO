@@ -25,9 +25,9 @@ class App {
         this.renderer.initCube();
 
         const state = globalStore.getState();
-        const defaultScene = state.portfolio?.scenes[0];
-        if (defaultScene && defaultScene.assets) {
-          await this.renderer.loadSkybox(defaultScene.assets);
+        const scenes = state.portfolio?.scenes || [];
+        if (scenes.length > 0 && scenes[0].assets) {
+          await this.renderer.loadSkybox(scenes[0].assets);
         }
 
         globalEventBus.on('vr:gyro:toggle', (enabled) => {

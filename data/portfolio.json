@@ -10,12 +10,12 @@
       "title": "Không gian chính",
       "description": "Điểm khởi đầu của hành trình trải nghiệm thực tế ảo 3D.",
       "assets": {
-        "px": "./assets/images/skybox/px.jpg",
-        "nx": "./assets/images/skybox/nx.jpg",
-        "py": "./assets/images/skybox/py.jpg",
-        "ny": "./assets/images/skybox/ny.jpg",
-        "pz": "./assets/images/skybox/pz.jpg",
-        "nz": "./assets/images/skybox/nz.jpg"
+        "px": "./assets/images/skybox/px.webp",
+        "nx": "./assets/images/skybox/nx.webp",
+        "py": "./assets/images/skybox/py.webp",
+        "ny": "./assets/images/skybox/ny.webp",
+        "pz": "./assets/images/skybox/pz.webp",
+        "nz": "./assets/images/skybox/nz.webp"
       }
     }
   ],

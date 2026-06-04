@@ -34,7 +34,7 @@ export class VRCameraMatrix {
 
             const transformMatrix = `
                 rotateX(${-this.currentX}deg)
-                rotateY(${-this.currentY}deg)
+                rotateY(${this.currentY}deg)
                 translateZ(0px)
             `;
 

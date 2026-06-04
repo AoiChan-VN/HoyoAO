@@ -1,81 +1,147 @@
-/* Khung nhìn VR chính cố định toàn màn hình, thiết lập tiêu cự Camera */
+/* Kích hoạt tiêu cự phối cảnh VR sâu lên lớp nền tối cao */
+html, body {
+    perspective: var(--vr-perspective);
+    perspective-origin: 50% 50%;
+    background: #020205;
+}
+
+/* Khung nhìn VR chính, ép render card đồ họa */
 .vr-viewport {
     position: relative;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background-color: #000000;
-    
-    /* Thiết lập tiêu cự camera không gian 3D lấy từ biến cấu hình CSS4+ */
-    perspective: var(--vr-perspective);
-    perspective-origin: 50% 50%;
-    
-    /* Ép trình duyệt kích hoạt GPU, tăng tốc phần cứng tối đa */
+    transform-style: preserve-3d;
     will-change: transform;
 }
 
-/* Node gốc chứa toàn bộ thế giới 3D (Skybox và các Panel nội dung) */
+/* Gốc thế giới 3D - Khóa chặt hướng nhìn mặt trước (Z-index không đảo) */
 .vr-scene-root {
     position: absolute;
     width: 100%;
     height: 100%;
     top: 0;
     left: 0;
-    
-    /* Giữ nguyên cấu trúc không gian 3D cho toàn bộ các thẻ con bên trong */
     transform-style: preserve-3d;
-    
-    /* Khởi tạo tọa độ ma trận trung tâm không gian */
-    transform: translateZ(0px) rotateX(0deg) rotateY(0deg);
-    
-    /* Đồng bộ chuyển động mượt mà từ ma trận tính toán của Javascript */
     transition: var(--transition-vr-matrix);
 }
 
-/* Lớp không gian chứa các Panel nội dung lơ lửng trước mặt người dùng */
+/* Lớp không gian chứa Panel lơ lửng - Đẩy về phía trước mặt người xem (Z âm) */
 .vr-content-layer {
     position: absolute;
     top: 50%;
     left: 50%;
     width: 100%;
     height: 100%;
-    
-    /* Đưa tâm của layer về chính giữa màn hình */
-    transform: translate(-50%, -50%);
-    
+    transform: translate(-50%, -50%) translateZ(0px);
     transform-style: preserve-3d;
     display: flex;
     justify-content: center;
     align-items: center;
-    pointer-events: none; /* Tránh cản trở việc tương tác click chuột của các thẻ con bên dưới */
+    pointer-events: none;
     z-index: var(--z-index-scene);
 }
 
-/* Kích hoạt lại tương tác cho các Panel và phần tử thực tế bên trong Layer */
 .vr-content-layer * {
     pointer-events: auto;
 }
 
-/* Lớp phủ UI 2D tĩnh toàn diện nằm trên cùng, không bị ảnh hưởng bởi Ma Trận Xoay 3D */
+/* --- TẦNG GIAO DIỆN TĨNH 2D HIỆN ĐẠI (UI OVERLAY LAYER) --- */
 #ui-overlay-layer {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    
-    /* Chặn tương tác xuyên suốt, chỉ cho phép tương tác tại các phần tử UI hiển thị */
     pointer-events: none;
     z-index: var(--z-index-overlay);
-    
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 24px;
+    display: grid;
+    grid-template-rows: 80px 1fr 60px;
+    grid-template-columns: 280px 1fr 280px;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-/* Kích hoạt lại tương tác cho các bảng Settings, Modal nằm trong lớp phủ tĩnh */
 #ui-overlay-layer > * {
     pointer-events: auto;
 }
- 
+
+/* 1. Khu vực Header chứa LOGO SVG Neon */
+.ui-header-left {
+    grid-row: 1;
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+}
+
+.ui-logo-svg {
+    width: 45px;
+    height: 45px;
+    filter: drop-shadow(0 0 8px var(--text-accent));
+}
+
+.ui-logo-text {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 3px;
+    margin-left: 12px;
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+}
+
+/* 2. Khu vực MENU chính giữa phía trên dạng thanh điều hướng hiện đại */
+.ui-nav-center {
+    grid-row: 1;
+    grid-column: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ui-menu-bar {
+    background: rgba(10, 10, 15, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    padding: 6px 24px;
+    display: flex;
+    gap: 20px;
+    box-shadow: var(--shadow-neon);
+}
+
+.ui-menu-item {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    transition: var(--transition-ui-fast);
+}
+
+.ui-menu-item:hover, 
+.ui-menu-item.active {
+    color: var(--text-accent);
+    text-shadow: 0 0 8px var(--text-accent);
+}
+
+/* 3. Khu vực SETTINGS góc phải phía trên */
+.ui-config-right {
+    grid-row: 1;
+    grid-column: 3;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+/* --- HIỆU ỨNG THẨM MỸ TOÀN CỤC CHUẨN KÔNG GIAN VR CYBERPUNK --- */
+vr-panel {
+    animation: floatingPanel 6s ease-in-out infinite;
+}
+
+@keyframes floatingPanel {
+    0%, 100% { transform: translateZ(var(--panel-translate-z, -400px)) translateY(0px); }
+    50% { transform: translateZ(var(--panel-translate-z, -400px)) translateY(-10px); }
+}

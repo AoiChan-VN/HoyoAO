@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Portfolio VR 360</title>
+  <meta name="description" content="Website Portfolio tương tác VR 360 sử dụng WebGL2 nguyên bản và kiến trúc hướng dữ liệu.">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0a0a0c">
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/app-icon.svg">
+  <link rel="stylesheet" href="./assets/css/variables.css">
+  <link rel="stylesheet" href="./assets/css/main.css">
+</head>
+<body>
+  <div id="app-shell">
+    <div class="vr-stage">
+      <canvas id="vr-canvas" class="interactive"></canvas>
+    </div>
+    <div class="ui-layer">
+      <div id="ui-settings-panel" class="hidden"></div>
+      <div id="ui-menu-panel"></div>
+      <div id="ui-content-modal" class="hidden"></div>
+    </div>
+  </div>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
+ 

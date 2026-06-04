@@ -61,7 +61,7 @@ export class Camera {
             this.isDragging = true;
             this.previousMouseX = e.touches[0].clientX;
             this.previousMouseY = e.touches[0].clientY;
-        });
+        }, { passive: true });
 
         this.canvas.addEventListener('touchmove', (e) => {
             if (!this.isDragging || e.touches.length !== 1) return;
@@ -76,7 +76,7 @@ export class Camera {
             this.yaw -= deltaX * sensitivity;
             this.pitch -= deltaY * sensitivity;
             this.pitch = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, this.pitch));
-        });
+        }, { passive: true });
 
         window.addEventListener('touchend', () => {
             this.isDragging = false;
@@ -88,7 +88,7 @@ export class Camera {
     }
 
     handleDeviceOrientation(event) {
-        if (!this.store.state.gyroscopeEnabled) {
+        if (!this.store.state.gyroscopeEnabled || event.alpha === null) {
             this.hasInitializedGyro = false;
             return;
         }
@@ -122,14 +122,22 @@ export class Camera {
         const cosYaw = Math.cos(this.yaw);
         const sinYaw = Math.sin(this.yaw);
 
-        const xAxis = [cosYaw, 0, -sinYaw];
-        const yAxis = [sinYaw * sinPitch, cosPitch, cosYaw * sinPitch];
-        const zAxis = [sinYaw * cosPitch, -sinPitch, cosYaw * cosPitch];
+        const m0 = cosYaw;
+        const m1 = sinYaw * sinPitch;
+        const m2 = sinYaw * cosPitch;
 
-        this.viewMatrix[0] = xAxis[0]; this.viewMatrix[1] = yAxis[0]; this.viewMatrix[2] = zAxis[0]; this.viewMatrix[3] = 0;
-        this.viewMatrix[4] = xAxis[1]; this.viewMatrix[5] = yAxis[1]; this.viewMatrix[6] = zAxis[1]; this.viewMatrix[7] = 0;
-        this.viewMatrix[8] = xAxis[2]; this.viewMatrix[9] = yAxis[2]; this.viewMatrix[10] = zAxis[2]; this.viewMatrix[11] = 0;
-        this.viewMatrix[12] = 0;        this.viewMatrix[13] = 0;        this.viewMatrix[14] = 0;         this.viewMatrix[15] = 1;
+        const m4 = 0;
+        const m5 = cosPitch;
+        const m6 = -sinPitch;
+
+        const m8 = -sinYaw;
+        const m9 = cosYaw * sinPitch;
+        const m10 = cosYaw * cosPitch;
+
+        this.viewMatrix[0] = m0; this.viewMatrix[1] = m1; this.viewMatrix[2] = m2; this.viewMatrix[3] = 0;
+        this.viewMatrix[4] = m4; this.viewMatrix[5] = m5; this.viewMatrix[6] = m6; this.viewMatrix[7] = 0;
+        this.viewMatrix[8] = m8; this.viewMatrix[9] = m9; this.viewMatrix[10] = m10; this.viewMatrix[11] = 0;
+        this.viewMatrix[12] = 0;  this.viewMatrix[13] = 0;  this.viewMatrix[14] = 0;   this.viewMatrix[15] = 1;
         
         this.eventBus.emit('CAMERA_UPDATED', this.viewMatrix);
     }
@@ -155,3 +163,4 @@ export class Camera {
         out[12] = 0;         out[13] = 0; out[14] = (2 * far * near) * nf; out[15] = 0;
     }
 }
+ 

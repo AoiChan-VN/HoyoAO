@@ -4,7 +4,7 @@
   "description": "Production Personal Portfolio VR Platform with Vanilla JS",
   "type": "module",
   "scripts": {
-    "start": "npx serve ."
+    "start": "serve ."
   },
   "keywords": [
     "vanilla-js",
@@ -13,11 +13,9 @@
     "gyroscope",
     "markdown-parser"
   ],
-  "author": "AI Developer",
+  "author": "AoiChan-VN",
   "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {
-    "serve": "^14.2.1"
+  "dependencies": {
+    "serve": "^14.2.6"
   }
 }
- 

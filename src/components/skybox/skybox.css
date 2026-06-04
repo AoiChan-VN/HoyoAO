@@ -30,31 +30,25 @@
 
 .front { 
     transform: rotateY(180deg) translateZ(var(--skybox-half-size, 1000px)); 
-    background-image: url('./src/assets/textures/pz.webp'); 
+    background-image: url('../../src/assets/textures/pz.webp'); 
 }
-
 .back { 
     transform: rotateY(0deg) translateZ(var(--skybox-half-size, 1000px)); 
-    background-image: url('./src/assets/textures/nz.webp'); 
+    background-image: url('../../src/assets/textures/nz.webp'); 
 }
-
 .left { 
     transform: rotateY(90deg) translateZ(var(--skybox-half-size, 1000px)); 
-    background-image: url('./src/assets/textures/px.webp'); 
+    background-image: url('../../src/assets/textures/px.webp'); 
 }
-
 .right { 
     transform: rotateY(-90deg) translateZ(var(--skybox-half-size, 1000px)); 
-    background-image: url('./src/assets/textures/nx.webp'); 
+    background-image: url('../../src/assets/textures/nx.webp'); 
 }
-
 .top { 
     transform: rotateX(-90deg) translateZ(var(--skybox-half-size, 1000px)); 
-    background-image: url('./src/assets/textures/py.webp'); 
+    background-image: url('../../src/assets/textures/py.webp'); 
 }
-
 .bottom { 
     transform: rotateX(90deg) translateZ(var(--skybox-half-size, 1000px)); 
-    background-image: url('./src/assets/textures/ny.webp'); 
+    background-image: url('../../src/assets/textures/ny.webp'); 
 }
- 

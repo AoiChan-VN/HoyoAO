@@ -105,7 +105,10 @@ export class Skybox {
     draw(viewMatrix, projectionMatrix) {
         const gl = this.gl;
 
-        const cleanViewMatrix = new Float32Array(viewMatrix);
+        const cleanViewMatrix = new Float32Array(16);
+        for (let i = 0; i < 16; i++) {
+            cleanViewMatrix[i] = viewMatrix[i];
+        }
         cleanViewMatrix[12] = 0.0;
         cleanViewMatrix[13] = 0.0;
         cleanViewMatrix[14] = 0.0;

@@ -63,7 +63,9 @@ export class WebGL2Renderer {
       void main() {
         v_texCoord = a_position;
         mat4 viewRaw = u_viewMatrix;
-        viewRaw[3] = vec4(0.0, 0.0, 0.0, 1.0);
+        viewRaw[3][0] = 0.0;
+        viewRaw[3][1] = 0.0;
+        viewRaw[3][2] = 0.0;
         vec4 pos = u_projectionMatrix * viewRaw * vec4(a_position, 1.0);
         gl_Position = pos.xyww;
       }`;
@@ -80,25 +82,34 @@ export class WebGL2Renderer {
     const vs = this.gl.createShader(this.gl.VERTEX_SHADER);
     this.gl.shaderSource(vs, vsSource);
     this.gl.compileShader(vs);
+    if (!this.gl.getShaderParameter(vs, this.gl.COMPILE_STATUS)) {
+      console.error(this.gl.getShaderInfoLog(vs));
+    }
 
     const fs = this.gl.createShader(this.gl.FRAGMENT_SHADER);
     this.gl.shaderSource(fs, fsSource);
     this.gl.compileShader(fs);
+    if (!this.gl.getShaderParameter(fs, this.gl.COMPILE_STATUS)) {
+      console.error(this.gl.getShaderInfoLog(fs));
+    }
 
     this.program = this.gl.createProgram();
     this.gl.attachShader(this.program, vs);
     this.gl.attachShader(this.program, fs);
     this.gl.linkProgram(this.program);
+    if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
+      console.error(this.gl.getProgramInfoLog(this.program));
+    }
   }
 
   initCube() {
     const vertices = new Float32Array([
-      -1,  1, -1,  -1, -1, -1,   1, -1, -1,   1, -1, -1,   1,  1, -1,  -1,  1, -1,
-      -1, -1,  1,  -1, -1, -1,  -1,  1, -1,  -1,  1, -1,  -1,  1,  1,  -1, -1,  1,
-       1, -1, -1,   1, -1,  1,   1,  1,  1,   1,  1,  1,   1,  1, -1,   1, -1, -1,
-      -1, -1,  1,  -1,  1,  1,   1,  1,  1,   1,  1,  1,   1, -1,  1,  -1, -1,  1,
-      -1,  1, -1,   1,  1, -1,   1,  1,  1,   1,  1,  1,  -1,  1,  1,  -1,  1, -1,
-      -1, -1, -1,  -1, -1,  1,   1, -1, -1,   1, -1, -1,  -1, -1,  1,   1, -1,  1
+      -1.0,  1.0, -1.0,  -1.0, -1.0, -1.0,   1.0, -1.0, -1.0,   1.0, -1.0, -1.0,   1.0,  1.0, -1.0,  -1.0,  1.0, -1.0,
+      -1.0, -1.0,  1.0,  -1.0, -1.0, -1.0,  -1.0,  1.0, -1.0,  -1.0,  1.0, -1.0,  -1.0,  1.0,  1.0,  -1.0, -1.0,  1.0,
+       1.0, -1.0, -1.0,   1.0, -1.0,  1.0,   1.0,  1.0,  1.0,   1.0,  1.0,  1.0,   1.0,  1.0, -1.0,   1.0, -1.0, -1.0,
+      -1.0, -1.0,  1.0,  -1.0,  1.0,  1.0,   1.0,  1.0,  1.0,   1.0,  1.0,  1.0,   1.0, -1.0,  1.0,  -1.0, -1.0,  1.0,
+      -1.0,  1.0, -1.0,   1.0,  1.0, -1.0,   1.0,  1.0,  1.0,   1.0,  1.0,  1.0,  -1.0,  1.0,  1.0,  -1.0,  1.0, -1.0,
+      -1.0, -1.0, -1.0,  -1.0, -1.0,  1.0,   1.0, -1.0, -1.0,   1.0, -1.0, -1.0,  -1.0, -1.0,  1.0,   1.0, -1.0,  1.0
     ]);
 
     this.vao = this.gl.createVertexArray();
@@ -190,5 +201,4 @@ export class WebGL2Renderer {
     if (this.vao) this.gl.deleteVertexArray(this.vao);
     if (this.texture) this.gl.deleteTexture(this.texture);
   }
-}
- 
+} 

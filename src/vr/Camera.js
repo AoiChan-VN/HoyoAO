@@ -122,22 +122,25 @@ export class Camera {
         const cosYaw = Math.cos(this.yaw);
         const sinYaw = Math.sin(this.yaw);
 
-        const m0 = cosYaw;
-        const m1 = sinYaw * sinPitch;
-        const m2 = sinYaw * cosPitch;
+        this.viewMatrix[0] = cosYaw;
+        this.viewMatrix[1] = sinYaw * sinPitch;
+        this.viewMatrix[2] = sinYaw * cosPitch;
+        this.viewMatrix[3] = 0;
 
-        const m4 = 0;
-        const m5 = cosPitch;
-        const m6 = -sinPitch;
+        this.viewMatrix[4] = 0;
+        this.viewMatrix[5] = cosPitch;
+        this.viewMatrix[6] = -sinPitch;
+        this.viewMatrix[7] = 0;
 
-        const m8 = -sinYaw;
-        const m9 = cosYaw * sinPitch;
-        const m10 = cosYaw * cosPitch;
+        this.viewMatrix[8] = -sinYaw;
+        this.viewMatrix[9] = cosYaw * sinPitch;
+        this.viewMatrix[10] = cosYaw * cosPitch;
+        this.viewMatrix[11] = 0;
 
-        this.viewMatrix[0] = m0; this.viewMatrix[1] = m1; this.viewMatrix[2] = m2; this.viewMatrix[3] = 0;
-        this.viewMatrix[4] = m4; this.viewMatrix[5] = m5; this.viewMatrix[6] = m6; this.viewMatrix[7] = 0;
-        this.viewMatrix[8] = m8; this.viewMatrix[9] = m9; this.viewMatrix[10] = m10; this.viewMatrix[11] = 0;
-        this.viewMatrix[12] = 0;  this.viewMatrix[13] = 0;  this.viewMatrix[14] = 0;   this.viewMatrix[15] = 1;
+        this.viewMatrix[12] = 0;
+        this.viewMatrix[13] = 0;
+        this.viewMatrix[14] = 0;
+        this.viewMatrix[15] = 1;
         
         this.eventBus.emit('CAMERA_UPDATED', this.viewMatrix);
     }

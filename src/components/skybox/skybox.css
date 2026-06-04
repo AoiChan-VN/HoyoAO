@@ -33,9 +33,9 @@
 Trình duyệt khi nạp CSS vào Shadow DOM sẽ tự động ghép nối chính xác tên repository 
 vào trước chuỗi 'src/assets/textures/...' bất kể web chạy ở local hay GitHub Pages.
 */
-.front  { transform: rotateY(180deg) translateZ(var(--skybox-half-size, 1000px)); background-image: url("src/assets/textures/pz.webp"); }
-.back   { transform: rotateY(0deg)   translateZ(var(--skybox-half-size, 1000px)); background-image: url("src/assets/textures/nz.webp"); }
-.left   { transform: rotateY(90deg)  translateZ(var(--skybox-half-size, 1000px)); background-image: url("src/assets/textures/px.webp"); }
-.right  { transform: rotateY(-90deg) translateZ(var(--skybox-half-size, 1000px)); background-image: url("src/assets/textures/nx.webp"); }
-.top    { transform: rotateX(-90deg) translateZ(var(--skybox-half-size, 1000px)); background-image: url("src/assets/textures/py.webp"); }
-.bottom { transform: rotateX(90deg)  translateZ(var(--skybox-half-size, 1000px)); background-image: url("src/assets/textures/ny.webp"); }
+.front  { transform: rotateY(180deg) translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/pz.webp"); }
+.back   { transform: rotateY(0deg)   translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/nz.webp"); }
+.left   { transform: rotateY(90deg)  translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/px.webp"); }
+.right  { transform: rotateY(-90deg) translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/nx.webp"); }
+.top    { transform: rotateX(-90deg) translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/py.webp"); }
+.bottom { transform: rotateX(90deg)  translateZ(var(--skybox-half-size, 1000px)); background-image: url("../../src/assets/textures/ny.webp"); }

@@ -10,7 +10,8 @@ class Store {
       uiState: {
         theme: 'dark',
         menuVisible: true,
-        settingsVisible: false
+        settingsVisible: false,
+        gyroscopeEnabled: true
       }
     };
   }
@@ -49,7 +50,11 @@ class Store {
       ]);
       this.state.settings = await settingsRes.json();
       this.state.portfolio = await portfolioRes.json();
-      this.state.currentSceneId = this.state.portfolio.scenes[0].id;
+      
+      const scenes = this.state.portfolio?.scenes || [];
+      if (scenes.length > 0) {
+        this.state.currentSceneId = scenes[0].id;
+      }
     } catch (error) {
       console.error(error);
     }
@@ -131,4 +136,3 @@ class Store {
 
 const globalStore = new Store();
 export default globalStore;
- 

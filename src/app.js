@@ -16,6 +16,11 @@ export class BootstrapApp {
         this.loaderNode = null;
         this.cameraMatrix = null;
         this.gyroSensor = null;
+        
+        this.isDragging = false;
+        this.activePanel = null;
+        this.panelTransform = { x: 0, y: 0, z: -400, rotX: 0, rotY: 0 };
+        this.dragStart = { x: 0, y: 0 };
     }
 
     init() {
@@ -25,7 +30,7 @@ export class BootstrapApp {
             this.loaderNode = document.getElementById(this.loaderId);
 
             if (!this.viewportNode || !this.sceneRootNode || !this.loaderNode) {
-                throw new Error("Missing critical DOM containers.");
+                throw new Error("Critical DOM error.");
             }
 
             this._registerWebComponents();
@@ -36,11 +41,11 @@ export class BootstrapApp {
             });
 
             this._setupGlobalEventListeners();
-            this._setupDesktopFallbackInteractions();
+            this._setupSpatialDragAndDrop();
             this._handleSystemReadyState();
 
         } catch (error) {
-            console.error("[VR Critical Error]:", error.message);
+            console.error(error);
         }
     }
 
@@ -55,52 +60,72 @@ export class BootstrapApp {
     _setupGlobalEventListeners() {
         window.addEventListener('vr-gyro-request', async (e) => {
             if (!this.gyroSensor) return;
-            
             if (e.detail.action === 'start') {
-                const activated = await this.gyroSensor.start();
-                if (!activated) {
-                    const settingsComponent = document.querySelector('vr-settings');
-                    if (settingsComponent && settingsComponent.shadowRoot) {
-                        const toggleBtn = settingsComponent.shadowRoot.getElementById('gyro-toggle');
-                        if (toggleBtn) {
-                            toggleBtn.classList.remove('active');
-                            toggleBtn.innerText = 'GYRO: FAILED';
-                        }
-                    }
-                }
-            } else if (e.detail.action === 'stop') {
+                await this.gyroSensor.start();
+            } else {
                 this.gyroSensor.stop();
             }
         });
     }
 
-    _setupDesktopFallbackInteractions() {
-        let isPointerDown = false;
-        let startPointerX = 0;
-        let startPointerY = 0;
+    _setupSpatialDragAndDrop() {
+        const handleStart = (e) => {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const targetPanel = e.target.closest('vr-panel');
+            if (!targetPanel) return;
 
-        window.addEventListener('mousedown', (e) => {
-            isPointerDown = true;
-            startPointerX = e.clientX;
-            startPointerY = e.clientY;
-        });
+            this.isDragging = true;
+            this.activePanel = targetPanel;
+            this.dragStart.x = clientX;
+            this.dragStart.y = clientY;
+            
+            this.activePanel.style.transition = 'none';
+            this.activePanel.style.cursor = 'grabbing';
+        };
 
-        window.addEventListener('mousemove', (e) => {
-            if (!isPointerDown || (this.gyroSensor && this.gyroSensor.isActive)) return;
+        const handleMove = (e) => {
+            if (!this.isDragging || !this.activePanel) return;
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-            const deltaX = e.clientX - startPointerX;
-            const deltaY = e.clientY - startPointerY;
-            const speedMultiplier = 0.05;
+            const deltaX = clientX - this.dragStart.x;
+            const deltaY = clientY - this.dragStart.y;
 
-            this.cameraMatrix.addManualOffset(deltaY * speedMultiplier, deltaX * speedMultiplier);
+            this.panelTransform.rotY += deltaX * 0.15;
+            this.panelTransform.rotX -= deltaY * 0.15;
 
-            startPointerX = e.clientX;
-            startPointerY = e.clientY;
-        });
+            this.panelTransform.rotX = Math.min(Math.max(this.panelTransform.rotX, -45), 45);
+            this.panelTransform.rotY = Math.min(Math.max(this.panelTransform.rotY, -60), 60);
 
-        window.addEventListener('mouseup', () => {
-            isPointerDown = false;
-        });
+            this.activePanel.style.transform = `
+                translate3d(-50%, -50%, ${this.panelTransform.z}px) 
+                rotateX(${this.panelTransform.rotX}deg) 
+                rotateY(${this.panelTransform.rotY}deg)
+            `;
+
+            this.dragStart.x = clientX;
+            this.dragStart.y = clientY;
+            e.preventDefault();
+        };
+
+        const handleEnd = () => {
+            if (!this.isDragging || !this.activePanel) return;
+            this.isDragging = false;
+            this.activePanel.style.transition = 'var(--transition-ui-normal)';
+            this.activePanel.style.cursor = 'grab';
+            this.activePanel = null;
+        };
+
+        window.addEventListener('mousedown', handleStart, { passive: false });
+        window.addEventListener('mousemove', handleMove, { passive: false });
+        window.addEventListener('mouseup', handleEnd);
+
+        window.addEventListener('touchstart', handleStart, { passive: false });
+        window.addEventListener('touchmove', handleMove, { passive: false });
+        window.addEventListener('touchend', handleEnd);
     }
 
     _handleSystemReadyState() {
@@ -109,9 +134,9 @@ export class BootstrapApp {
                 this.loaderNode.style.opacity = '0';
                 setTimeout(() => {
                     this.loaderNode.style.display = 'none';
+                    if(this.gyroSensor) this.gyroSensor.start();
                 }, 500);
             }, 800);
         });
     }
 }
- 

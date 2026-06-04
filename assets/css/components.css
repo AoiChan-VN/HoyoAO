@@ -1,0 +1,212 @@
+/* ==========================================================================
+   PRODUCTION COMPONENT UI STYLES (CSS4+ NESTING)
+   ========================================================================== */
+
+/* Base Glassmorphism Panel Wrapper */
+.glass-panel {
+    background: var(--bg-surface);
+    backdrop-filter: blur(var(--blur-radius));
+    -webkit-backdrop-filter: blur(var(--blur-radius));
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* 1. NAVIGATION MENU COMPONENT */
+.app-menu {
+    composes: glass-panel;
+    position: fixed;
+    bottom: var(--space-lg);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--z-menu);
+    padding: var(--space-sm) var(--space-md);
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+    border-radius: var(--radius-lg);
+
+    & .menu-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-sm);
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+
+        &:hover, &.active {
+            color: var(--accent);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        & svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+    }
+}
+
+/* 2. SIDE PANEL COMPONENT (DASHBOARD INFO) */
+.info-panel {
+    position: fixed;
+    top: var(--space-lg);
+    left: var(--space-lg);
+    width: 360px;
+    max-height: calc(100vh - 120px);
+    z-index: var(--z-panel);
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    overflow-y: auto;
+
+    & .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: var(--space-sm);
+    }
+
+    & .panel-body {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+}
+
+/* 3. SETTINGS PANEL COMPONENT */
+.settings-panel {
+    position: fixed;
+    top: var(--space-lg);
+    right: var(--space-lg);
+    width: 300px;
+    z-index: var(--z-panel);
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    transform: translateX(120%);
+    transition: var(--transition-smooth);
+
+    &.open {
+        transform: translateX(0);
+    }
+
+    & .setting-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--space-sm) 0;
+
+        & select {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+        }
+    }
+}
+
+/* 4. MODAL DIALOG COMPONENT (MARKDOWN READER) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--transition-smooth);
+
+    &.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    & .modal-container {
+        width: 90%;
+        max-width: 800px;
+        height: 80vh;
+        padding: var(--space-xl);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+        transform: translateY(20px);
+        transition: var(--transition-smooth);
+
+        & .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: var(--space-sm);
+
+            & .close-btn {
+                font-size: 1.5rem;
+                color: var(--text-secondary);
+                &:hover { color: var(--danger); }
+            }
+        }
+
+        & .modal-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: var(--space-sm);
+        }
+    }
+
+    &.open .modal-container {
+        transform: translateY(0);
+    }
+}
+
+/* Toggle Switch Control Component for Settings */
+.switch-control {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+
+    & input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+
+        &:checked + .slider {
+            background-color: var(--accent);
+            &::before { transform: translateX(20px); }
+        }
+    }
+
+    & .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        transition: var(--transition-smooth);
+
+        &::before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: var(--transition-smooth);
+        }
+    }
+}
+ 

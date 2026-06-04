@@ -13,12 +13,12 @@ export class Skybox {
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.texture);
 
         const faces = [
-            { target: gl.TEXTURE_CUBE_MAP_POSITIVE_X, url: './assets/images/skybox/px.jpeg' },
-            { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X, url: './assets/images/skybox/nx.jpeg' },
-            { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y, url: './assets/images/skybox/py.jpeg' },
-            { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, url: './assets/images/skybox/ny.jpeg' },
-            { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z, url: './assets/images/skybox/pz.jpeg' },
-            { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, url: './assets/images/skybox/nz.jpeg' }
+            { target: gl.TEXTURE_CUBE_MAP_POSITIVE_X, url: './assets/images/skybox/px.jpg' },
+            { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X, url: './assets/images/skybox/nx.jpg' },
+            { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y, url: './assets/images/skybox/py.jpg' },
+            { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, url: './assets/images/skybox/ny.jpg' },
+            { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z, url: './assets/images/skybox/pz.jpg' },
+            { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, url: './assets/images/skybox/nz.jpg' }
         ];
 
         const loadFace = (face) => {

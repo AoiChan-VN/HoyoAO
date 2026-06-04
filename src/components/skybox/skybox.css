@@ -16,7 +16,6 @@
     height: var(--skybox-size, 2000px);
     top: calc(var(--skybox-negative-half-size, -1000px));
     left: calc(var(--skybox-negative-half-size, -1000px));
-    backface-visibility: var(--bg-surface-blur, visible);
 }
 
 .face {
@@ -28,18 +27,13 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    /* Đổi sang visible hoặc loại bỏ hoàn toàn hidden để mắt nhìn từ trong tâm khối hộp không bị triệt tiêu mặt ảnh */
-    backface-visibility: visible; 
+    backface-visibility: visible;
 }
 
-/* 
-Đảo ngược góc quay ma trận (thêm dấu âm hoặc đảo trục) kết hợp hoán đổi mặt 
-Ép bề mặt có ảnh của khối lập phương lộn ngược xoay thẳng vào tâm camera (0,0,0)
-Đường dẫn dùng tiền tố cấu trúc nội bộ linh hoạt cho cả Local và subfolder của GitHub Pages.
-*/
-.front  { transform: rotateY(0deg)    translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/pz.webp"); }
-.back   { transform: rotateY(180deg)  translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/nz.webp"); }
-.left   { transform: rotateY(-90deg) translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/px.webp"); }
-.right  { transform: rotateY(90deg)  translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/nx.webp"); }
-.top    { transform: rotateX(90deg)  translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/py.webp"); }
-.bottom { transform: rotateX(-90deg) translateZ(var(--skybox-negative-half-size, -1000px)); background-image: url("src/assets/textures/ny.webp"); }
+/* Định vị ma trận hình học lập phương lộn ngược hướng thẳng bề mặt ảnh vào tâm camera (0,0,0) */
+.front  { transform: rotateY(0deg)    translateZ(var(--skybox-negative-half-size, -1000px)); }
+.back   { transform: rotateY(180deg)  translateZ(var(--skybox-negative-half-size, -1000px)); }
+.left   { transform: rotateY(-90deg)  translateZ(var(--skybox-negative-half-size, -1000px)); }
+.right  { transform: rotateY(90deg)   translateZ(var(--skybox-negative-half-size, -1000px)); }
+.top    { transform: rotateX(90deg)   translateZ(var(--skybox-negative-half-size, -1000px)); }
+.bottom { transform: rotateX(-90deg)  translateZ(var(--skybox-negative-half-size, -1000px)); }

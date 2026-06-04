@@ -2,22 +2,47 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Portfolio Engine</title>
-    <meta name="description" content="Data-Driven VR Portfolio">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Portfolio 3D VR</title>
+    
+    <!-- PWA & Meta Capabilities -->
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./assets/images/icons/icon-192.png">
+
+    <!-- Production Stylesheets (CSS4+) -->
     <link rel="stylesheet" href="./assets/css/main.css">
     <link rel="stylesheet" href="./assets/css/components.css">
-    <link rel="manifest" href="./assets/manifests/manifest.json">
+    <link rel="stylesheet" href="./assets/css/vr-overlay.css">
 </head>
 <body>
 
-    <!-- App Shell Minimal -->
-    <div id="app-shell">
-        <div id="app-router-view"></div>
+    <!-- WebGL2 VR Canvas Container -->
+    <div id="vr-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; overflow: hidden;">
+        <canvas id="vr-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
     </div>
 
-    <!-- Khởi chạy hệ thống qua ES6 Module -->
-    <script type="module" src="./assets/js/core/app.js"></script>
+    <!-- Application Shell UI Mount Point (DOM Renderer target) -->
+    <div id="app" style="position: relative; z-index: 2; width: 100%; min-height: 100vh; pointer-events: none;"></div>
+
+    <!-- Entry Point (ES6 Modules) -->
+    <script type="module" src="./src/main.js"></script>
+
+    <!-- Service Worker Registration for Offline Capabilities -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('SW registered with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('SW registration failed: ', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
- 

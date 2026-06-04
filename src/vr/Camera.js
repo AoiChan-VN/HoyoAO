@@ -122,9 +122,9 @@ export class Camera {
         const cosYaw = Math.cos(this.yaw);
         const sinYaw = Math.sin(this.yaw);
 
-        const xAxis = new Float32Array([cosYaw, 0, -sinYaw]);
-        const yAxis = new Float32Array([sinYaw * sinPitch, cosPitch, cosYaw * sinPitch]);
-        const zAxis = new Float32Array([sinYaw * cosPitch, -sinPitch, cosYaw * cosPitch]);
+        const xAxis = [cosYaw, 0, -sinYaw];
+        const yAxis = [sinYaw * sinPitch, cosPitch, cosYaw * sinPitch];
+        const zAxis = [sinYaw * cosPitch, -sinPitch, cosYaw * cosPitch];
 
         this.viewMatrix[0] = xAxis[0]; this.viewMatrix[1] = yAxis[0]; this.viewMatrix[2] = zAxis[0]; this.viewMatrix[3] = 0;
         this.viewMatrix[4] = xAxis[1]; this.viewMatrix[5] = yAxis[1]; this.viewMatrix[6] = zAxis[1]; this.viewMatrix[7] = 0;
@@ -154,9 +154,4 @@ export class Camera {
         out[8] = 0;          out[9] = 0; out[10] = (far + near) * nf; out[11] = -1;
         out[12] = 0;         out[13] = 0; out[14] = (2 * far * near) * nf; out[15] = 0;
     }
-
-    destroy() {
-        window.removeEventListener('deviceorientation', this.handleDeviceOrientation);
-    }
 }
- 

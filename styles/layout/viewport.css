@@ -1,0 +1,81 @@
+/* Khung nhìn VR chính cố định toàn màn hình, thiết lập tiêu cự Camera */
+.vr-viewport {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #000000;
+    
+    /* Thiết lập tiêu cự camera không gian 3D lấy từ biến cấu hình CSS4+ */
+    perspective: var(--vr-perspective);
+    perspective-origin: 50% 50%;
+    
+    /* Ép trình duyệt kích hoạt GPU, tăng tốc phần cứng tối đa */
+    will-change: transform;
+}
+
+/* Node gốc chứa toàn bộ thế giới 3D (Skybox và các Panel nội dung) */
+.vr-scene-root {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    
+    /* Giữ nguyên cấu trúc không gian 3D cho toàn bộ các thẻ con bên trong */
+    transform-style: preserve-3d;
+    
+    /* Khởi tạo tọa độ ma trận trung tâm không gian */
+    transform: translateZ(0px) rotateX(0deg) rotateY(0deg);
+    
+    /* Đồng bộ chuyển động mượt mà từ ma trận tính toán của Javascript */
+    transition: var(--transition-vr-matrix);
+}
+
+/* Lớp không gian chứa các Panel nội dung lơ lửng trước mặt người dùng */
+.vr-content-layer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    
+    /* Đưa tâm của layer về chính giữa màn hình */
+    transform: translate(-50%, -50%);
+    
+    transform-style: preserve-3d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* Tránh cản trở việc tương tác click chuột của các thẻ con bên dưới */
+    z-index: var(--z-index-scene);
+}
+
+/* Kích hoạt lại tương tác cho các Panel và phần tử thực tế bên trong Layer */
+.vr-content-layer * {
+    pointer-events: auto;
+}
+
+/* Lớp phủ UI 2D tĩnh toàn diện nằm trên cùng, không bị ảnh hưởng bởi Ma Trận Xoay 3D */
+#ui-overlay-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    
+    /* Chặn tương tác xuyên suốt, chỉ cho phép tương tác tại các phần tử UI hiển thị */
+    pointer-events: none;
+    z-index: var(--z-index-overlay);
+    
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px;
+}
+
+/* Kích hoạt lại tương tác cho các bảng Settings, Modal nằm trong lớp phủ tĩnh */
+#ui-overlay-layer > * {
+    pointer-events: auto;
+}
+ 

@@ -1,55 +1,31 @@
 :root {
-    /* --- Thiết kế Hệ thống Màu sắc (Cyberpunk Neon / Minimal Dark) --- */
     --bg-primary: #050505;
-    --bg-surface: rgba(15, 15, 20, 0.7);
+    --bg-surface: rgba(10, 10, 18, 0.65);
     --bg-surface-blur: blur(20px);
-    --border-color: rgba(0, 255, 204, 0.15);
-    --border-color-active: rgba(0, 255, 204, 0.6);
-    
-    /* Màu chữ */
+    --border-color: rgba(0, 255, 204, 0.2);
+    --border-color-active: rgba(0, 255, 204, 0.5);
     --text-main: #ffffff;
     --text-muted: #8a8a93;
-    --text-accent: #00ffcc; /* Neon Cyan */
-    --text-secondary: #ff007f; /* Neon Pink */
-
-    /* Typography */
+    --text-accent: #00ffcc;
+    --text-secondary: #ff007f;
     --font-primary: system-ui, -apple-system, sans-serif;
     --font-mono: 'Courier New', Courier, monospace;
-
-    /* --- Cấu hình Không gian 3D / VR Viewport Tokens --- */
-    /* Tiêu cự camera (Độ sâu trường ảnh). Giá trị càng nhỏ, góc nhìn càng rộng */
     --vr-perspective: 1000px;
-    
-    /* Khoảng cách đẩy lùi của các Panel trên trục Z trong không gian 3D */
-    --panel-translate-z: -400px;
-    
-    /* Kích thước khối hộp Skybox (Phải khớp với ma trận tính toán trong JS) */
+    --panel-translate-z: -450px;
     --skybox-size: 2000px;
     --skybox-half-size: 1000px;
     --skybox-negative-half-size: -1000px;
-
-    /* --- Hệ thống Giao diện độc lập (Card, Modal, Settings, Panel) --- */
     --card-radius: 12px;
-    --panel-radius: 16px;
+    --panel-radius: 20px;
     --modal-radius: 20px;
-    
-    /* Đổ bóng dạng Neon Glow tạo cảm giác vật thể phát sáng lơ lửng trong VR */
-    --shadow-neon: 0 0 20px rgba(0, 255, 204, 0.2);
-    --shadow-panel: 0 20px 50px rgba(0, 0, 0, 0.5);
-
-    /* --- Tốc độ phản hồi và chuyển động (Animation Transitions) --- */
-    /* Chuyển động xoay của Camera Matrix / Gyroscope (Cần cực kỳ mịn để tránh say xe) */
-    --transition-vr-matrix: transform 0.1s cubic-bezier(0.25, 1, 0.5, 1);
-    
-    /* Chuyển động đóng/mở của Modal và Panel UI */
+    --shadow-neon: 0 0 30px rgba(0, 255, 204, 0.15);
+    --shadow-panel: 0 20px 50px rgba(0, 0, 0, 0.7);
+    --transition-vr-matrix: transform 0.1s cubic-bezier(0.2, 0.85, 0.3, 1);
     --transition-ui-fast: all 0.2s ease;
     --transition-ui-normal: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    
-    /* Thứ tự hiển thị các tầng giao diện */
     --z-index-skybox: 1;
     --z-index-scene: 10;
     --z-index-overlay: 100;
     --z-index-modal: 1000;
     --z-index-loader: 9999;
 }
- 

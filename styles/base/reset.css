@@ -1,4 +1,3 @@
-/* Toàn bộ hệ thống: Triệt tiêu margin, padding và ép tính toán box-sizing chuẩn */
 *,
 *::before,
 *::after {
@@ -9,7 +8,6 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Cố định môi trường hiển thị, cấm scroll chuột làm vỡ không gian VR */
 html, 
 body {
     width: 100vw;
@@ -25,10 +23,17 @@ body {
     line-height: 1.5;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
-    touch-action: none; /* Cấm thao tác zoom/pan mặc định của mobile để nhường cho Gyroscope */
 }
 
-/* Đồng bộ định dạng cho các phần tử tương tác */
+/* Cho phép lớp viewport và các phần tử con tiếp nhận tương tác cuộn tự do độc lập */
+.vr-viewport,
+#ui-overlay-layer,
+vr-panel,
+vr-modal,
+vr-settings {
+    touch-action: pan-x pan-y;
+}
+
 a, 
 button {
     cursor: pointer;
@@ -50,17 +55,14 @@ canvas {
     -webkit-user-drag: none;
 }
 
-/* Đồng bộ danh sách cho các menu hoặc panel danh mục */
 ol, 
 ul {
     list-style: none;
 }
 
-/* Đảm bảo các phần tử nhập liệu không phá vỡ cấu trúc font */
 input, 
 textarea, 
 select, 
 button {
     font: inherit;
 }
- 

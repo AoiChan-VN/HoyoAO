@@ -11,17 +11,14 @@ export class BootstrapApp {
         this.viewportId = config.viewportId;
         this.sceneRootId = config.sceneRootId;
         this.loaderId = config.loaderId;
-        
         this.viewportNode = null;
         this.sceneRootNode = null;
         this.loaderNode = null;
         this.cameraMatrix = null;
         this.gyroSensor = null;
-        
         this.isDragging = false;
         this.activeObject = null;
         this.dragStart = { x: 0, y: 0 };
-        
         this.objectTransforms = new Map();
     }
 
@@ -32,7 +29,7 @@ export class BootstrapApp {
             this.loaderNode = document.getElementById(this.loaderId);
 
             if (!this.viewportNode || !this.sceneRootNode || !this.loaderNode) {
-                throw new Error("Critical Core DOM is missing.");
+                throw new Error("Critical DOM core structure failure.");
             }
 
             this._registerWebComponents();
@@ -64,15 +61,15 @@ export class BootstrapApp {
         const spatialElements = this.sceneRootNode.querySelectorAll('vr-panel, vr-settings');
         spatialElements.forEach((el, index) => {
             const initialZ = -450;
-            const initialXOffset = index === 0 ? -120 : 380; 
-            const initialYOffset = index === 0 ? 0 : 80;
+            const initialXOffset = index === 0 ? -160 : 280;
+            const initialYOffset = index === 0 ? 0 : 40;
 
             this.objectTransforms.set(el, {
                 x: initialXOffset,
                 y: initialYOffset,
                 z: initialZ,
                 rotX: 0,
-                rotY: index === 0 ? 15 : -20 
+                rotY: index === 0 ? 15 : -15
             });
 
             this._applySpatialTransform(el);
@@ -102,7 +99,7 @@ export class BootstrapApp {
     _setupSpatialInteractionEngine() {
         const handleStart = (e) => {
             const target = e.target.closest('vr-panel, vr-settings');
-            if (!target || e.target.closest('button', 'a', 'vr-card')) return;
+            if (!target || e.target.closest('button, a, vr-card')) return;
 
             this.isDragging = true;
             this.activeObject = target;
@@ -132,6 +129,9 @@ export class BootstrapApp {
                 transform.rotY += deltaX * 0.1;
                 transform.rotX -= deltaY * 0.1;
                 
+                transform.rotX = Math.min(Math.max(transform.rotX, -45), 45);
+                transform.rotY = Math.min(Math.max(transform.rotY, -60), 60);
+                
                 this._applySpatialTransform(this.activeObject);
             }
 
@@ -151,7 +151,7 @@ export class BootstrapApp {
         this.viewportNode.addEventListener('mousemove', handleMove, { passive: false });
         window.addEventListener('mouseup', handleEnd);
 
-        this.viewportNode.addEventListener('touchstart', handleStart);
+        this.viewportNode.addEventListener('touchstart', handleStart, { passive: false });
         this.viewportNode.addEventListener('touchmove', handleMove, { passive: false });
         window.addEventListener('touchend', handleEnd);
     }

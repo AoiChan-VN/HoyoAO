@@ -52,7 +52,6 @@ export class BootstrapApp {
         const spatialElements = this.sceneRootNode.querySelectorAll('vr-panel, vr-settings');
         spatialElements.forEach((el, index) => {
             const initialZ = -450;
-            // Tính toán khoảng cách dạt sang hai bên chính xác từ tâm màn hình thiết bị di động
             const initialXOffset = index === 0 ? -180 : 180;
             const initialYOffset = index === 0 ? 0 : 0;
 
@@ -72,16 +71,13 @@ export class BootstrapApp {
         const t = this.objectTransforms.get(el);
         if (!t) return;
         
-        // Đặt vị trí cố định tại trung tâm tuyệt đối của không gian ba chiều
         el.style.position = 'absolute';
-        el.style.top = '0';
-        el.style.left = '0';
-        el.style.right = '0';
-        el.style.bottom = '0';
-        el.style.margin = 'auto';
+        el.style.top = '50%';
+        el.style.left = '50%';
+        el.style.width = 'auto';
+        el.style.height = 'auto';
         
-        // Trực tiếp tịnh tiến thực thể từ gốc tọa độ (0,0) ra các trục không gian 3D
-        el.style.transform = `translate3d(${t.x}px, ${t.y}px, ${t.z}px) rotateX(${t.rotX}deg) rotateY(${t.rotY}deg)`;
+        el.style.transform = `translate3d(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px), ${t.z}px) rotateX(${t.rotX}deg) rotateY(${t.rotY}deg)`;
     }
 
     _setupGlobalEventListeners() {

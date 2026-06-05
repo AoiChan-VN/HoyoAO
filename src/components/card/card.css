@@ -8,7 +8,7 @@
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(0, 255, 204, 0.15);
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 12px 14px;
     transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
     cursor: pointer;
     position: relative;
@@ -25,28 +25,28 @@
 
 .card-title {
     font-family: system-ui, -apple-system, sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     color: #00ffcc;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     text-shadow: 0 0 6px rgba(0, 255, 204, 0.3);
 }
 
 .card-content {
-    font-size: 12px;
-    line-height: 1.5;
+    font-size: 11px;
+    line-height: 1.4;
     color: #8a8a93;
-    max-height: 72px;
+    max-height: 50px;
     overflow: hidden;
     position: relative;
-    -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 50%, transparent 100%);
 }
 
 .card-content p {
-    margin: 0 0 6px 0;
+    margin: 0 0 4px 0;
 }
 
 .card-content p:last-child {
@@ -59,12 +59,11 @@
         border-radius: 8px;
     }
     .card-title {
-        font-size: 13px;
-        margin-bottom: 6px;
+        font-size: 12px;
+        margin-bottom: 4px;
     }
     .card-content {
-        max-height: 54px;
+        max-height: 44px;
         font-size: 11px;
     }
 }
- 

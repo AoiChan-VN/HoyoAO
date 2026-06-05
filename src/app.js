@@ -104,8 +104,8 @@ export class BootstrapApp {
             this.isDragging = true;
             this.activeObject = target;
             
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const clientX = e.touches ? e.touches.clientX : e.clientX;
+            const clientY = e.touches ? e.touches.clientY : e.clientY;
             
             this.dragStart.x = clientX;
             this.dragStart.y = clientY;
@@ -116,8 +116,8 @@ export class BootstrapApp {
         const handleMove = (e) => {
             if (!this.isDragging || !this.activeObject) return;
 
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const clientX = e.touches ? e.touches.clientX : e.clientX;
+            const clientY = e.touches ? e.touches.clientY : e.clientY;
 
             const deltaX = clientX - this.dragStart.x;
             const deltaY = clientY - this.dragStart.y;
@@ -157,14 +157,23 @@ export class BootstrapApp {
     }
 
     _handleSystemReadyState() {
-        window.addEventListener('load', () => {
+        const dismissLoader = () => {
+            if (!this.loaderNode) return;
             setTimeout(() => {
                 this.loaderNode.style.opacity = '0';
                 setTimeout(() => {
                     this.loaderNode.style.display = 'none';
                 }, 500);
-            }, 800);
-        });
+            }, 500);
+        };
+
+        // Nếu trình duyệt đã tải xong xuôi trước đó, thực hiện ẩn ngay lập tức
+        if (document.readyState === 'complete') {
+            dismissLoader();
+        } else {
+            // Nếu chưa tải xong, đăng ký dự phòng và kích hoạt ngay khi hoàn tất
+            window.addEventListener('load', dismissLoader, { once: true });
+        }
     }
 }
  

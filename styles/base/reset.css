@@ -26,10 +26,9 @@ body {
 }
 
 .vr-viewport,
-#ui-overlay-layer,
 vr-panel,
-vr-modal,
-vr-settings {
+vr-dashboard,
+vr-spatial-viewer {
     touch-action: pan-x pan-y;
 }
 

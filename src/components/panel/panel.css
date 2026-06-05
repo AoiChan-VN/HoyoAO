@@ -1,17 +1,14 @@
 :host {
-    position: absolute;
-    top: 50%;
-    left: 50%;
     display: block;
     width: 95vw;
     max-width: 550px;
     height: 65vh;
     max-height: 480px;
     transform-style: preserve-3d;
-    transform: translate3d(-50%, -50%, var(--panel-translate-z, -400px));
-    transition: var(--transition-ui-normal);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
     cursor: grab;
     will-change: transform;
+    box-sizing: border-box;
 }
 
 :host(:active) {
@@ -35,6 +32,7 @@
     flex-direction: column;
     gap: 16px;
     user-select: none;
+    box-sizing: border-box;
 }
 
 .panel-container::-webkit-scrollbar {
@@ -54,7 +52,6 @@
     background: var(--text-accent);
 }
 
-/* Tối ưu hóa hiển thị đặc biệt trên màn hình Mobile hẹp */
 @media (max-width: 480px) {
     :host {
         width: 92vw;

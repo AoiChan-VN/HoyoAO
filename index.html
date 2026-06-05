@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Personal Portfolio VR Platform</title>
+    <title>Aoi Platform</title>
     <link rel="stylesheet" href="styles/base/reset.css">
     <link rel="stylesheet" href="styles/base/variables.css">
     <link rel="stylesheet" href="styles/layout/viewport.css">
@@ -47,44 +47,35 @@
 </head>
 <body>
 
+    <!-- Màn hình chờ khởi tạo không gian VR -->
     <div id="app-loader">
         <div class="spinner"></div>
         <p style="margin-top: 20px; letter-spacing: 3px; font-size: 12px; color: #00ffcc; text-shadow: 0 0 8px rgba(0,255,204,0.5);">INITIALIZING VR SPACE...</p>
     </div>
 
+    <!-- Khung nhìn tối cao - Không bị các lớp 2D phẳng chiếm quyền Raycast -->
     <div id="vr-viewport" class="vr-viewport">
         <div id="vr-scene-root" class="vr-scene-root">
+            
+            <!-- Thực thể 1: Skybox 6 mặt nền -->
             <vr-skybox></vr-skybox>
-            <div class="vr-content-layer">
-                <vr-panel id="main-portfolio-panel">
-                    <vr-card type="profile" title="Developer Profile"></vr-card>
-                    <vr-card type="projects" title="Featured Projects"></vr-card>
-                </vr-panel>
-            </div>
-        </div>
-    </div>
+            
+            <!-- Thực thể 2: Bảng Panel hiển thị thông tin Portfolio và các bài viết -->
+            <vr-panel id="main-portfolio-panel">
+                <vr-card type="profile" title="Developer Profile"></vr-card>
+                <vr-card type="projects" title="Featured Projects"></vr-card>
+            </vr-panel>
 
-    <div id="ui-overlay-layer">
-        <div class="ui-header-left">
-            <img class="ui-logo-img" src="src/assets/icons/logo.svg" alt="Portfolio Logo">
-            <span class="ui-logo-text">PORTFOLIO.VR</span>
-        </div>
-
-        <div class="ui-nav-center">
-            <nav class="ui-menu-bar">
-                <button class="ui-menu-item active">Overview</button>
-                <button class="ui-menu-item" id="nav-trigger-projects">Projects</button>
-                <button class="ui-menu-item" id="nav-trigger-profile">Profile</button>
-            </nav>
-        </div>
-
-        <div class="ui-config-right">
+            <!-- Thực thể 3: Bảng Menu Dashboard & Cấu hình VR lơ lửng, cho phép cầm nắm kéo thả tự do -->
             <vr-settings></vr-settings>
+
         </div>
     </div>
 
+    <!-- Cửa sổ xem chi tiết bài viết, bọc ngoài luồng xoay để đọc văn bản phẳng tĩnh ổn định -->
     <vr-modal id="global-detail-modal"></vr-modal>
 
+    <!-- Kích hoạt lõi điều phối thực thể -->
     <script type="module" src="main.js"></script>
 </body>
 </html>

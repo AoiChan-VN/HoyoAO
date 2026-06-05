@@ -2,8 +2,8 @@
     display: block;
     width: 95vw;
     max-width: 550px;
-    height: 65vh;
-    max-height: 480px;
+    height: 60vh;
+    max-height: 440px;
     transform-style: preserve-3d;
     transition: box-shadow 0.3s ease, border-color 0.3s ease;
     cursor: grab;
@@ -55,12 +55,11 @@
 @media (max-width: 480px) {
     :host {
         width: 92vw;
-        height: 60vh;
-        max-height: 400px;
+        height: 55vh;
+        max-height: 380px;
     }
     .panel-container {
         padding: 16px;
         gap: 12px;
     }
 }
- 

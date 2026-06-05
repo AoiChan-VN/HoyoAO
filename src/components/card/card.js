@@ -25,24 +25,9 @@ export class VRStatusCard extends HTMLElement {
         const contentContainer = this.shadowRoot.getElementById('card-content');
         
         try {
-            const isGitHubPages = window.location.hostname.includes('github.io');
-            let basePath = '';
-            
-            if (isGitHubPages) {
-                const pathSegments = window.location.pathname.split('/').filter(segment => segment.length > 0);
-                if (pathSegments.length > 0) {
-                    basePath = `/${pathSegments[0]}/`;
-                } else {
-                    basePath = '/';
-                }
-            } else {
-                basePath = '/';
-            }
-
-            const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
-            const requestUrl = `${window.location.origin}${cleanBasePath}src/assets/content/${type}.md`;
-            
+            const requestUrl = `src/assets/content/${type}.md`;
             const response = await fetch(requestUrl);
+            
             if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
             
             const markdown = await response.text();
@@ -57,35 +42,5 @@ export class VRStatusCard extends HTMLElement {
         }
     }
 
-    _triggerModal(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const modal = document.getElementById('global-detail-modal');
-        if (!modal) return;
-        
-        const type = this.getAttribute('type');
-        const title = this.getAttribute('title');
-        
-        modal.setAttribute('data-type', type);
-        modal.setAttribute('data-title', title);
-        modal.setAttribute('open', 'true');
-    }
-
-    render() {
-        const title = this.getAttribute('title') || 'Card';
-        this.shadowRoot.innerHTML = `
-            <link rel="stylesheet" href="./src/components/card/card.css">
-            <div class="card" id="main-card-element">
-                <div class="card-title">${title}</div>
-                <div class="card-content" id="card-content">Loading content...</div>
-            </div>
-        `;
-
-        const cardElement = this.shadowRoot.getElementById('main-card-element');
-        if (cardElement) {
-            cardElement.addEventListener('click', (e) => this._triggerModal(e));
-            cardElement.addEventListener('touchend', (e) => this._triggerModal(e));
-        }
-    }
+    ...
 }

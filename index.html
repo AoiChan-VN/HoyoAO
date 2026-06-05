@@ -66,16 +66,15 @@
 
     <div id="ui-overlay-layer">
         <div class="ui-header-left">
-            <!-- Đã sửa: Nạp trực tiếp từ file logo cục bộ của bạn, cấm hardcode mã SVG -->
-            <img class="ui-logo-img" src="src/assets/icons/logo.svg" alt="Portfolio Logo">
+            <img class="ui-logo-img" src="src/assets/textures/logo.svg" alt="Portfolio Logo">
             <span class="ui-logo-text">PORTFOLIO.VR</span>
         </div>
 
         <div class="ui-nav-center">
             <nav class="ui-menu-bar">
                 <button class="ui-menu-item active">Overview</button>
-                <button class="ui-menu-item" onclick="document.getElementById('global-detail-modal').setAttribute('data-type', 'projects'); document.getElementById('global-detail-modal').setAttribute('data-title', 'Featured Projects'); document.getElementById('global-detail-modal').setAttribute('open', 'true');">Projects</button>
-                <button class="ui-menu-item" onclick="document.getElementById('global-detail-modal').setAttribute('data-type', 'profile'); document.getElementById('global-detail-modal').setAttribute('data-title', 'Developer Profile'); document.getElementById('global-detail-modal').setAttribute('open', 'true');">Profile</button>
+                <button class="ui-menu-item" id="nav-trigger-projects">Projects</button>
+                <button class="ui-menu-item" id="nav-trigger-profile">Profile</button>
             </nav>
         </div>
 

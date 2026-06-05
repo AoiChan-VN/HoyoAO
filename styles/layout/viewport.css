@@ -92,7 +92,8 @@ vr-skybox {
 }
 
 vr-panel,
-vr-settings {
+vr-dashboard,
+vr-spatial-viewer {
     animation: vrSpatialFloating 6s ease-in-out infinite alternate;
 }
 

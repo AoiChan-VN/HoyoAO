@@ -63,23 +63,7 @@ export class VRStatusModal extends HTMLElement {
         try {
             contentContainer.innerHTML = '<p style="color:var(--text-accent)">LOADING DATABASE...</p>';
             
-            const isGitHubPages = window.location.hostname.includes('github.io');
-            let basePath = '';
-            
-            if (isGitHubPages) {
-                const pathSegments = window.location.pathname.split('/').filter(segment => segment.length > 0);
-                if (pathSegments.length > 0) {
-                    basePath = `/${pathSegments[0]}/`;
-                } else {
-                    basePath = '/';
-                }
-            } else {
-                basePath = '/';
-            }
-
-            const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
-            const requestUrl = `${window.location.origin}${cleanBasePath}src/assets/content/${type}.md`;
-            
+            const requestUrl = `src/assets/content/${type}.md`;
             const response = await fetch(requestUrl);
             if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
             
@@ -123,4 +107,3 @@ export class VRStatusModal extends HTMLElement {
         `;
     }
 }
- 

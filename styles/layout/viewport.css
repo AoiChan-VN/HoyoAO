@@ -1,4 +1,3 @@
-/* Tối ưu hóa render phần cứng toàn bộ khung nhìn, triệt tiêu giật khựng */
 .vr-viewport {
     position: relative;
     width: 100vw;
@@ -7,10 +6,10 @@
     background-color: #020205;
     perspective: var(--vr-perspective);
     perspective-origin: 50% 50%;
+    transform-style: preserve-3d;
     will-change: transform;
 }
 
-/* Node gốc thế giới 3D */
 .vr-scene-root {
     position: absolute;
     width: 100%;
@@ -18,39 +17,34 @@
     top: 0;
     left: 0;
     transform-style: preserve-3d;
-    transition: transform 0.1s cubic-bezier(0.2, 0.85, 0.3, 1);
     will-change: transform;
 }
 
-/* Ép Skybox lùi sâu ra xa vô tận để loại bỏ hoàn toàn lỗi che lấp vật thể (Z-Fighting) */
 vr-skybox {
     position: absolute;
-    transform: translate3d(0, 0, 0);
-    transform-style: preserve-3d;
-    z-index: 1;
-}
-
-/* Đẩy Panel nội dung lên phân lớp phía trước, tách biệt hoàn toàn khỏi ma trận Skybox */
-.vr-content-layer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
     width: 100%;
     height: 100%;
-    transform: translate3d(-50%, -50%, 100px);
+    top: 0;
+    left: 0;
     transform-style: preserve-3d;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    z-index: var(--z-index-skybox, 1);
+}
+
+.vr-content-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    transform-style: preserve-3d;
     pointer-events: none;
-    z-index: 10;
+    z-index: var(--z-index-scene, 10);
 }
 
 .vr-content-layer * {
     pointer-events: auto;
 }
 
-/* --- HỆ THỐNG LAYOUT HUD 2D HIỆN ĐẠI TOÀN DIỆN --- */
 #ui-overlay-layer {
     position: fixed;
     top: 0;
@@ -58,7 +52,7 @@ vr-skybox {
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    z-index: 1000;
+    z-index: var(--z-index-overlay, 100);
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -70,7 +64,6 @@ vr-skybox {
     pointer-events: auto;
 }
 
-/* Thiết kế khu vực LOGO bo tròn cao cấp */
 .ui-header-left {
     display: flex;
     align-items: center;
@@ -100,45 +93,13 @@ vr-skybox {
     margin-left: 10px;
 }
 
-/* Đóng gói Menu điều hướng tối giản (Đã xóa bỏ hoàn toàn thanh mở bài viết bẩn thỉu cũ) */
-.ui-nav-center {
-    position: absolute;
-    top: 24px;
-    left: 50%;
-    transform: translateX(-50%);
+vr-panel,
+vr-settings {
+    animation: vrSpatialFloating 8s ease-in-out infinite alternate;
 }
 
-.ui-menu-bar {
-    background: rgba(10, 10, 15, 0.6);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(0, 255, 204, 0.2);
-    border-radius: 30px;
-    padding: 6px 24px;
-    display: flex;
-    gap: 12px;
-    box-shadow: var(--shadow-neon);
+@keyframes vrSpatialFloating {
+    0% { margin-top: 0px; }
+    100% { margin-top: -8px; }
 }
-
-.ui-menu-item {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 6px 12px;
-    border-radius: 20px;
-    transition: var(--transition-ui-fast);
-}
-
-.ui-menu-item:hover, 
-.ui-menu-item.active {
-    color: var(--text-accent);
-    background: rgba(0, 255, 204, 0.1);
-}
-
-/* Gom cụm Settings / Bộ lọc Gyroscope vào góc phải đồng nhất */
-.ui-config-right {
-    display: flex;
-    align-items: center;
-}
+ 

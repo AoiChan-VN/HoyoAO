@@ -1,0 +1,22 @@
+{
+  "name": "portfolio-vr-platform",
+  "version": "1.0.0",
+  "description": "Production Personal Portfolio VR Platform with Vanilla JS",
+  "type": "module",
+  "scripts": {
+    "start": "serve ."
+  },
+  "keywords": [
+    "vanilla-js",
+    "webgl",
+    "vr",
+    "gyroscope",
+    "markdown-parser"
+  ],
+  "author": "AI Developer",
+  "license": "MIT",
+  "dependencies": {
+    "serve": "^14.2.6"
+  }
+}
+ 

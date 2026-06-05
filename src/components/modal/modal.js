@@ -67,20 +67,26 @@ export class VRStatusModal extends HTMLElement {
             let basePath = '';
             
             if (isGitHubPages) {
-                const pathSegments = window.location.pathname.split('/');
-                const repoName = pathSegments[1];
-                basePath = `/${repoName}/`;
+                const pathSegments = window.location.pathname.split('/').filter(segment => segment.length > 0);
+                if (pathSegments.length > 0) {
+                    basePath = `/${pathSegments[0]}/`;
+                } else {
+                    basePath = '/';
+                }
             } else {
                 basePath = '/';
             }
 
             const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
-            const response = await fetch(`${window.location.origin}${cleanBasePath}src/assets/content/${type}.md`);
+            const requestUrl = `${window.location.origin}${cleanBasePath}src/assets/content/${type}.md`;
             
-            if (!response.ok) throw new Error();
+            const response = await fetch(requestUrl);
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            
             const markdown = await response.text();
             contentContainer.innerHTML = this.parser.parse(markdown);
-        } catch {
+        } catch (error) {
+            console.error("[Modal Core Fetch Failure]:", error);
             contentContainer.innerHTML = '<p style="color:var(--text-secondary)">SYSTEM ERROR: FAILED TO LOAD DOCUMENT.</p>';
         }
     }
@@ -117,3 +123,4 @@ export class VRStatusModal extends HTMLElement {
         `;
     }
 }
+ 

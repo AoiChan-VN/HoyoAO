@@ -3,7 +3,14 @@
     width: 280px;
     height: auto;
     transform-style: preserve-3d;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    cursor: grab;
     will-change: transform;
+    box-sizing: border-box;
+}
+
+:host(:active) {
+    cursor: grabbing;
 }
 
 .vr-dashboard-container {
@@ -68,6 +75,7 @@
     text-align: left;
     border-radius: 6px;
     transition: var(--transition-ui-fast, all 0.2s ease);
+    cursor: pointer;
 }
 
 .nav-btn:hover {
@@ -112,3 +120,4 @@
     50% { opacity: 1; }
     100% { opacity: 0.4; }
 }
+ 

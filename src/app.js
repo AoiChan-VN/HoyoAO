@@ -16,11 +16,10 @@ export class BootstrapApp {
         this.loaderNode = null;
         this.cameraMatrix = null;
         this.gyroSensor = null;
-        
         this.isDragging = false;
-        this.activePanel = null;
-        this.panelTransform = { x: 0, y: 0, z: -400, rotX: 0, rotY: 0 };
+        this.activeObject = null;
         this.dragStart = { x: 0, y: 0 };
+        this.objectTransforms = new Map();
     }
 
     init() {
@@ -30,18 +29,18 @@ export class BootstrapApp {
             this.loaderNode = document.getElementById(this.loaderId);
 
             if (!this.viewportNode || !this.sceneRootNode || !this.loaderNode) {
-                throw new Error("Critical DOM error.");
+                throw new Error("Critical DOM failure.");
             }
 
-            this._registerWebComponents();
             this.cameraMatrix = new VRCameraMatrix(this.sceneRootNode);
             
             this.gyroSensor = new VRGyroscopeSensor((rotationX, rotationY) => {
                 this.cameraMatrix.updateOrientation(rotationX, rotationY);
             });
 
+            this._setupSpatialObjects();
             this._setupGlobalEventListeners();
-            this._setupSpatialDragAndDrop();
+            this._setupSpatialInteractionEngine();
             this._handleSystemReadyState();
 
         } catch (error) {
@@ -49,12 +48,32 @@ export class BootstrapApp {
         }
     }
 
-    _registerWebComponents() {
-        if (!customElements.get('vr-skybox')) customElements.define('vr-skybox', VRStatusSkybox);
-        if (!customElements.get('vr-panel')) customElements.define('vr-panel', VRStatusPanel);
-        if (!customElements.get('vr-card')) customElements.define('vr-card', VRStatusCard);
-        if (!customElements.get('vr-settings')) customElements.define('vr-settings', VRStatusSettings);
-        if (!customElements.get('vr-modal')) customElements.define('vr-modal', VRStatusModal);
+    _setupSpatialObjects() {
+        const spatialElements = this.sceneRootNode.querySelectorAll('vr-panel, vr-settings');
+        spatialElements.forEach((el, index) => {
+            const initialZ = -450;
+            const initialXOffset = index === 0 ? -160 : 280;
+            const initialYOffset = index === 0 ? 0 : 40;
+
+            this.objectTransforms.set(el, {
+                x: initialXOffset,
+                y: initialYOffset,
+                z: initialZ,
+                rotX: 0,
+                rotY: index === 0 ? 15 : -15
+            });
+
+            this._applySpatialTransform(el);
+        });
+    }
+
+    _applySpatialTransform(el) {
+        const t = this.objectTransforms.get(el);
+        if (!t) return;
+        el.style.position = 'absolute';
+        el.style.top = '50%';
+        el.style.left = '50%';
+        el.style.transform = `translate3d(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px), ${t.z}px) rotateX(${t.rotX}deg) rotateY(${t.rotY}deg)`;
     }
 
     _setupGlobalEventListeners() {
@@ -68,43 +87,44 @@ export class BootstrapApp {
         });
     }
 
-    _setupSpatialDragAndDrop() {
+    _setupSpatialInteractionEngine() {
         const handleStart = (e) => {
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            const targetPanel = e.target.closest('vr-panel');
-            if (!targetPanel) return;
+            const target = e.target.closest('vr-panel, vr-settings');
+            if (!target || e.target.closest('button, a, vr-card')) return;
 
             this.isDragging = true;
-            this.activePanel = targetPanel;
+            this.activeObject = target;
+            
+            const clientX = e.touches ? e.touches.clientX : e.clientX;
+            const clientY = e.touches ? e.touches.clientY : e.clientY;
+            
             this.dragStart.x = clientX;
             this.dragStart.y = clientY;
             
-            this.activePanel.style.transition = 'none';
-            this.activePanel.style.cursor = 'grabbing';
+            this.activeObject.style.transition = 'none';
         };
 
         const handleMove = (e) => {
-            if (!this.isDragging || !this.activePanel) return;
-            
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            if (!this.isDragging || !this.activeObject) return;
+
+            const clientX = e.touches ? e.touches.clientX : e.clientX;
+            const clientY = e.touches ? e.touches.clientY : e.clientY;
 
             const deltaX = clientX - this.dragStart.x;
             const deltaY = clientY - this.dragStart.y;
 
-            this.panelTransform.rotY += deltaX * 0.15;
-            this.panelTransform.rotX -= deltaY * 0.15;
-
-            this.panelTransform.rotX = Math.min(Math.max(this.panelTransform.rotX, -45), 45);
-            this.panelTransform.rotY = Math.min(Math.max(this.panelTransform.rotY, -60), 60);
-
-            this.activePanel.style.transform = `
-                translate3d(-50%, -50%, ${this.panelTransform.z}px) 
-                rotateX(${this.panelTransform.rotX}deg) 
-                rotateY(${this.panelTransform.rotY}deg)
-            `;
+            const transform = this.objectTransforms.get(this.activeObject);
+            if (transform) {
+                transform.x += deltaX * 0.8;
+                transform.y += deltaY * 0.8;
+                transform.rotY += deltaX * 0.1;
+                transform.rotX -= deltaY * 0.1;
+                
+                transform.rotX = Math.min(Math.max(transform.rotX, -45), 45);
+                transform.rotY = Math.min(Math.max(transform.rotY, -60), 60);
+                
+                this._applySpatialTransform(this.activeObject);
+            }
 
             this.dragStart.x = clientX;
             this.dragStart.y = clientY;
@@ -112,32 +132,34 @@ export class BootstrapApp {
         };
 
         const handleEnd = () => {
-            if (!this.isDragging || !this.activePanel) return;
+            if (!this.isDragging || !this.activeObject) return;
+            this.activeObject.style.transition = 'var(--transition-ui-normal)';
             this.isDragging = false;
-            this.activePanel.style.transition = 'var(--transition-ui-normal)';
-            this.activePanel.style.cursor = 'grab';
-            this.activePanel = null;
+            this.activeObject = null;
         };
 
-        window.addEventListener('mousedown', handleStart, { passive: false });
-        window.addEventListener('mousemove', handleMove, { passive: false });
+        this.viewportNode.addEventListener('mousedown', handleStart);
+        this.viewportNode.addEventListener('mousemove', handleMove, { passive: false });
         window.addEventListener('mouseup', handleEnd);
 
-        window.addEventListener('touchstart', handleStart, { passive: false });
-        window.addEventListener('touchmove', handleMove, { passive: false });
+        this.viewportNode.addEventListener('touchstart', handleStart, { passive: false });
+        this.viewportNode.addEventListener('touchmove', handleMove, { passive: false });
         window.addEventListener('touchend', handleEnd);
     }
 
     _handleSystemReadyState() {
-        window.addEventListener('load', () => {
+        const dismissLoader = () => {
+            if (!this.loaderNode) return;
+            this.loaderNode.style.opacity = '0';
             setTimeout(() => {
-                this.loaderNode.style.opacity = '0';
-                setTimeout(() => {
-                    this.loaderNode.style.display = 'none';
-                    if(this.gyroSensor) this.gyroSensor.start();
-                }, 500);
-            }, 800);
-        });
+                this.loaderNode.style.display = 'none';
+            }, 500);
+        };
+
+        if (document.readyState === 'complete') {
+            dismissLoader();
+        } else {
+            window.addEventListener('load', dismissLoader, { once: true });
+        }
     }
 }
- 

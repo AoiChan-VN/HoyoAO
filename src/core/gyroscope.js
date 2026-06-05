@@ -4,17 +4,14 @@ export class VRGyroscopeSensor {
         this.isActive = false;
         this.initialPitch = null;
         this.initialYaw = null;
-        
         this.smoothedX = 0;
         this.smoothedY = 0;
-        this.filterFactor = 0.22; 
-
+        this.filterFactor = 0.22;
         this._handleDeviceOrientation = this._handleDeviceOrientation.bind(this);
     }
 
     async start() {
         if (typeof window === 'undefined' || !window.DeviceOrientationEvent) return false;
-
         try {
             if (typeof DeviceOrientationEvent.requestPermission === 'function') {
                 const permissionState = await DeviceOrientationEvent.requestPermission();
@@ -47,8 +44,8 @@ export class VRGyroscopeSensor {
     _handleDeviceOrientation(event) {
         if (event.alpha === null || event.beta === null || event.gamma === null) return;
 
-        const pitch = event.beta; 
-        const yaw = event.alpha;  
+        const pitch = event.beta;
+        const yaw = event.alpha;
 
         if (this.initialPitch === null) {
             this.initialPitch = pitch;
@@ -64,7 +61,7 @@ export class VRGyroscopeSensor {
         targetY = ((targetY + 180) % 360 + 360) % 360 - 180;
 
         this.smoothedX += (targetX - this.smoothedX) * this.filterFactor;
-        
+
         let diffY = targetY - this.smoothedY;
         diffY = ((diffY + 180) % 360 + 360) % 360 - 180;
         this.smoothedY += diffY * this.filterFactor;

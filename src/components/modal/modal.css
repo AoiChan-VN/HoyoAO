@@ -1,70 +1,116 @@
 :host {
     display: block;
-    width: 100%;
-    box-sizing: border-box;
 }
 
-.card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(0, 255, 204, 0.15);
-    border-radius: 12px;
-    padding: 12px 14px;
-    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    box-sizing: border-box;
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--transition-ui-normal);
+    z-index: var(--z-index-modal);
 }
 
-.card:hover {
-    border-color: rgba(0, 255, 204, 0.5);
-    background: rgba(0, 255, 204, 0.03);
-    transform: translateZ(5px);
-    box-shadow: 0 0 20px rgba(0, 255, 204, 0.15);
+.modal-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
 }
 
-.card-title {
-    font-family: system-ui, -apple-system, sans-serif;
-    font-size: 13px;
+.modal-box {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color-active);
+    border-radius: var(--modal-radius);
+    width: 90vw;
+    max-width: 650px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-panel), var(--shadow-neon);
+    transform: scale(0.92) translateY(15px);
+    transition: var(--transition-ui-normal);
+}
+
+.modal-overlay.visible .modal-box {
+    transform: scale(1) translateY(0);
+}
+
+.modal-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(0, 255, 204, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: 16px;
+    color: var(--text-accent);
+    font-family: var(--font-mono);
     font-weight: 700;
-    color: #00ffcc;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    text-shadow: 0 0 6px rgba(0, 255, 204, 0.3);
+    letter-spacing: 1px;
 }
 
-.card-content {
-    font-size: 11px;
-    line-height: 1.4;
-    color: #8a8a93;
-    max-height: 50px;
-    overflow: hidden;
-    position: relative;
-    -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 50%, transparent 100%);
+.close-btn {
+    color: var(--text-muted);
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    transition: var(--transition-ui-fast);
 }
 
-.card-content p {
-    margin: 0 0 4px 0;
+.close-btn:hover {
+    color: var(--text-secondary);
 }
 
-.card-content p:last-child {
-    margin-bottom: 0;
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    color: var(--text-main);
+    font-size: 14px;
+    line-height: 1.6;
 }
 
-@media (max-width: 480px) {
-    .card {
-        padding: 10px 12px;
-        border-radius: 8px;
-    }
-    .card-title {
-        font-size: 12px;
-        margin-bottom: 4px;
-    }
-    .card-content {
-        max-height: 44px;
-        font-size: 11px;
-    }
+.modal-body h1, 
+.modal-body h2 { 
+    color: var(--text-accent); 
+    margin: 20px 0 10px; 
+    font-weight: 700;
 }
- 
+
+.modal-body h1 { font-size: 20px; }
+.modal-body h2 { font-size: 16px; }
+
+.modal-body p { 
+    margin-bottom: 14px; 
+}
+
+.modal-body ul,
+.modal-body ol { 
+    margin-left: 20px; 
+    margin-bottom: 14px; 
+}
+
+.modal-body ul { list-style: square; }
+.modal-body ol { list-style: decimal; }
+
+.modal-body li { 
+    margin-bottom: 6px; 
+}
+
+.modal-body blockquote {
+    border-left: 3px solid var(--text-accent);
+    background: rgba(0, 255, 204, 0.03);
+    padding: 10px 16px;
+    margin: 16px 0;
+    font-style: italic;
+    color: var(--text-muted);
+}

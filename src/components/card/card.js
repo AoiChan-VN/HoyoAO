@@ -30,7 +30,7 @@ export class VRStatusCard extends HTMLElement {
             
             if (isGitHubPages) {
                 const pathSegments = window.location.pathname.split('/');
-                const repoName = pathSegments[1];
+                const repoName = pathSegments;
                 basePath = `/${repoName}/`;
             } else {
                 basePath = '/';
@@ -47,7 +47,10 @@ export class VRStatusCard extends HTMLElement {
         }
     }
 
-    _triggerModal() {
+    _triggerModal(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         const modal = document.getElementById('global-detail-modal');
         if (!modal) return;
         
@@ -69,6 +72,8 @@ export class VRStatusCard extends HTMLElement {
             </div>
         `;
 
-        this.shadowRoot.getElementById('main-card-element').addEventListener('click', () => this._triggerModal());
+        const cardElement = this.shadowRoot.getElementById('main-card-element');
+        cardElement.addEventListener('click', (e) => this._triggerModal(e));
+        cardElement.addEventListener('touchend', (e) => this._triggerModal(e));
     }
 }

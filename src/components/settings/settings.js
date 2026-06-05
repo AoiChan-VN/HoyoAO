@@ -1,77 +1,79 @@
-export class VRStatusSettings extends HTMLElement {
+import { VRMarkdownParser } from '../../core/markdown.js';
+
+export class VRStatusCard extends HTMLElement {
+    static get observedAttributes() {
+        return ['type', 'title'];
+    }
+
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        this.gyroActive = false;
+        this.parser = new VRMarkdownParser();
     }
 
     connectedCallback() {
         this.render();
-        this._bindDashboardEvents();
+        this._loadCardData();
     }
 
-    _bindDashboardEvents() {
-        const toggleBtn = this.shadowRoot.getElementById('gyro-toggle');
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.gyroActive = !this.gyroActive;
-                if (this.gyroActive) {
-                    toggleBtn.classList.add('active');
-                    toggleBtn.innerText = 'GYRO: ACTIVE';
-                    window.dispatchEvent(new CustomEvent('vr-gyro-request', { detail: { action: 'start' } }));
-                } else {
-                    toggleBtn.classList.remove('active');
-                    toggleBtn.innerText = 'GYRO: DISABLED';
-                    window.dispatchEvent(new CustomEvent('vr-gyro-request', { detail: { action: 'stop' } }));
-                }
-            });
-        }
+    attributeChangedCallback() {
+        this.render();
+    }
 
-        const navButtons = this.shadowRoot.querySelectorAll('.nav-btn');
-        navButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const targetType = btn.getAttribute('data-target');
-                const targetTitle = btn.innerText;
-                
-                const modal = document.getElementById('global-detail-modal');
-                if (modal && targetType) {
-                    modal.setAttribute('data-type', targetType);
-                    modal.setAttribute('data-title', targetTitle);
-                    modal.setAttribute('open', 'true');
-                }
-            });
-        });
+    async _loadCardData() {
+        const type = this.getAttribute('type') || 'profile';
+        const contentContainer = this.shadowRoot.getElementById('card-content');
+        
+        try {
+            const isGitHubPages = window.location.hostname.includes('github.io');
+            let basePath = '';
+            
+            if (isGitHubPages) {
+                const pathSegments = window.location.pathname.split('/');
+                const repoName = pathSegments;
+                basePath = `/${repoName}/`;
+            } else {
+                basePath = '/';
+            }
 
-        const resetBtn = this.shadowRoot.getElementById('space-reset');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                window.location.reload();
-            });
+            const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
+            const response = await fetch(`${window.location.origin}${cleanBasePath}src/assets/content/${type}.md`);
+            
+            if (!response.ok) throw new Error();
+            const markdown = await response.text();
+            contentContainer.innerHTML = this.parser.parse(markdown);
+        } catch {
+            contentContainer.innerHTML = `<p style="color:var(--text-secondary)">Failed to load ${type}.md data.</p>`;
         }
+    }
+
+    _triggerModal(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const modal = document.getElementById('global-detail-modal');
+        if (!modal) return;
+        
+        const type = this.getAttribute('type');
+        const title = this.getAttribute('title');
+        
+        modal.setAttribute('data-type', type);
+        modal.setAttribute('data-title', title);
+        modal.setAttribute('open', 'true');
     }
 
     render() {
+        const title = this.getAttribute('title') || 'Card';
         this.shadowRoot.innerHTML = `
-            <link rel="stylesheet" href="./src/components/settings/settings.css">
-            <div class="vr-dashboard-container">
-                <div class="dashboard-header">
-                    <div class="status-dot"></div>
-                    <span class="title">CORE INTERFACE v1.0</span>
-                </div>
-                
-                <div class="nav-section">
-                    <button class="nav-btn" data-target="profile">DEVELOPER PROFILE</button>
-                    <button class="nav-btn" data-target="projects">FEATURED PROJECTS</button>
-                </div>
-                
-                <div class="system-section">
-                    <button class="sys-btn" id="gyro-toggle">GYRO: DISABLED</button>
-                    <button class="sys-btn reset" id="space-reset">RESET VIEW</button>
-                </div>
+            <link rel="stylesheet" href="./src/components/card/card.css">
+            <div class="card" id="main-card-element">
+                <div class="card-title">${title}</div>
+                <div class="card-content" id="card-content">Loading content...</div>
             </div>
         `;
+
+        const cardElement = this.shadowRoot.getElementById('main-card-element');
+        cardElement.addEventListener('click', (e) => this._triggerModal(e));
+        cardElement.addEventListener('touchend', (e) => this._triggerModal(e));
     }
 }

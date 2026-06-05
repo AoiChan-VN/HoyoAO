@@ -29,21 +29,31 @@ export class VRStatusCard extends HTMLElement {
             let basePath = '';
             
             if (isGitHubPages) {
-                const pathSegments = window.location.pathname.split('/');
-                const repoName = pathSegments;
-                basePath = `/${repoName}/`;
+                const pathSegments = window.location.pathname.split('/').filter(segment => segment.length > 0);
+                if (pathSegments.length > 0) {
+                    basePath = `/${pathSegments[0]}/`;
+                } else {
+                    basePath = '/';
+                }
             } else {
                 basePath = '/';
             }
 
             const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
-            const response = await fetch(`${window.location.origin}${cleanBasePath}src/assets/content/${type}.md`);
+            const requestUrl = `${window.location.origin}${cleanBasePath}src/assets/content/${type}.md`;
             
-            if (!response.ok) throw new Error();
+            const response = await fetch(requestUrl);
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            
             const markdown = await response.text();
-            contentContainer.innerHTML = this.parser.parse(markdown);
-        } catch {
-            contentContainer.innerHTML = `<p style="color:var(--text-secondary)">Failed to load ${type}.md data.</p>`;
+            if (contentContainer) {
+                contentContainer.innerHTML = this.parser.parse(markdown);
+            }
+        } catch (error) {
+            console.error("[Card Core Fetch Failure]:", error);
+            if (contentContainer) {
+                contentContainer.innerHTML = `<p style="color:var(--text-secondary)">Failed to load data.</p>`;
+            }
         }
     }
 
@@ -73,7 +83,9 @@ export class VRStatusCard extends HTMLElement {
         `;
 
         const cardElement = this.shadowRoot.getElementById('main-card-element');
-        cardElement.addEventListener('click', (e) => this._triggerModal(e));
-        cardElement.addEventListener('touchend', (e) => this._triggerModal(e));
+        if (cardElement) {
+            cardElement.addEventListener('click', (e) => this._triggerModal(e));
+            cardElement.addEventListener('touchend', (e) => this._triggerModal(e));
+        }
     }
 }

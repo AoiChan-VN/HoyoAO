@@ -1,21 +1,16 @@
-/* Kích hoạt tiêu cự phối cảnh VR sâu lên lớp nền tối cao */
-html, body {
-    perspective: var(--vr-perspective);
-    perspective-origin: 50% 50%;
-    background: #020205;
-}
-
-/* Khung nhìn VR chính, ép render card đồ họa */
+/* Tối ưu hóa render phần cứng toàn bộ khung nhìn, triệt tiêu giật khựng */
 .vr-viewport {
     position: relative;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    transform-style: preserve-3d;
+    background-color: #020205;
+    perspective: var(--vr-perspective);
+    perspective-origin: 50% 50%;
     will-change: transform;
 }
 
-/* Gốc thế giới 3D - Khóa chặt hướng nhìn mặt trước (Z-index không đảo) */
+/* Node gốc thế giới 3D */
 .vr-scene-root {
     position: absolute;
     width: 100%;
@@ -23,30 +18,39 @@ html, body {
     top: 0;
     left: 0;
     transform-style: preserve-3d;
-    transition: var(--transition-vr-matrix);
+    transition: transform 0.1s cubic-bezier(0.2, 0.85, 0.3, 1);
+    will-change: transform;
 }
 
-/* Lớp không gian chứa Panel lơ lửng - Đẩy về phía trước mặt người xem (Z âm) */
+/* Ép Skybox lùi sâu ra xa vô tận để loại bỏ hoàn toàn lỗi che lấp vật thể (Z-Fighting) */
+vr-skybox {
+    position: absolute;
+    transform: translate3d(0, 0, 0);
+    transform-style: preserve-3d;
+    z-index: 1;
+}
+
+/* Đẩy Panel nội dung lên phân lớp phía trước, tách biệt hoàn toàn khỏi ma trận Skybox */
 .vr-content-layer {
     position: absolute;
     top: 50%;
     left: 50%;
     width: 100%;
     height: 100%;
-    transform: translate(-50%, -50%) translateZ(0px);
+    transform: translate3d(-50%, -50%, 100px);
     transform-style: preserve-3d;
     display: flex;
     justify-content: center;
     align-items: center;
     pointer-events: none;
-    z-index: var(--z-index-scene);
+    z-index: 10;
 }
 
 .vr-content-layer * {
     pointer-events: auto;
 }
 
-/* --- TẦNG GIAO DIỆN TĨNH 2D HIỆN ĐẠI (UI OVERLAY LAYER) --- */
+/* --- HỆ THỐNG LAYOUT HUD 2D HIỆN ĐẠI TOÀN DIỆN --- */
 #ui-overlay-layer {
     position: fixed;
     top: 0;
@@ -54,11 +58,11 @@ html, body {
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    z-index: var(--z-index-overlay);
-    display: grid;
-    grid-template-rows: 80px 1fr 60px;
-    grid-template-columns: 280px 1fr 280px;
-    padding: 20px;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px;
     box-sizing: border-box;
 }
 
@@ -66,48 +70,53 @@ html, body {
     pointer-events: auto;
 }
 
-/* 1. Khu vực Header chứa LOGO SVG Neon */
+/* Thiết kế khu vực LOGO bo tròn cao cấp */
 .ui-header-left {
-    grid-row: 1;
-    grid-column: 1;
     display: flex;
     align-items: center;
+    background: rgba(10, 10, 15, 0.6);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(0, 255, 204, 0.2);
+    padding: 8px 16px;
+    border-radius: 40px;
+    box-shadow: var(--shadow-neon);
 }
 
-.ui-logo-svg {
-    width: 45px;
-    height: 45px;
-    filter: drop-shadow(0 0 8px var(--text-accent));
+.ui-logo-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--text-accent);
 }
 
 .ui-logo-text {
     font-family: var(--font-mono);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: #ffffff;
-    letter-spacing: 3px;
-    margin-left: 12px;
-    text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+    letter-spacing: 2px;
+    margin-left: 10px;
 }
 
-/* 2. Khu vực MENU chính giữa phía trên dạng thanh điều hướng hiện đại */
+/* Đóng gói Menu điều hướng tối giản (Đã xóa bỏ hoàn toàn thanh mở bài viết bẩn thỉu cũ) */
 .ui-nav-center {
-    grid-row: 1;
-    grid-column: 2;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .ui-menu-bar {
     background: rgba(10, 10, 15, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--border-color);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(0, 255, 204, 0.2);
     border-radius: 30px;
     padding: 6px 24px;
     display: flex;
-    gap: 20px;
+    gap: 12px;
     box-shadow: var(--shadow-neon);
 }
 
@@ -118,30 +127,19 @@ html, body {
     text-transform: uppercase;
     letter-spacing: 1px;
     padding: 6px 12px;
+    border-radius: 20px;
     transition: var(--transition-ui-fast);
 }
 
 .ui-menu-item:hover, 
 .ui-menu-item.active {
     color: var(--text-accent);
-    text-shadow: 0 0 8px var(--text-accent);
+    background: rgba(0, 255, 204, 0.1);
 }
 
-/* 3. Khu vực SETTINGS góc phải phía trên */
+/* Gom cụm Settings / Bộ lọc Gyroscope vào góc phải đồng nhất */
 .ui-config-right {
-    grid-row: 1;
-    grid-column: 3;
     display: flex;
-    justify-content: flex-end;
     align-items: center;
 }
-
-/* --- HIỆU ỨNG THẨM MỸ TOÀN CỤC CHUẨN KÔNG GIAN VR CYBERPUNK --- */
-vr-panel {
-    animation: floatingPanel 6s ease-in-out infinite;
-}
-
-@keyframes floatingPanel {
-    0%, 100% { transform: translateZ(var(--panel-translate-z, -400px)) translateY(0px); }
-    50% { transform: translateZ(var(--panel-translate-z, -400px)) translateY(-10px); }
-}
+ 

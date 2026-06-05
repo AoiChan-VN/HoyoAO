@@ -27,22 +27,25 @@ export class VRCameraMatrix {
 
     _startRenderLoop() {
         const render = (currentTime) => {
-            const dt = (currentTime - this.lastTime) / 1000;
-            this.lastTime = currentTime;
+            const timestamp = currentTime || performance.now();
+            const dt = (timestamp - this.lastTime) / 1000;
+            this.lastTime = timestamp;
 
-            if (dt > 0.1) {
+            if (dt <= 0 || dt > 0.1) {
                 requestAnimationFrame(render);
                 return;
             }
 
             const alpha = 1 - Math.exp(-this.lerpSpeed * dt);
+            
             this.currentX += (this.targetX - this.currentX) * alpha;
-
+            
             let diffY = this.targetY - this.currentY;
             diffY = ((diffY + 180) % 360 + 360) % 360 - 180;
             this.currentY += diffY * alpha;
 
             const transformMatrix = `
+                perspective(var(--vr-perspective))
                 rotateX(${-this.currentX}deg)
                 rotateY(${this.currentY}deg)
                 translateZ(0px)
@@ -54,4 +57,3 @@ export class VRCameraMatrix {
         requestAnimationFrame(render);
     }
 }
- 

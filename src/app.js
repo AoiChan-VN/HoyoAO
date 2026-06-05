@@ -29,7 +29,7 @@ export class BootstrapApp {
             this.loaderNode = document.getElementById(this.loaderId);
 
             if (!this.viewportNode || !this.sceneRootNode || !this.loaderNode) {
-                throw new Error("Critical DOM failure.");
+                throw new Error("Critical DOM infrastructure collapse.");
             }
 
             this.cameraMatrix = new VRCameraMatrix(this.sceneRootNode);
@@ -52,15 +52,16 @@ export class BootstrapApp {
         const spatialElements = this.sceneRootNode.querySelectorAll('vr-panel, vr-settings');
         spatialElements.forEach((el, index) => {
             const initialZ = -450;
-            const initialXOffset = index === 0 ? -160 : 280;
-            const initialYOffset = index === 0 ? 0 : 40;
+            // Tính toán khoảng cách dạt sang hai bên chính xác từ tâm màn hình thiết bị di động
+            const initialXOffset = index === 0 ? -180 : 180;
+            const initialYOffset = index === 0 ? 0 : 0;
 
             this.objectTransforms.set(el, {
                 x: initialXOffset,
                 y: initialYOffset,
                 z: initialZ,
                 rotX: 0,
-                rotY: index === 0 ? 15 : -15
+                rotY: index === 0 ? 12 : -12
             });
 
             this._applySpatialTransform(el);
@@ -70,10 +71,17 @@ export class BootstrapApp {
     _applySpatialTransform(el) {
         const t = this.objectTransforms.get(el);
         if (!t) return;
+        
+        // Đặt vị trí cố định tại trung tâm tuyệt đối của không gian ba chiều
         el.style.position = 'absolute';
-        el.style.top = '50%';
-        el.style.left = '50%';
-        el.style.transform = `translate3d(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px), ${t.z}px) rotateX(${t.rotX}deg) rotateY(${t.rotY}deg)`;
+        el.style.top = '0';
+        el.style.left = '0';
+        el.style.right = '0';
+        el.style.bottom = '0';
+        el.style.margin = 'auto';
+        
+        // Trực tiếp tịnh tiến thực thể từ gốc tọa độ (0,0) ra các trục không gian 3D
+        el.style.transform = `translate3d(${t.x}px, ${t.y}px, ${t.z}px) rotateX(${t.rotX}deg) rotateY(${t.rotY}deg)`;
     }
 
     _setupGlobalEventListeners() {

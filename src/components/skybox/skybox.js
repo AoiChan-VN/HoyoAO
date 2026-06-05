@@ -10,20 +10,7 @@ export class VRStatusSkybox extends HTMLElement {
     }
 
     _applyTextures() {
-        const isGitHubPages = window.location.hostname.includes('github.io');
-        let basePath = '';
-        
-        if (isGitHubPages) {
-            const pathSegments = window.location.pathname.split('/');
-            const repoName = pathSegments[1];
-            basePath = `/${repoName}/`;
-        } else {
-            basePath = '/';
-        }
-
-        const cleanBasePath = basePath.endsWith('/') ? basePath : basePath + '/';
-        const texturesPath = `${window.location.origin}${cleanBasePath}src/assets/textures/`;
-
+        const texturesPath = 'src/assets/textures/';
         const faces = {
             'front': 'pz.webp',
             'back': 'nz.webp',

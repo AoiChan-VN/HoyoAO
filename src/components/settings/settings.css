@@ -41,16 +41,16 @@
 .status-dot {
     width: 6px;
     height: 6px;
-    background-color: #00ffcc;
+    background-color: var(--text-accent, #00ffcc);
     border-radius: 50%;
-    box-shadow: 0 0 8px #00ffcc;
+    box-shadow: 0 0 8px var(--text-accent, #00ffcc);
     animation: pulse 2s infinite;
 }
 
 .dashboard-header .title {
     font-family: var(--font-mono, monospace);
     font-size: 11px;
-    color: #ffffff;
+    color: var(--text-main, #ffffff);
     letter-spacing: 2px;
 }
 
@@ -66,7 +66,7 @@
     width: 100%;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(0, 255, 204, 0.15);
-    color: #8a8a93;
+    color: var(--text-muted, #8a8a93);
     padding: 10px 14px;
     font-size: 11px;
     font-family: var(--font-mono, monospace);
@@ -74,13 +74,13 @@
     letter-spacing: 1.5px;
     text-align: left;
     border-radius: 6px;
-    transition: all 0.2s ease;
+    transition: var(--transition-ui-fast, all 0.2s ease);
     cursor: pointer;
 }
 
 .nav-btn:hover {
-    border-color: #00ffcc;
-    color: #00ffcc;
+    border-color: var(--text-accent, #00ffcc);
+    color: var(--text-accent, #00ffcc);
     background: rgba(0, 255, 204, 0.05);
     text-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
     box-shadow: 0 0 12px rgba(0, 255, 204, 0.1);
@@ -88,20 +88,20 @@
 
 .sys-btn {
     border-color: rgba(255, 0, 127, 0.2);
-    color: #8a8a93;
+    color: var(--text-muted, #8a8a93);
 }
 
 .sys-btn:hover {
-    border-color: #ff007f;
-    color: #ff007f;
+    border-color: var(--text-secondary, #ff007f);
+    color: var(--text-secondary, #ff007f);
     background: rgba(255, 0, 127, 0.05);
 }
 
 .sys-btn.active {
     background: rgba(0, 255, 204, 0.15);
-    border-color: #00ffcc;
-    color: #00ffcc;
-    text-shadow: 0 0 8px #00ffcc;
+    border-color: var(--text-accent, #00ffcc);
+    color: var(--text-accent, #00ffcc);
+    text-shadow: 0 0 8px var(--text-accent, #00ffcc);
 }
 
 .sys-btn.reset {

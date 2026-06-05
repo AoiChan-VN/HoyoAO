@@ -30,7 +30,6 @@
     backface-visibility: visible;
 }
 
-/* Định vị ma trận hình học lập phương lộn ngược hướng thẳng bề mặt ảnh vào tâm camera (0,0,0) */
 .front  { transform: rotateY(0deg)    translateZ(var(--skybox-negative-half-size, -1000px)); }
 .back   { transform: rotateY(180deg)  translateZ(var(--skybox-negative-half-size, -1000px)); }
 .left   { transform: rotateY(-90deg)  translateZ(var(--skybox-negative-half-size, -1000px)); }

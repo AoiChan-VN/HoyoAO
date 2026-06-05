@@ -1,30 +1,27 @@
+import { VRStatusSkybox } from './src/components/skybox/skybox.js';
+import { VRStatusPanel } from './src/components/panel/panel.js';
+import { VRStatusCard } from './src/components/card/card.js';
+import { VRStatusSettings } from './src/components/settings/settings.js';
+import { VRStatusModal } from './src/components/modal/modal.js';
 import { BootstrapApp } from './src/app.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const app = new BootstrapApp({
-        viewportId: 'vr-viewport',
-        sceneRootId: 'vr-scene-root',
-        loaderId: 'app-loader'
-    });
-    app.init();
+    try {
+        if (!customElements.get('vr-skybox')) customElements.define('vr-skybox', VRStatusSkybox);
+        if (!customElements.get('vr-panel')) customElements.define('vr-panel', VRStatusPanel);
+        if (!customElements.get('vr-card')) customElements.define('vr-card', VRStatusCard);
+        if (!customElements.get('vr-settings')) customElements.define('vr-settings', VRStatusSettings);
+        if (!customElements.get('vr-modal')) customElements.define('vr-modal', VRStatusModal);
 
-    const modal = document.getElementById('global-detail-modal');
-    const btnProjects = document.getElementById('nav-trigger-projects');
-    const btnProfile = document.getElementById('nav-trigger-profile');
-
-    if (modal && btnProjects && btnProfile) {
-        btnProjects.addEventListener('click', (e) => {
-            e.stopPropagation();
-            modal.setAttribute('data-type', 'projects');
-            modal.setAttribute('data-title', 'Featured Projects');
-            modal.setAttribute('open', 'true');
+        const app = new BootstrapApp({
+            viewportId: 'vr-viewport',
+            sceneRootId: 'vr-scene-root',
+            loaderId: 'app-loader'
         });
+        
+        app.init();
 
-        btnProfile.addEventListener('click', (e) => {
-            e.stopPropagation();
-            modal.setAttribute('data-type', 'profile');
-            modal.setAttribute('data-title', 'Developer Profile');
-            modal.setAttribute('open', 'true');
-        });
+    } catch (error) {
+        console.error(error);
     }
 });

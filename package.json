@@ -1,22 +1,21 @@
 {
   "name": "portfolio-vr-platform",
   "version": "1.0.0",
-  "description": "Production Personal Portfolio VR Platform with Vanilla JS",
+  "description": "International Production Platform Web VR-XR with Vanilla JS",
   "type": "module",
   "scripts": {
     "start": "serve ."
   },
   "keywords": [
     "vanilla-js",
-    "webgl",
-    "vr",
-    "gyroscope",
-    "markdown-parser"
+    "webxr",
+    "spatial-ui",
+    "parallax-3d",
+    "gyroscope"
   ],
-  "author": "AI Developer",
+  "author": "Aoi Dev",
   "license": "MIT",
   "dependencies": {
     "serve": "^14.2.6"
   }
 }
- 

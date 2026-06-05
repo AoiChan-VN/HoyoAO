@@ -53,11 +53,6 @@ vr-skybox {
     height: 100vh;
     pointer-events: none;
     z-index: var(--z-index-overlay, 100);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 24px;
-    box-sizing: border-box;
 }
 
 #ui-overlay-layer > * {
@@ -65,6 +60,9 @@ vr-skybox {
 }
 
 .ui-header-left {
+    position: absolute;
+    top: 24px;
+    left: 24px;
     display: flex;
     align-items: center;
     background: rgba(10, 10, 15, 0.6);
@@ -85,7 +83,7 @@ vr-skybox {
 }
 
 .ui-logo-text {
-    font-family: var(--font-mono);
+    font-family: var(--font-primary);
     font-size: 14px;
     font-weight: 700;
     color: #ffffff;
@@ -95,11 +93,10 @@ vr-skybox {
 
 vr-panel,
 vr-settings {
-    animation: vrSpatialFloating 8s ease-in-out infinite alternate;
+    animation: vrSpatialFloating 6s ease-in-out infinite alternate;
 }
 
 @keyframes vrSpatialFloating {
-    0% { margin-top: 0px; }
-    100% { margin-top: -8px; }
+    0% { margin-top: -4px; }
+    100% { margin-top: 4px; }
 }
- 

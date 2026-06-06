@@ -8,7 +8,7 @@
 </p>
 
 <details>
-  <summary><b>Nhấn vào đây để xem hướng dẫn cài đặt chi tiết</b></summary>
+  <summary><b>【Hướng dẫn】</b></summary>
 
   ### Các bước thực hiện:
   1. Chạy lệnh `npm install`
@@ -19,11 +19,11 @@
 <table width="100%">
   <tr>
     <td width="50%">
-      <h3>Giao diện trên Máy tính</h3>
+      <h3>Giao diện「Máy tính」</h3>
       <img src="https://placeholder.com" alt="Desktop View">
     </td>
     <td width="50%">
-      <h3>Giao diện trên Điện thoại</h3>
+      <h3>Giao diện「Điện thoại」</h3>
       <img src="https://placeholder.com" alt="Mobile View">
     </td>
   </tr>

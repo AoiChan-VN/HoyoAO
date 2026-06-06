@@ -1,8 +1,3 @@
-import { VRStatusSkybox } from './components/skybox/skybox.js';
-import { VRStatusPanel } from './components/panel/panel.js';
-import { VRStatusCard } from './components/card/card.js';
-import { VRStatusSettings } from './components/settings/settings.js';
-import { VRStatusModal } from './components/modal/modal.js';
 import { VRCameraMatrix } from './core/matrix.js';
 import { VRGyroscopeSensor } from './core/gyroscope.js';
 
@@ -29,17 +24,17 @@ export class BootstrapApp {
             this.loaderNode = document.getElementById(this.loaderId);
 
             if (!this.viewportNode || !this.sceneRootNode || !this.loaderNode) {
-                throw new Error("Critical DOM infrastructure collapse.");
+                throw new Error("Core elements missing.");
             }
 
             this.cameraMatrix = new VRCameraMatrix(this.sceneRootNode);
             
-            this.gyroSensor = new VRGyroscopeSensor((rotationX, rotationY) => {
+            this.gyroSensor = new VRGyrosensorCore((rotationX, rotationY) => {
                 this.cameraMatrix.updateOrientation(rotationX, rotationY);
             });
 
-            this._setupSpatialObjects();
-            this._setupGlobalEventListeners();
+            this._setupSpatialLayout();
+            this._setupGlobalEvents();
             this._setupSpatialInteractionEngine();
             this._handleSystemReadyState();
 
@@ -48,21 +43,21 @@ export class BootstrapApp {
         }
     }
 
-    _setupSpatialObjects() {
-        const spatialElements = this.sceneRootNode.querySelectorAll('vr-panel, vr-settings');
-        spatialElements.forEach((el, index) => {
-            const initialZ = -450;
-            const initialXOffset = index === 0 ? -180 : 180;
-            const initialYOffset = index === 0 ? 0 : 0;
+    _setupSpatialLayout() {
+        const spatialElements = this.sceneRootNode.querySelectorAll('vr-panel, vr-dashboard, vr-spatial-viewer');
+        spatialElements.forEach((el) => {
+            const tagName = el.tagName.toLowerCase();
+            let initialTransform = { x: 0, y: 0, z: -450, rotX: 0, rotY: 0 };
 
-            this.objectTransforms.set(el, {
-                x: initialXOffset,
-                y: initialYOffset,
-                z: initialZ,
-                rotX: 0,
-                rotY: index === 0 ? 12 : -12
-            });
+            if (tagName === 'vr-panel') {
+                initialTransform = { x: -220, y: 0, z: -450, rotX: 0, rotY: 12 };
+            } else if (tagName === 'vr-dashboard') {
+                initialTransform = { x: 220, y: 50, z: -450, rotX: -5, rotY: -12 };
+            } else if (tagName === 'vr-spatial-viewer') {
+                initialTransform = { x: 0, y: 0, z: -900, rotX: 0, rotY: 0 };
+            }
 
+            this.objectTransforms.set(el, initialTransform);
             this._applySpatialTransform(el);
         });
     }
@@ -80,7 +75,7 @@ export class BootstrapApp {
         el.style.transform = `translate3d(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px), ${t.z}px) rotateX(${t.rotX}deg) rotateY(${t.rotY}deg)`;
     }
 
-    _setupGlobalEventListeners() {
+    _setupGlobalEvents() {
         window.addEventListener('vr-gyro-request', async (e) => {
             if (!this.gyroSensor) return;
             if (e.detail.action === 'start') {
@@ -93,14 +88,14 @@ export class BootstrapApp {
 
     _setupSpatialInteractionEngine() {
         const handleStart = (e) => {
-            const target = e.target.closest('vr-panel, vr-settings');
+            const target = e.target.closest('vr-panel, vr-dashboard, vr-spatial-viewer');
             if (!target || e.target.closest('button, a, vr-card')) return;
 
             this.isDragging = true;
             this.activeObject = target;
             
-            const clientX = e.touches ? e.touches.clientX : e.clientX;
-            const clientY = e.touches ? e.touches.clientY : e.clientY;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
             this.dragStart.x = clientX;
             this.dragStart.y = clientY;
@@ -111,8 +106,8 @@ export class BootstrapApp {
         const handleMove = (e) => {
             if (!this.isDragging || !this.activeObject) return;
 
-            const clientX = e.touches ? e.touches.clientX : e.clientX;
-            const clientY = e.touches ? e.touches.clientY : e.clientY;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
             const deltaX = clientX - this.dragStart.x;
             const deltaY = clientY - this.dragStart.y;

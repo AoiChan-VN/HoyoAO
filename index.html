@@ -1,31 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    >
+    <meta
+        http-equiv="X-UA-Compatible"
+        content="IE=edge"
+    >
 
-<title>𝓐𝓸𝓲𝓒𝓱𝓪𝓷︵❤</title>
+    <title>XR Spatial Dashboard</title>
 
-<link rel="stylesheet" href="./styles/reset.css">
-<link rel="stylesheet" href="./styles/variables.css">
-<link rel="stylesheet" href="./styles/global.css">
+    <link
+        rel="icon"
+        href="./favicon.ico"
+        type="image/x-icon"
+    >
 
-<script type="module" src="./src/main.js"></script>
+    <link
+        rel="stylesheet"
+        href="./assets/css/fallback.css"
+    >
 </head>
-
 <body>
+    <div id="xr-loader" aria-live="polite">
+        <div id="xr-loader-content">
+            <div id="xr-loader-spinner"></div>
+            <div id="xr-loader-text">𝓐𝓸𝓲𝓒𝓱𝓪𝓷︵❤</div>
+        </div>
+    </div>
 
-<div id="app">
+    <canvas
+        id="xr-canvas"
+        aria-label="XR Rendering Surface"
+    ></canvas>
 
-<div id="viewport">
+    <noscript>
+        <div id="xr-noscript">
+            JavaScript is required to run this XR platform.
+        </div>
+    </noscript>
 
-<div id="world"></div>
-
-</div>
-
-</div>
-
+    <script type="module" src="./js/app.js"></script>
 </body>
 </html>

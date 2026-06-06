@@ -18,42 +18,44 @@ export class BootstrapApp {
     }
 
     init() {
+        this.viewportNode = document.getElementById(this.viewportId);
+        this.sceneRootNode = document.getElementById(this.sceneRootId);
+        this.loaderNode = document.getElementById(this.loaderId);
+
+        if (!this.viewportNode || !this.sceneRootNode || !this.loaderNode) {
+            console.error("[VR Core Error]: Critical DOM nodes missing.");
+            return;
+        }
+
         try {
-            this.viewportNode = document.getElementById(this.viewportId);
-            this.sceneRootNode = document.getElementById(this.sceneRootId);
-            this.loaderNode = document.getElementById(this.loaderId);
-
-            if (!this.viewportNode || !this.sceneRootNode || !this.loaderNode) {
-                throw new Error("Core elements missing.");
-            }
-
             this.cameraMatrix = new VRCameraMatrix(this.sceneRootNode);
             
-            this.gyroSensor = new VRGyrosensorCore((rotationX, rotationY) => {
-                this.cameraMatrix.updateOrientation(rotationX, rotationY);
+            this.gyroSensor = new VRGyroscopeSensor((rotationX, rotationY) => {
+                if (this.cameraMatrix) {
+                    this.cameraMatrix.updateOrientation(rotationX, rotationY);
+                }
             });
 
-            this._setupSpatialLayout();
-            this._setupGlobalEvents();
+            this._setupSpatialObjects();
+            this._setupGlobalEventListeners();
             this._setupSpatialInteractionEngine();
-            this._handleSystemReadyState();
-
         } catch (error) {
-            console.error(error);
+            console.error("[VR Engine Init Warning]:", error);
+        } finally {
+            this._handleSystemReadyState();
         }
     }
 
-    _setupSpatialLayout() {
+    _setupSpatialObjects() {
         const spatialElements = this.sceneRootNode.querySelectorAll('vr-panel, vr-dashboard, vr-spatial-viewer');
-        spatialElements.forEach((el) => {
-            const tagName = el.tagName.toLowerCase();
+        spatialElements.forEach((el, index) => {
             let initialTransform = { x: 0, y: 0, z: -450, rotX: 0, rotY: 0 };
 
-            if (tagName === 'vr-panel') {
-                initialTransform = { x: -220, y: 0, z: -450, rotX: 0, rotY: 12 };
-            } else if (tagName === 'vr-dashboard') {
-                initialTransform = { x: 220, y: 50, z: -450, rotX: -5, rotY: -12 };
-            } else if (tagName === 'vr-spatial-viewer') {
+            if (el.tagName.toLowerCase() === 'vr-panel') {
+                initialTransform = { x: -200, y: 0, z: -450, rotX: 0, rotY: 12 };
+            } else if (el.tagName.toLowerCase() === 'vr-dashboard') {
+                initialTransform = { x: 200, y: 30, z: -450, rotX: -5, rotY: -12 };
+            } else if (el.tagName.toLowerCase() === 'vr-spatial-viewer') {
                 initialTransform = { x: 0, y: 0, z: -900, rotX: 0, rotY: 0 };
             }
 
@@ -75,7 +77,7 @@ export class BootstrapApp {
         el.style.transform = `translate3d(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px), ${t.z}px) rotateX(${t.rotX}deg) rotateY(${t.rotY}deg)`;
     }
 
-    _setupGlobalEvents() {
+    _setupGlobalEventListeners() {
         window.addEventListener('vr-gyro-request', async (e) => {
             if (!this.gyroSensor) return;
             if (e.detail.action === 'start') {
@@ -94,8 +96,8 @@ export class BootstrapApp {
             this.isDragging = true;
             this.activeObject = target;
             
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const clientX = e.touches ? e.touches.clientX : e.clientX;
+            const clientY = e.touches ? e.touches.clientY : e.clientY;
             
             this.dragStart.x = clientX;
             this.dragStart.y = clientY;
@@ -106,8 +108,8 @@ export class BootstrapApp {
         const handleMove = (e) => {
             if (!this.isDragging || !this.activeObject) return;
 
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const clientX = e.touches ? e.touches.clientX : e.clientX;
+            const clientY = e.touches ? e.touches.clientY : e.clientY;
 
             const deltaX = clientX - this.dragStart.x;
             const deltaY = clientY - this.dragStart.y;
@@ -151,12 +153,12 @@ export class BootstrapApp {
             if (!this.loaderNode) return;
             this.loaderNode.style.opacity = '0';
             setTimeout(() => {
-                this.loaderNode.style.display = 'none';
+                if (this.loaderNode) this.loaderNode.style.display = 'none';
             }, 500);
         };
 
         if (document.readyState === 'complete') {
-            dismissLoader();
+            requestAnimationFrame(dismissLoader);
         } else {
             window.addEventListener('load', dismissLoader, { once: true });
         }

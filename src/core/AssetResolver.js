@@ -1,24 +1,24 @@
 export default class AssetResolver {
 
-    static base() {
+    static getBasePath() {
 
-        const path =
-        window.location.pathname;
+        const segments =
+            window.location.pathname
+            .split("/")
+            .filter(Boolean);
 
-        if(
-            path.includes("/Website/")
-        ){
-            return "/Website/";
+        if (segments.length > 0) {
+            return `/${segments[0]}/`;
         }
 
-        return "./";
+        return "/";
     }
 
-    static resolve(asset){
+    static resolve(assetPath) {
 
-        return new URL(
-            asset,
-            AssetResolver.base()
-        ).toString();
+        const clean =
+            assetPath.replace(/^\/+/, "");
+
+        return `${this.getBasePath()}${clean}`;
     }
-} 
+}

@@ -1,7 +1,6 @@
 ├── index.html                  # Điểm khởi tạo duy nhất, chứa thẻ <canvas id="xr-canvas">
-├── cname                       # Cname cấu hình Custom Domain cho GitHub Pages
 ├── favicon.ico                 # Icon trình duyệt bắt buộc của nền tảng
-├── assets/                     # Tài nguyên nội bộ cô lập hoàn toàn
+├── assets/                     # Tài nguyên nội bộ cô lập hoàn toàn (Sử dụng ./assets/ để gọi)
 │   ├── css/
 │   │   └── fallback.css        # Style reset toàn màn hình, ẩn scrollbar, màn hình chờ (Loader)
 │   ├── textures/
@@ -18,11 +17,11 @@
 │   ├── audio/
 │   │   ├── spatial-click.mp3   # Âm thanh phản hồi tần số thấp khi ngón tay chạm HUD 3D
 │   │   └── ambient-space.mp3   # Âm thanh nền không gian lặp (Loop) phục vụ Spatial Audio
-│   └── docs/                   # [BỔ SUNG] Kho tài liệu tĩnh nội bộ phục vụ hiển thị trong XR
+│   └── docs/                   # Kho tài liệu tĩnh nội bộ phục vụ hiển thị trong XR
 │       ├── system-guide.md     # Tài liệu định dạng Markdown (.md) hướng dẫn hệ thống
 │       ├── security-policy.md  # Tài liệu bảo mật định dạng Markdown (.md)
 │       └── whitepaper.pdf      # Tài liệu chuyên sâu dạng định dạng PDF
-└── js/                         # Toàn bộ logic hệ thống (Thuần ES Modules)
+└── js/                         # Toàn bộ logic hệ thống (Thuần ES Modules - Sử dụng ./js/ để import)
     ├── app.js                  # Entry point: Khởi tạo Engine, Monitor, và kích hoạt Vòng lặp
     ├── core/
     │   ├── webgl-context.js    # Kích hoạt WebGL2 Context, kiểm tra phần cứng mở rộng (Extensions)
@@ -37,7 +36,7 @@
     │   ├── skybox.shader.js    # Vertex + Fragment Shader dựng hộp không gian, ánh sáng Mặt Trời
     │   ├── hologram.shader.js  # Shader phủ lưới Grid, hiệu ứng phát sáng quét cạnh (Glow edge)
     │   ├── lighting.shader.js  # Blinn-Phong Shader tính toán vector ánh sáng đổi hướng thực tế
-    │   └── text-render.shader.js # [BỔ SUNG] Shader chuyên dụng hiển thị ký tự chữ sắc nét trong không gian 3D
+    │   └── text-render.shader.js # Shader chuyên dụng hiển thị ký tự chữ sắc nét trong không gian 3D
     ├── database/
     │   ├── platform-state.js   # Quản lý State tập trung (Trạng thái Bật/Tắt Dashboard, vị trí HUD)
     │   └── scenes-db.js        # Khai báo cấu trúc Mapping dữ liệu từ file .md/.pdf vào đối tượng 3D
@@ -48,7 +47,7 @@
     │   ├── raycaster.js        # Thuật toán bắn tia va chạm (Bounding Box) từ chuột/tay cầm
     │   ├── drag-3d.js          # Chuyển đổi tọa độ 2D của chuột sang không gian 3D để kéo thả
     │   └── motion-sensor.js    # Đọc dữ liệu Gyroscope/Accelerometer trên thiết bị di động
-    ├── parser/                 # [BỔ SUNG] Phân hệ biên dịch tài liệu thuần Vanilla
+    ├── parser/                 # Phân hệ biên dịch tài liệu thuần Vanilla
     │   ├── md-parser.js        # Bộ biên dịch Markdown thuần (Chuyển cú pháp MD sang mảng Vector ký tự)
     │   └── pdf-loader.js       # Bộ xử lý nhị phân đọc luồng dữ liệu PDF tĩnh hiển thị lên Canvas phụ
     └── components/
@@ -56,6 +55,5 @@
         ├── hud-telemetry.js    # Vẽ bảng thông số phần cứng 3D (Bị ẩn/hiện bởi Menu điều khiển)
         ├── hud-validator.js    # Vẽ bảng trạng thái kiểm tra lỗi code (Bị ẩn/hiện bởi Menu điều khiển)
         ├── spatial-button.js   # Xử lý hình học nút bấm 3D, tính toán biên độ lún khi va chạm
-        ├── doc-panel.js        # [BỔ SUNG] Bảng Hologram 3D cuộn trang để đọc nội dung tài liệu .md/.pdf
-        └── spatial-menu.js     # [BỔ SUNG] Khối Menu Hologram 3D chữ ≡ (Chứa logic ẩn/hiện, cài đặt hệ thống)
- 
+        ├── doc-panel.js        # Bảng Hologram 3D cuộn trang để đọc nội dung tài liệu .md/.pdf
+        └── spatial-menu.js     # Khối Menu Hologram 3D chữ ≡ (Chứa logic ẩn/hiện, cài đặt hệ thống)

@@ -56,7 +56,10 @@ export default class Engine {
 
         for (const entity of this.registry.getAll()) {
 
-            this.physics.update(entity);
+            this.physics.update(
+                entity,
+                dt
+            );
         }
 
         for (const system of this.systems) {

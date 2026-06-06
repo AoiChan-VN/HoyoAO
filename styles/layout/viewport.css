@@ -1,0 +1,60 @@
+html {
+    background: var(--color-bg);
+}
+
+body {
+    color: var(--color-text);
+    font-family:
+        Inter,
+        system-ui,
+        sans-serif;
+}
+
+#viewport {
+    position: relative;
+
+    width: 100vw;
+    height: 100vh;
+
+    overflow: hidden;
+
+    perspective: var(--fov);
+    perspective-origin: center center;
+
+    transform-style: preserve-3d;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(59, 130, 246, 0.08),
+            transparent 60%
+        ),
+        linear-gradient(
+            180deg,
+            #020617,
+            #030712
+        );
+}
+
+#spatial-root {
+    position: absolute;
+    inset: 0;
+
+    transform-style: preserve-3d;
+
+    will-change: transform;
+
+    transform:
+        rotateX(var(--camera-rotate-x))
+        rotateY(var(--camera-rotate-y));
+}
+
+.spatial-layer {
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    transform-style: preserve-3d;
+    will-change: transform;
+} 

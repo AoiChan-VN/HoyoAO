@@ -1,14 +1,12 @@
 /* ==========================================================================
-   SPATIAL SKYBOX STYLE
-   Định dạng hình học khối hộp lập phương lộn ngược úp vào tâm nhìn.
-   Sử dụng kích thước lớn bao bọc toàn bộ hệ thống thực thể không gian bên trong.
+   SPATIAL SKYBOX STYLE (PATCHED)
+   Sửa góc xoay hình học để hướng mặt chứa texture vào tâm nhìn của người dùng.
    ========================================================================== */
 
 :host {
     position: absolute;
     width: 2000px;
     height: 2000px;
-    /* Bảo toàn không gian 3D cho toàn bộ các mặt phẳng con */
     transform-style: preserve-3d;
     pointer-events: none;
     z-index: 1;
@@ -21,50 +19,50 @@
     transform-style: preserve-3d;
 }
 
-/* Định cấu trúc chung cho toàn bộ 6 mặt phẳng không gian */
 .skybox-face {
     position: absolute;
     width: 2000px;
     height: 2000px;
-    background-size: 101% 101%; /* Chống hiện tượng rách lưới/lộ viền trắng ở các khớp nối */
+    background-size: 100% 100%;
     background-position: center;
     background-repeat: no-repeat;
-    /* Kích hoạt cơ chế nén đồ họa phần cứng trên GPU */
     will-change: transform;
+    /* Tắt backface-visibility để không lỗi trên mobile safari */
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
 }
 
 /* ==========================================================================
-   MA TRẬN DỊCH CHUYỂN 6 MẶT PHẲNG (Cự ly đẩy ra xa tâm = 1000px)
+   MA TRẬN HÌNH HỌC LẬT TRONG (Độ sâu đẩy lùi d = 1000px)
+   Xoay các mặt 180 độ hướng vào trong lòng khối lập phương.
    ========================================================================== */
 
-/* Mặt trước - Hướng trục +Z */
+/* Mặt trước - pz.webp */
 .face-front {
-    transform: translateZ(-1000px) rotateY(0deg);
+    transform: translateZ(-1000px) rotateY(180deg);
 }
 
-/* Mặt sau - Hướng trục -Z (Quay 180 độ) */
+/* Mặt sau - nz.webp */
 .face-back {
-    transform: translateZ(1000px) rotateY(180deg);
+    transform: translateZ(1000px) rotateY(0deg);
 }
 
-/* Mặt trái - Hướng trục +X (Quay -90 độ) */
+/* Mặt trái - px.webp */
 .face-left {
     transform: translateX(-1000px) rotateY(90deg);
 }
 
-/* Mặt phải - Hướng trục -X (Quay 90 độ) */
+/* Mặt phải - nx.webp */
 .face-right {
     transform: translateX(1000px) rotateY(-90deg);
 }
 
-/* Mặt trên - Hướng trục +Y (Quay 90 độ quanh trục X) */
+/* Mặt trên - py.webp */
 .face-top {
     transform: translateY(-1000px) rotateX(-90deg);
 }
 
-/* Mặt dưới - Hướng trục -Y (Quay -90 độ quanh trục X) */
+/* Mặt dưới - ny.webp */
 .face-bottom {
     transform: translateY(1000px) rotateX(90deg);
 }

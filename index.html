@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Cyberpunk Spatial Portfolio v1.0</title>
+    <!-- Hệ thống hạ tầng cô lập tương tác và định nghĩa biến số FOV -->
+    <link rel="stylesheet" href="styles/base/reset.css">
+    <link rel="stylesheet" href="styles/base/variables.css">
+    <link rel="stylesheet" href="styles/layout/viewport.css">
+</head>
+<body>
+
+    <!-- Lớp Viewport tối cao thiết lập trường nhìn Perspective FOV -->
+    <div class="spatial-viewport">
+        <!-- Lớp Stage bảo toàn cấu trúc hình học preserve-3d cho ma trận thực thể -->
+        <div class="spatial-stage" id="spatial-stage">
+            
+            <!-- Thực thể 1: Khối lập phương Skybox 6 mặt úp vào tâm nhìn -->
+            <spatial-skybox></spatial-skybox>
+
+            <!-- Thực thể 2: HUD Dashboard VR - Bảng menu, thanh điều hướng lơ lửng -->
+            <spatial-dashboard></spatial-dashboard>
+
+            <!-- Thực thể 3: Viewer xem tài liệu chi tiết (Thay thế Modal 2D cũ) -->
+            <spatial-viewer></spatial-viewer>
+
+        </div>
+    </div>
+
+    <!-- Điểm kích hoạt tối cao - Đăng ký Custom Elements vào Registry -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>
+ 

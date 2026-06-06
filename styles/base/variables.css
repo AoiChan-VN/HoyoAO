@@ -1,0 +1,48 @@
+:root {
+    /* Colors */
+    --color-bg: #030712;
+    --color-surface: rgba(15, 23, 42, 0.55);
+
+    --color-cyan: #00f6ff;
+    --color-blue: #3b82f6;
+    --color-purple: #8b5cf6;
+    --color-pink: #ff3cac;
+
+    --color-text: #f8fafc;
+    --color-text-muted: #94a3b8;
+
+    /* Depth */
+    --fov: 1200px;
+
+    --depth-near: 200px;
+    --depth-mid: 800px;
+    --depth-far: 1600px;
+
+    /* Camera */
+    --camera-rotate-x: 0deg;
+    --camera-rotate-y: 0deg;
+
+    /* Physics */
+    --drag-friction: 0.92;
+    --drag-strength: 1;
+
+    /* Glow */
+    --glow-soft:
+        0 0 12px rgba(0, 246, 255, 0.3);
+
+    --glow-medium:
+        0 0 24px rgba(0, 246, 255, 0.45);
+
+    --glow-hard:
+        0 0 40px rgba(0, 246, 255, 0.65);
+
+    /* Radius */
+    --radius-sm: 12px;
+    --radius-md: 20px;
+    --radius-lg: 32px;
+
+    /* Animation */
+    --transition-fast: 150ms;
+    --transition-normal: 250ms;
+    --transition-slow: 500ms;
+} 

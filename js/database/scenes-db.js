@@ -94,17 +94,17 @@ export const SCENES_DB = {
     environment: {
         skybox: {
             positiveX:
-                './assets/textures/skybox/px.jpg',
+                './assets/textures/skybox/px.webp',
             negativeX:
-                './assets/textures/skybox/nx.jpg',
+                './assets/textures/skybox/nx.webp',
             positiveY:
-                './assets/textures/skybox/py.jpg',
+                './assets/textures/skybox/py.webp',
             negativeY:
-                './assets/textures/skybox/ny.jpg',
+                './assets/textures/skybox/ny.webp',
             positiveZ:
-                './assets/textures/skybox/pz.jpg',
+                './assets/textures/skybox/pz.webp',
             negativeZ:
-                './assets/textures/skybox/nz.jpg'
+                './assets/textures/skybox/nz.webp'
         },
 
         hologramGrid:

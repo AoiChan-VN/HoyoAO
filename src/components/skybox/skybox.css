@@ -36,4 +36,3 @@
 .right  { transform: rotateY(90deg)   translateZ(var(--skybox-negative-half-size, -1000px)); }
 .top    { transform: rotateX(90deg)   translateZ(var(--skybox-negative-half-size, -1000px)); }
 .bottom { transform: rotateX(-90deg)  translateZ(var(--skybox-negative-half-size, -1000px)); }
- 

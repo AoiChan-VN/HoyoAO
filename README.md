@@ -1,12 +1,30 @@
-```html
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Aoi-VR Platform</title>
-</head>
-<body>
-  <h1>𝓐𝓸𝓲𝓒𝓱𝓪𝓷︵❤</h1>
-</body>
-</html>
-```
+<p align="center">
+  <img src="src/assets/icons/logo.svg" alt="Logo Dự Án" width="50" />
+  <h1 align="center">𝓐𝓸𝓲𝓒𝓱𝓪𝓷︵❤</h1>
+</p>
+
+<p align="center">
+  Production VR-XR Platform.
+</p>
+
+<details>
+  <summary><b>Nhấn vào đây để xem hướng dẫn cài đặt chi tiết</b></summary>
+
+  ### Các bước thực hiện:
+  1. Chạy lệnh `npm install`
+  2. Tạo file `.env`
+  3. Chạy `npm start` để khởi động dự án.
+</details>
+
+<table width="100%">
+  <tr>
+    <td width="50%">
+      <h3>Giao diện trên Máy tính</h3>
+      <img src="https://placeholder.com" alt="Desktop View">
+    </td>
+    <td width="50%">
+      <h3>Giao diện trên Điện thoại</h3>
+      <img src="https://placeholder.com" alt="Mobile View">
+    </td>
+  </tr>
+</table>

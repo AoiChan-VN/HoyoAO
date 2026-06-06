@@ -1,13 +1,14 @@
 /**
  * ==========================================================================
- * ULTRA-COMPATIBLE SPATIAL SKYBOX SUBSYSTEM (MOBILE RE-INDEX)
+ * ULTRA-COMPATIBLE LIGHT-DOM SPATIAL SKYBOX
+ * Khai tử hoàn toàn Shadow DOM để cứu luồng ma trận 3D trên trình duyệt di động.
+ * Tự động nạp trực tiếp các mặt phẳng không gian vào Light DOM của Stage cha.
  * ==========================================================================
  */
 
 export class SpatialSkybox extends HTMLElement {
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
         this.isLoaded = false;
     }
 
@@ -28,10 +29,7 @@ export class SpatialSkybox extends HTMLElement {
     }
 
     render() {
-        const styleLink = document.createElement('link');
-        styleLink.setAttribute('rel', 'stylesheet');
-        styleLink.setAttribute('href', 'src/components/skybox/skybox.css');
-
+        // Tạo thùng chứa nội bộ bằng thẻ div thường thay vì Shadow Root
         const container = document.createElement('div');
         container.setAttribute('class', 'skybox-container');
 
@@ -53,7 +51,7 @@ export class SpatialSkybox extends HTMLElement {
             container.appendChild(faceDiv);
         });
 
-        this.shadowRoot.appendChild(styleLink);
-        this.shadowRoot.appendChild(container);
+        // Đẩy thẳng container vào thân thẻ (Light DOM) giúp giữ liên kết preserve-3d với stage cha
+        this.appendChild(container);
     }
 }

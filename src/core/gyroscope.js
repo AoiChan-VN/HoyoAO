@@ -69,4 +69,3 @@ export class VRGyroscopeSensor {
         this.onUpdateCallback(this.smoothedX, this.smoothedY);
     }
 }
- 

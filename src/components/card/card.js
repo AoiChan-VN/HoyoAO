@@ -42,19 +42,19 @@ export class VRStatusCard extends HTMLElement {
         }
     }
 
-    _triggerModal(e) {
+    _triggerSpatialViewer(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        const modal = document.getElementById('global-detail-modal');
-        if (!modal) return;
+        const viewer = document.getElementById('global-spatial-viewer');
+        if (!viewer) return;
         
         const type = this.getAttribute('type');
         const title = this.getAttribute('title');
         
-        modal.setAttribute('data-type', type);
-        modal.setAttribute('data-title', title);
-        modal.setAttribute('open', 'true');
+        viewer.setAttribute('data-type', type);
+        viewer.setAttribute('data-title', title);
+        viewer.setAttribute('open', 'true');
     }
 
     render() {
@@ -69,9 +69,8 @@ export class VRStatusCard extends HTMLElement {
 
         const cardElement = this.shadowRoot.getElementById('main-card-element');
         if (cardElement) {
-            cardElement.addEventListener('click', (e) => this._triggerModal(e));
-            cardElement.addEventListener('touchend', (e) => this._triggerModal(e));
+            cardElement.addEventListener('click', (e) => this._triggerSpatialViewer(e));
+            cardElement.addEventListener('touchend', (e) => this._triggerSpatialViewer(e));
         }
     }
 }
- 

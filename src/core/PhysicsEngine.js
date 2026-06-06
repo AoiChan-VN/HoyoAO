@@ -2,26 +2,31 @@ export default class PhysicsEngine {
 
     constructor() {
 
-        this.friction = 0.92;
+        this.friction = 8;
     }
 
-    update(entity) {
+    update(entity, dt) {
 
-        entity.x += entity.vx;
-        entity.y += entity.vy;
-        entity.z += entity.vz;
+        entity.x += entity.vx * dt;
+        entity.y += entity.vy * dt;
+        entity.z += entity.vz * dt;
 
-        entity.vx *= this.friction;
-        entity.vy *= this.friction;
-        entity.vz *= this.friction;
+        const damping =
+            Math.exp(
+                -this.friction * dt
+            );
 
-        if(Math.abs(entity.vx)<0.001)
-            entity.vx=0;
+        entity.vx *= damping;
+        entity.vy *= damping;
+        entity.vz *= damping;
 
-        if(Math.abs(entity.vy)<0.001)
-            entity.vy=0;
+        if (Math.abs(entity.vx) < 0.01)
+            entity.vx = 0;
 
-        if(Math.abs(entity.vz)<0.001)
-            entity.vz=0;
+        if (Math.abs(entity.vy) < 0.01)
+            entity.vy = 0;
+
+        if (Math.abs(entity.vz) < 0.01)
+            entity.vz = 0;
     }
-} 
+}

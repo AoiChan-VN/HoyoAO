@@ -4,11 +4,15 @@ export default class MatrixRenderer {
 
         this.world = world;
         this.camera = camera;
+
+        this.cache =
+            new WeakMap();
     }
 
     render(registry) {
 
-        const cam = this.camera;
+        const cam =
+            this.camera;
 
         this.world.style.transform =
         `
@@ -26,9 +30,7 @@ export default class MatrixRenderer {
 
         for (const entity of entities) {
 
-            if (!entity.element) continue;
-
-            entity.element.style.transform =
+            const transform =
             `
             translate3d(
                 ${entity.x}px,
@@ -39,6 +41,22 @@ export default class MatrixRenderer {
             rotateY(${entity.ry || 0}deg)
             rotateZ(${entity.rz || 0}deg)
             `;
+
+            if (
+                this.cache.get(
+                    entity.element
+                ) === transform
+            ) {
+                continue;
+            }
+
+            entity.element.style.transform =
+                transform;
+
+            this.cache.set(
+                entity.element,
+                transform
+            );
         }
     }
-} 
+}

@@ -1,48 +1,51 @@
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    >
-    <meta
-        http-equiv="X-UA-Compatible"
-        content="IE=edge"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="VR Showroom WebGL2 với hệ thống bài viết Markdown tương tác.">
+    <meta name="theme-color" content="#0b0f14">
 
-    <title>𝓐𝓸𝓲𝓒𝓱𝓪𝓷</title>
+    <title>VR Showroom</title>
 
-    <link
-        rel="icon"
-        href="./favicon.ico"
-        type="image/x-icon"
-    >
-
-    <link
-        rel="stylesheet"
-        href="./assets/css/fallback.css"
-    >
+    <link rel="icon" href="./assets/branding/favicon.ico">
+    <link rel="stylesheet" href="./assets/css/main.css">
 </head>
 <body>
-    <div id="xr-loader" aria-live="polite">
-        <div id="xr-loader-content">
-            <div id="xr-loader-spinner"></div>
-            <div id="xr-loader-text">𝓐𝓸𝓲𝓒𝓱𝓪𝓷︵❤</div>
+
+    <div id="app">
+
+        <canvas
+            id="vr-canvas"
+            aria-label="VR Scene"
+            tabindex="0">
+        </canvas>
+
+        <div id="ui-root">
+
+            <nav
+                id="menu-3d-container"
+                aria-label="Navigation Menu">
+            </nav>
+
+            <section
+                id="panel-3d-container"
+                aria-label="Article Panel">
+            </section>
+
         </div>
+
     </div>
 
-    <canvas
-        id="xr-canvas"
-        aria-label="XR Rendering Surface"
-    ></canvas>
-
     <noscript>
-        <div id="xr-noscript">
-            JavaScript is required to run this XR platform.
+        <div class="noscript-warning">
+            Ứng dụng yêu cầu JavaScript để hoạt động.
         </div>
     </noscript>
 
-    <script type="module" src="./js/app.js"></script>
+    <script type="module" src="./src/app.js"></script>
+
 </body>
 </html>
+```

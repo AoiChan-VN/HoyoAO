@@ -1,6 +1,7 @@
 /* ==========================================================================
    WEBGL2 VR ENGINE
    File: src/core/vr-engine.js
+   FIXED VERSION
    ========================================================================== */
 
 import { Mat4, degToRad } from './gl-matrix.js';
@@ -47,6 +48,9 @@ export class VREngine {
         this.uniforms = {};
 
         this.vertexCount = 0;
+
+        this.handleResize =
+            this.resize.bind(this);
     }
 
     async initialize(sceneConfig) {
@@ -80,6 +84,12 @@ export class VREngine {
         gl.cullFace(gl.BACK);
 
         this.resize();
+
+        window.addEventListener(
+            'resize',
+            this.handleResize,
+            { passive: true }
+        );
     }
 
     cacheUniforms() {
@@ -96,6 +106,12 @@ export class VREngine {
             gl.getUniformLocation(
                 this.program,
                 'uViewMatrix'
+            );
+
+        this.uniforms.viewDirection =
+            gl.getUniformLocation(
+                this.program,
+                'uViewDirection'
             );
 
         this.uniforms.baseTexture =
@@ -199,53 +215,23 @@ export class VREngine {
 
         const vertices =
             new Float32Array([
-                -1,-1,-1,
-                 1,-1,-1,
-                 1, 1,-1,
+                -1,-1,-1,  1,-1,-1,  1, 1,-1,
+                -1,-1,-1,  1, 1,-1, -1, 1,-1,
 
-                -1,-1,-1,
-                 1, 1,-1,
-                -1, 1,-1,
+                -1,-1, 1,  1,-1, 1,  1, 1, 1,
+                -1,-1, 1,  1, 1, 1, -1, 1, 1,
 
-                -1,-1, 1,
-                 1,-1, 1,
-                 1, 1, 1,
+                -1,-1,-1, -1, 1,-1, -1, 1, 1,
+                -1,-1,-1, -1, 1, 1, -1,-1, 1,
 
-                -1,-1, 1,
-                 1, 1, 1,
-                -1, 1, 1,
+                 1,-1,-1,  1, 1,-1,  1, 1, 1,
+                 1,-1,-1,  1, 1, 1,  1,-1, 1,
 
-                -1,-1,-1,
-                -1, 1,-1,
-                -1, 1, 1,
+                -1, 1,-1,  1, 1,-1,  1, 1, 1,
+                -1, 1,-1,  1, 1, 1, -1, 1, 1,
 
-                -1,-1,-1,
-                -1, 1, 1,
-                -1,-1, 1,
-
-                 1,-1,-1,
-                 1, 1,-1,
-                 1, 1, 1,
-
-                 1,-1,-1,
-                 1, 1, 1,
-                 1,-1, 1,
-
-                -1, 1,-1,
-                 1, 1,-1,
-                 1, 1, 1,
-
-                -1, 1,-1,
-                 1, 1, 1,
-                -1, 1, 1,
-
-                -1,-1,-1,
-                 1,-1,-1,
-                 1,-1, 1,
-
-                -1,-1,-1,
-                 1,-1, 1,
-                -1,-1, 1
+                -1,-1,-1,  1,-1,-1,  1,-1, 1,
+                -1,-1,-1,  1,-1, 1, -1,-1, 1
             ]);
 
         this.vertexCount =
@@ -257,7 +243,9 @@ export class VREngine {
         this.vertexBuffer =
             gl.createBuffer();
 
-        gl.bindVertexArray(this.vao);
+        gl.bindVertexArray(
+            this.vao
+        );
 
         gl.bindBuffer(
             gl.ARRAY_BUFFER,
@@ -362,18 +350,48 @@ export class VREngine {
         return new Promise(
             (resolve, reject) => {
 
-                const image = new Image();
+                const image =
+                    new Image();
+
+                const timeoutId =
+                    window.setTimeout(
+                        () => {
+
+                            reject(
+                                new Error(
+                                    'Texture timeout: ' +
+                                    url
+                                )
+                            );
+
+                        },
+                        15000
+                    );
 
                 image.onload =
-                    () => resolve(image);
+                    () => {
+
+                        clearTimeout(
+                            timeoutId
+                        );
+
+                        resolve(image);
+                    };
 
                 image.onerror =
-                    () => reject(
-                        new Error(
-                            'Texture load failed: ' +
-                            url
-                        )
-                    );
+                    () => {
+
+                        clearTimeout(
+                            timeoutId
+                        );
+
+                        reject(
+                            new Error(
+                                'Texture load failed: ' +
+                                url
+                            )
+                        );
+                    };
 
                 image.src = url;
             }
@@ -422,8 +440,10 @@ export class VREngine {
             getCameraState();
 
         const aspect =
-            this.canvas.width /
-            this.canvas.height;
+            this.canvas.height > 0
+                ? this.canvas.width /
+                  this.canvas.height
+                : 1;
 
         const projection =
             Mat4.perspective(
@@ -433,21 +453,32 @@ export class VREngine {
                 1000.0
             );
 
-        const yaw =
-            Mat4.rotationY(
-                degToRad(camera.yaw)
-            );
-
-        const pitch =
-            Mat4.rotationX(
-                degToRad(camera.pitch)
-            );
-
         const view =
-            Mat4.multiply(
-                pitch,
-                yaw
+            Mat4.createViewMatrix(
+                camera.yaw,
+                camera.pitch
             );
+
+        const yawRad =
+            degToRad(
+                camera.yaw
+            );
+
+        const pitchRad =
+            degToRad(
+                camera.pitch
+            );
+
+        const viewDirection =
+            new Float32Array([
+                -Math.sin(yawRad) *
+                Math.cos(pitchRad),
+
+                Math.sin(pitchRad),
+
+                -Math.cos(yawRad) *
+                Math.cos(pitchRad)
+            ]);
 
         gl.clearColor(
             0,
@@ -475,6 +506,11 @@ export class VREngine {
             this.uniforms.view,
             false,
             view
+        );
+
+        gl.uniform3fv(
+            this.uniforms.viewDirection,
+            viewDirection
         );
 
         gl.activeTexture(
@@ -516,5 +552,45 @@ export class VREngine {
         );
 
         gl.bindVertexArray(null);
+    }
+
+    destroy() {
+
+        const gl = this.gl;
+
+        window.removeEventListener(
+            'resize',
+            this.handleResize
+        );
+
+        if (this.baseCubemap) {
+            gl.deleteTexture(
+                this.baseCubemap
+            );
+        }
+
+        if (this.parallaxCubemap) {
+            gl.deleteTexture(
+                this.parallaxCubemap
+            );
+        }
+
+        if (this.vertexBuffer) {
+            gl.deleteBuffer(
+                this.vertexBuffer
+            );
+        }
+
+        if (this.vao) {
+            gl.deleteVertexArray(
+                this.vao
+            );
+        }
+
+        if (this.program) {
+            gl.deleteProgram(
+                this.program
+            );
+        }
     }
 } 

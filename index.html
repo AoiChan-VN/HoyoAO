@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Infinity VR Platform</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <!-- Không gian 3D bao cảnh -->
+    <div id="vr-universe">
+        <!-- Cube Skybox 6 mặt tạo môi trường vô cực -->
+        <div class="skybox">
+            <div class="face front"></div>
+            <div class="face back"></div>
+            <div class="face left"></div>
+            <div class="face right"></div>
+            <div class="face top"></div>
+            <div class="face bottom"></div>
+        </div>
+
+        <!-- Bảng điều khiển Dashboard kéo thả tương tác -->
+        <div id="main-dashboard" class="dashboard-panel">
+            <div class="dashboard-header">🛸 CONTROL PANEL (DRAG HERE)</div>
+            <div class="dashboard-body">
+                <h3>System Status: Online</h3>
+                <p>No Framework / Pure Vanilla WebGL</p>
+                <button class="vr-btn">ACTIVATE MATRIX</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
+ 

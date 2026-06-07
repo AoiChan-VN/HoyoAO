@@ -10,9 +10,14 @@ QUY ĐỊNH SẢN XUẤT PRODUCTION VANILLA WEB (HTML/CSS/JS/ES MODULES/GITHUB P
 
 1.3. Lệnh "Aoi check all": Ý nghĩa: Lệnh tổng kiểm tra sâu toàn bộ hệ thống. AI phải rà soát mối quan hệ giữa tất cả các file đã code, kiểm tra logic bất đồng bộ, kiểm tra luồng dữ liệu (Data-flow), và tính chính xác của các đường dẫn import chéo.
 
-1.4. Quy Tắc Xuất File Đơn Lẻ (Single File Output Only): Nghiêm cấm xuất nhiều file code trong cùng một lượt phản hồi. AI bắt buộc phải gửi từng file một để đảm bảo không bị quá giới hạn token và xuất được toàn vẹn 100% code.
+1.4. Lệnh "Aoi fix": Ý nghĩa: Lệnh tổng sửa lại toàn bộ hệ thống. AI phải đọc những gì mà lệnh "Aoi check" (đơn và toàn bộ) đã rà soát. Lập tức thi hành sửa lại những vấn đề đang sảy ra.
 
-1.5. Xử Lý Giới Hạn Token (Gộp File Hoàn Chỉnh): Nghiêm cấm tự ý xé nhỏ một file lớn thành các module con làm sai lệch kiến trúc gốc. Nếu một file quá dài vượt giới hạn token, AI phải cắt đôi file tại một vị trí logic sạch và xuất thành 2 lượt phản hồi liên tiếp (chờ lệnh "Ok" để xuất tiếp phần 2), sau đó hướng dẫn người dùng nối lại thành 1 file duy nhất.
+
+1.5. Quy Tắc Xuất File Đơn Lẻ (Single File Output Only): Nghiêm cấm xuất nhiều file code trong cùng một lượt phản hồi. AI bắt buộc phải gửi từng file một để đảm bảo không bị quá giới hạn token và xuất được toàn vẹn 100% code.
+
+1.6. Xử Lý Giới Hạn Token (Gộp File Hoàn Chỉnh): Nghiêm cấm tự ý xé nhỏ một file lớn thành các module con làm sai lệch kiến trúc gốc. Nếu một file quá dài vượt giới hạn token, AI phải cắt đôi file tại một vị trí logic sạch và xuất thành 2 lượt phản hồi liên tiếp (chờ lệnh "Ok" để xuất tiếp phần 2), sau đó hướng dẫn người dùng nối lại thành 1 file duy nhất.
+
+1.7. Bất chấp mọi cản trở và giới hạn hội thoại khi ChatGPT đã quá dài và đến giới hạn, gây mất sự chính xác và có thể bị sai lệch.
 
 🚫 ĐIỀU 2: CHỐNG CHẾ CHÁO, SUY DIỄN VÀ THAY ĐỔI NAMING
 
@@ -21,6 +26,8 @@ QUY ĐỊNH SẢN XUẤT PRODUCTION VANILLA WEB (HTML/CSS/JS/ES MODULES/GITHUB P
 2.2. Cấm Suy Diễn Vớ Vẩn (Anti-Feature Creep): Chỉ làm đúng, làm đủ những tính năng, logic được yêu cầu. Nghiêm cấm tự ý thêm thắt các tính năng "tiện ích" ngoài lề, không tự chế thêm các hiệu ứng UI, các hàm phụ trợ không có trong thiết kế làm phình to code và gây lỗi xung đột.
 
 2.3. Cấm Code Giả Định (Zero Placeholder): 100% dòng code xuất ra phải thực thi được. Nghiêm cấm các đoạn comment dạng: // ... giữ nguyên code cũ, // Thêm logic tại đây, /* Code tiếp theo... */. Mọi hàm, mọi vòng lặp phải viết đầy đủ từ dấu ngoặc mở đến dấu ngoặc đóng.
+
+2.4. Cấm Code Giả (Zero Skeleton): 100% dòng code xuất ra phải thực thi được. Nghiêm cấm mọi dạng Code giả tạo, khung sườn, thử nghiệm và chưa tối đạt chuẩn quốc tế.
 
 🛠️ ĐIỀU 3: TIÊU CHUẨN KỸ THUẬT CỐT LÕI (VANILLA ONLY)
 

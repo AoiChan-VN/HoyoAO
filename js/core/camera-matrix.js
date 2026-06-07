@@ -1,189 +1,277 @@
 // ./js/core/camera-matrix.js
 
+import { Vector3 } from '../math/vector3.js';
+import { Quaternion } from '../math/quaternion.js';
+import { Matrix4 } from '../math/matrix4.js';
+
 export class CameraMatrix {
     constructor() {
-        this.position = {
-            x: 0,
-            y: 0,
-            z: 0
-        };
+        this.position =
+            new Vector3(
+                0,
+                1.6,
+                0
+            );
 
-        this.rotation = {
-            x: 0,
-            y: 0,
-            z: 0,
-            w: 1
-        };
+        this.rotation =
+            new Quaternion();
 
-        this.viewMatrix = new Float32Array(16);
-        this.projectionMatrix = new Float32Array(16);
+        this.viewMatrix =
+            new Matrix4();
 
-        this.fieldOfView = 60;
-        this.near = 0.1;
-        this.far = 1000.0;
-        this.aspect = 1.0;
+        this.projectionMatrix =
+            new Matrix4();
 
-        this.identity(this.viewMatrix);
-        this.identity(this.projectionMatrix);
+        this.fieldOfView = 70;
+
+        this.aspectRatio =
+            window.innerWidth /
+            window.innerHeight;
+
+        this.near = 0.01;
+
+        this.far = 1000;
+
+        this.updateProjection();
+
+        this.updateView();
     }
 
-    identity(matrix) {
-        matrix[0] = 1;
-        matrix[1] = 0;
-        matrix[2] = 0;
-        matrix[3] = 0;
+    setPosition(
+        x,
+        y,
+        z
+    ) {
+        this.position.set(
+            x,
+            y,
+            z
+        );
 
-        matrix[4] = 0;
-        matrix[5] = 1;
-        matrix[6] = 0;
-        matrix[7] = 0;
+        this.updateView();
 
-        matrix[8] = 0;
-        matrix[9] = 0;
-        matrix[10] = 1;
-        matrix[11] = 0;
-
-        matrix[12] = 0;
-        matrix[13] = 0;
-        matrix[14] = 0;
-        matrix[15] = 1;
+        return this;
     }
 
-    setPosition(x, y, z) {
-        this.position.x = x;
-        this.position.y = y;
-        this.position.z = z;
+    setRotationQuaternion(
+        x,
+        y,
+        z,
+        w
+    ) {
+        this.rotation.set(
+            x,
+            y,
+            z,
+            w
+        );
+
+        this.rotation.normalize();
+
+        this.updateView();
+
+        return this;
     }
 
-    setQuaternion(x, y, z, w) {
-        this.rotation.x = x;
-        this.rotation.y = y;
-        this.rotation.z = z;
-        this.rotation.w = w;
+    setEuler(
+        pitch,
+        yaw,
+        roll = 0
+    ) {
+        this.rotation
+            .setFromEuler(
+                pitch,
+                yaw,
+                roll
+            );
+
+        this.updateView();
+
+        return this;
     }
 
     setPerspective(
         fieldOfView,
-        aspect,
+        aspectRatio,
         near,
         far
     ) {
-        this.fieldOfView = fieldOfView;
-        this.aspect = aspect;
+        this.fieldOfView =
+            fieldOfView;
+
+        this.aspectRatio =
+            aspectRatio;
+
         this.near = near;
+
         this.far = far;
 
-        const fovRadians =
-            fieldOfView * Math.PI / 180.0;
+        this.updateProjection();
 
-        const f =
-            1.0 / Math.tan(fovRadians * 0.5);
-
-        const rangeInverse =
-            1.0 / (near - far);
-
-        const matrix =
-            this.projectionMatrix;
-
-        matrix[0] = f / aspect;
-        matrix[1] = 0;
-        matrix[2] = 0;
-        matrix[3] = 0;
-
-        matrix[4] = 0;
-        matrix[5] = f;
-        matrix[6] = 0;
-        matrix[7] = 0;
-
-        matrix[8] = 0;
-        matrix[9] = 0;
-        matrix[10] =
-            (far + near) * rangeInverse;
-        matrix[11] = -1;
-
-        matrix[12] = 0;
-        matrix[13] = 0;
-        matrix[14] =
-            (2 * far * near) * rangeInverse;
-        matrix[15] = 0;
+        return this;
     }
 
-    updateViewMatrix() {
-        const x = this.rotation.x;
-        const y = this.rotation.y;
-        const z = this.rotation.z;
-        const w = this.rotation.w;
+    updateProjection() {
+        this.projectionMatrix
+            .makePerspective(
+                this.fieldOfView,
+                this.aspectRatio,
+                this.near,
+                this.far
+            );
+    }
 
-        const xx = x * x;
-        const yy = y * y;
-        const zz = z * z;
+    updateAspectRatio(
+        width,
+        height
+    ) {
+        this.aspectRatio =
+            width / height;
 
-        const xy = x * y;
-        const xz = x * z;
-        const yz = y * z;
+        this.updateProjection();
+    }
 
-        const wx = w * x;
-        const wy = w * y;
-        const wz = w * z;
-
+    updateView() {
         const matrix =
-            this.viewMatrix;
+            this.viewMatrix
+                .elements;
+
+        const rotation =
+            this.rotation
+                .toMatrix4();
 
         matrix[0] =
-            1 - (2 * yy) - (2 * zz);
+            rotation[0];
 
         matrix[1] =
-            (2 * xy) + (2 * wz);
+            rotation[4];
 
         matrix[2] =
-            (2 * xz) - (2 * wy);
+            rotation[8];
 
         matrix[3] = 0;
 
         matrix[4] =
-            (2 * xy) - (2 * wz);
+            rotation[1];
 
         matrix[5] =
-            1 - (2 * xx) - (2 * zz);
+            rotation[5];
 
         matrix[6] =
-            (2 * yz) + (2 * wx);
+            rotation[9];
 
         matrix[7] = 0;
 
         matrix[8] =
-            (2 * xz) + (2 * wy);
+            rotation[2];
 
         matrix[9] =
-            (2 * yz) - (2 * wx);
+            rotation[6];
 
         matrix[10] =
-            1 - (2 * xx) - (2 * yy);
+            rotation[10];
 
         matrix[11] = 0;
 
         matrix[12] =
-            -(
-                matrix[0] * this.position.x +
-                matrix[4] * this.position.y +
-                matrix[8] * this.position.z
-            );
+            -this.position.x;
 
         matrix[13] =
-            -(
-                matrix[1] * this.position.x +
-                matrix[5] * this.position.y +
-                matrix[9] * this.position.z
-            );
+            -this.position.y;
 
         matrix[14] =
-            -(
-                matrix[2] * this.position.x +
-                matrix[6] * this.position.y +
-                matrix[10] * this.position.z
-            );
+            -this.position.z;
 
         matrix[15] = 1;
+    }
+
+    getForwardVector() {
+        const rotation =
+            this.rotation
+                .toMatrix4();
+
+        return new Vector3(
+            -rotation[8],
+            -rotation[9],
+            -rotation[10]
+        ).normalize();
+    }
+
+    getRightVector() {
+        const rotation =
+            this.rotation
+                .toMatrix4();
+
+        return new Vector3(
+            rotation[0],
+            rotation[1],
+            rotation[2]
+        ).normalize();
+    }
+
+    getUpVector() {
+        const rotation =
+            this.rotation
+                .toMatrix4();
+
+        return new Vector3(
+            rotation[4],
+            rotation[5],
+            rotation[6]
+        ).normalize();
+    }
+
+    moveForward(
+        distance
+    ) {
+        const forward =
+            this.getForwardVector();
+
+        this.position.add(
+            forward.multiplyScalar(
+                distance
+            )
+        );
+
+        this.updateView();
+    }
+
+    moveRight(
+        distance
+    ) {
+        const right =
+            this.getRightVector();
+
+        this.position.add(
+            right.multiplyScalar(
+                distance
+            )
+        );
+
+        this.updateView();
+    }
+
+    moveUp(
+        distance
+    ) {
+        const up =
+            this.getUpVector();
+
+        this.position.add(
+            up.multiplyScalar(
+                distance
+            )
+        );
+
+        this.updateView();
+    }
+
+    getPosition() {
+        return this.position;
+    }
+
+    getRotation() {
+        return this.rotation;
     }
 
     getViewMatrix() {
@@ -194,20 +282,13 @@ export class CameraMatrix {
         return this.projectionMatrix;
     }
 
-    getPosition() {
-        return {
-            x: this.position.x,
-            y: this.position.y,
-            z: this.position.z
-        };
+    getViewArray() {
+        return this.viewMatrix
+            .toFloat32Array();
     }
 
-    getQuaternion() {
-        return {
-            x: this.rotation.x,
-            y: this.rotation.y,
-            z: this.rotation.z,
-            w: this.rotation.w
-        };
+    getProjectionArray() {
+        return this.projectionMatrix
+            .toFloat32Array();
     }
 } 

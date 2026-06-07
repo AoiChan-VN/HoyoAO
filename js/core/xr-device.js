@@ -2,126 +2,175 @@
 
 export class XRDevice {
     constructor() {
-        this.isSupported = false;
-        this.isSessionActive = false;
+        this.supported = false;
 
-        this.xr = null;
         this.session = null;
+
         this.referenceSpace = null;
 
-        this.viewerPose = null;
+        this.mode =
+            'immersive-vr';
 
-        this.supportedModes = {
-            immersiveVR: false,
-            immersiveAR: false,
-            inline: false
-        };
+        this.onSessionStart =
+            null;
+
+        this.onSessionEnd =
+            null;
     }
 
     async initialize() {
-        if (!('xr' in navigator)) {
-            return;
+        if (
+            !('xr' in navigator)
+        ) {
+            return false;
         }
 
-        this.xr = navigator.xr;
-        this.isSupported = true;
-
-        this.supportedModes.inline =
-            await this.checkSessionSupport(
-                'inline'
-            );
-
-        this.supportedModes.immersiveVR =
-            await this.checkSessionSupport(
-                'immersive-vr'
-            );
-
-        this.supportedModes.immersiveAR =
-            await this.checkSessionSupport(
-                'immersive-ar'
-            );
-    }
-
-    async checkSessionSupport(mode) {
         try {
-            return await this.xr.isSessionSupported(
-                mode
+            this.supported =
+                await navigator.xr.isSessionSupported(
+                    this.mode
+                );
+
+            return this.supported;
+        } catch (
+            error
+        ) {
+            console.error(
+                '[XR_DEVICE]',
+                error
             );
-        } catch {
+
             return false;
         }
     }
 
-    async startSession(
-        mode = 'immersive-vr'
-    ) {
-        if (!this.xr) {
+    async startSession() {
+        if (
+            !this.supported
+        ) {
             throw new Error(
-                '[XR] WebXR API unavailable.'
+                '[XR_DEVICE] XR session not supported.'
             );
         }
 
-        if (this.session) {
+        if (
+            this.session
+        ) {
             return this.session;
         }
 
-        const session =
-            await this.xr.requestSession(
-                mode,
+        this.session =
+            await navigator.xr.requestSession(
+                this.mode,
                 {
+                    requiredFeatures: [
+                        'local-floor'
+                    ],
                     optionalFeatures: [
-                        'local',
-                        'local-floor',
+                        'hand-tracking',
+                        'layers',
                         'bounded-floor'
                     ]
                 }
             );
 
-        session.addEventListener(
-            'end',
-            () => {
-                this.isSessionActive = false;
-                this.session = null;
-                this.referenceSpace = null;
-                this.viewerPose = null;
-            }
-        );
-
         this.referenceSpace =
-            await session.requestReferenceSpace(
+            await this.session.requestReferenceSpace(
                 'local-floor'
             );
 
-        this.session = session;
-        this.isSessionActive = true;
+        this.session.addEventListener(
+            'end',
+            () =>
+                this.handleSessionEnd()
+        );
 
-        return session;
+        if (
+            typeof this.onSessionStart ===
+            'function'
+        ) {
+            this.onSessionStart(
+                this.session,
+                this.referenceSpace
+            );
+        }
+
+        return this.session;
     }
 
     async endSession() {
-        if (!this.session) {
+        if (
+            !this.session
+        ) {
             return;
         }
 
         await this.session.end();
     }
 
-    updateFrame(frame) {
+    handleSessionEnd() {
+        const previousSession =
+            this.session;
+
+        this.session = null;
+
+        this.referenceSpace =
+            null;
+
+        if (
+            typeof this.onSessionEnd ===
+            'function'
+        ) {
+            this.onSessionEnd(
+                previousSession
+            );
+        }
+    }
+
+    setSessionStartCallback(
+        callback
+    ) {
+        this.onSessionStart =
+            callback;
+
+        return this;
+    }
+
+    setSessionEndCallback(
+        callback
+    ) {
+        this.onSessionEnd =
+            callback;
+
+        return this;
+    }
+
+    getViewerPose(
+        frame
+    ) {
         if (
             !frame ||
             !this.referenceSpace
         ) {
-            return;
+            return null;
         }
 
-        this.viewerPose =
-            frame.getViewerPose(
-                this.referenceSpace
-            );
+        return frame.getViewerPose(
+            this.referenceSpace
+        );
     }
 
-    getViewerPose() {
-        return this.viewerPose;
+    getInputSources() {
+        if (
+            !this.session
+        ) {
+            return [];
+        }
+
+        return [
+            ...this.session
+                .inputSources
+        ];
     }
 
     getSession() {
@@ -132,23 +181,13 @@ export class XRDevice {
         return this.referenceSpace;
     }
 
-    hasXRSupport() {
-        return this.isSupported;
+    isSupported() {
+        return this.supported;
     }
 
-    hasActiveSession() {
-        return this.isSessionActive;
+    isRunning() {
+        return (
+            this.session !== null
+        );
     }
-
-    supportsInline() {
-        return this.supportedModes.inline;
-    }
-
-    supportsImmersiveVR() {
-        return this.supportedModes.immersiveVR;
-    }
-
-    supportsImmersiveAR() {
-        return this.supportedModes.immersiveAR;
-    }
-}
+} 

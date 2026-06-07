@@ -2,177 +2,268 @@
 
 export class Engine3D {
     constructor({
-        canvas,
         gl,
-        xrDevice
-    }) {
-        if (!(canvas instanceof HTMLCanvasElement)) {
-            throw new Error('[ENGINE] Invalid canvas.');
-        }
-
+        camera,
+        hardwareMonitor = null
+    } = {}) {
         if (!gl) {
-            throw new Error('[ENGINE] Invalid WebGL context.');
+            throw new Error(
+                '[ENGINE_3D] WebGL2 context is required.'
+            );
         }
 
-        this.canvas = canvas;
         this.gl = gl;
-        this.xrDevice = xrDevice;
 
-        this.isRunning = false;
+        this.camera =
+            camera || null;
 
-        this.animationFrameId = 0;
+        this.hardwareMonitor =
+            hardwareMonitor;
+
+        this.sceneObjects = [];
+
+        this.running = false;
+
+        this.animationFrameId =
+            null;
 
         this.lastFrameTime = 0;
+
         this.deltaTime = 0;
+
         this.elapsedTime = 0;
 
-        this.renderables = [];
-        this.updatables = [];
+        this.xrSession = null;
+
+        this.xrReferenceSpace =
+            null;
+
+        this.boundLoop =
+            this.loop.bind(
+                this
+            );
     }
 
-    async initialize() {
-        this.lastFrameTime = performance.now();
-
-        this.gl.viewport(
-            0,
-            0,
-            this.canvas.width,
-            this.canvas.height
-        );
-    }
-
-    start() {
-        if (this.isRunning) {
+    add(object) {
+        if (!object) {
             return;
         }
 
-        this.isRunning = true;
+        this.sceneObjects.push(
+            object
+        );
+    }
 
-        this.lastFrameTime = performance.now();
+    remove(object) {
+        this.sceneObjects =
+            this.sceneObjects.filter(
+                (entry) =>
+                    entry !== object
+            );
+    }
+
+    clearScene() {
+        this.sceneObjects.length = 0;
+    }
+
+    start() {
+        if (
+            this.running
+        ) {
+            return;
+        }
+
+        this.running = true;
+
+        this.lastFrameTime =
+            performance.now();
 
         this.animationFrameId =
-            window.requestAnimationFrame(
-                this.loop.bind(this)
+            requestAnimationFrame(
+                this.boundLoop
             );
     }
 
     stop() {
-        this.isRunning = false;
+        this.running = false;
 
-        if (this.animationFrameId) {
-            window.cancelAnimationFrame(
+        if (
+            this.animationFrameId
+        ) {
+            cancelAnimationFrame(
                 this.animationFrameId
             );
 
-            this.animationFrameId = 0;
+            this.animationFrameId =
+                null;
         }
     }
 
-    loop(timestamp) {
-        if (!this.isRunning) {
+    loop(
+        currentTime
+    ) {
+        if (
+            !this.running
+        ) {
             return;
         }
 
         this.deltaTime =
-            (timestamp - this.lastFrameTime) * 0.001;
+            (
+                currentTime -
+                this.lastFrameTime
+            ) / 1000;
 
-        this.elapsedTime += this.deltaTime;
+        this.lastFrameTime =
+            currentTime;
 
-        this.lastFrameTime = timestamp;
+        this.elapsedTime +=
+            this.deltaTime;
 
-        this.update(this.deltaTime);
+        if (
+            this.hardwareMonitor
+        ) {
+            this.hardwareMonitor.beginFrame();
+        }
+
+        this.update(
+            this.deltaTime
+        );
+
         this.render();
 
+        if (
+            this.hardwareMonitor
+        ) {
+            this.hardwareMonitor.update();
+        }
+
         this.animationFrameId =
-            window.requestAnimationFrame(
-                this.loop.bind(this)
+            requestAnimationFrame(
+                this.boundLoop
             );
     }
 
-    update(deltaTime) {
-        for (let i = 0; i < this.updatables.length; i += 1) {
-            const item = this.updatables[i];
+    update(
+        deltaTime
+    ) {
+        for (
+            let i = 0;
+            i <
+            this.sceneObjects.length;
+            i += 1
+        ) {
+            const object =
+                this.sceneObjects[
+                    i
+                ];
 
             if (
-                item &&
-                typeof item.update === 'function'
+                object &&
+                typeof object.update ===
+                    'function'
             ) {
-                item.update(deltaTime);
+                object.update(
+                    deltaTime
+                );
             }
         }
     }
 
     render() {
-        const gl = this.gl;
+        const gl =
+            this.gl;
+
+        gl.clearColor(
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        );
 
         gl.clear(
             gl.COLOR_BUFFER_BIT |
             gl.DEPTH_BUFFER_BIT
         );
 
-        for (let i = 0; i < this.renderables.length; i += 1) {
-            const item = this.renderables[i];
+        for (
+            let i = 0;
+            i <
+            this.sceneObjects.length;
+            i += 1
+        ) {
+            const object =
+                this.sceneObjects[
+                    i
+                ];
 
             if (
-                item &&
-                typeof item.render === 'function'
+                !object ||
+                typeof object.render !==
+                    'function'
             ) {
-                item.render(gl);
+                continue;
+            }
+
+            if (
+                typeof object.isVisible ===
+                    'function' &&
+                !object.isVisible()
+            ) {
+                continue;
+            }
+
+            object.render(
+                gl,
+                this.camera
+            );
+
+            if (
+                this.hardwareMonitor
+            ) {
+                this.hardwareMonitor
+                    .registerDrawCall();
             }
         }
     }
 
-    resize(width, height) {
-        this.gl.viewport(
-            0,
-            0,
-            width,
-            height
+    attachXRSession(
+        session,
+        referenceSpace
+    ) {
+        this.xrSession =
+            session;
+
+        this.xrReferenceSpace =
+            referenceSpace;
+    }
+
+    renderXRFrame(
+        time,
+        frame
+    ) {
+        if (
+            !this.xrSession
+        ) {
+            return;
+        }
+
+        this.update(
+            this.deltaTime
         );
-    }
 
-    addRenderable(renderable) {
-        if (
-            !renderable ||
-            this.renderables.includes(renderable)
-        ) {
-            return;
-        }
+        this.render();
 
-        this.renderables.push(renderable);
-    }
-
-    removeRenderable(renderable) {
-        const index =
-            this.renderables.indexOf(renderable);
-
-        if (index === -1) {
-            return;
-        }
-
-        this.renderables.splice(index, 1);
-    }
-
-    addUpdatable(updatable) {
-        if (
-            !updatable ||
-            this.updatables.includes(updatable)
-        ) {
-            return;
-        }
-
-        this.updatables.push(updatable);
-    }
-
-    removeUpdatable(updatable) {
-        const index =
-            this.updatables.indexOf(updatable);
-
-        if (index === -1) {
-            return;
-        }
-
-        this.updatables.splice(index, 1);
+        this.xrSession.requestAnimationFrame(
+            (
+                xrTime,
+                xrFrame
+            ) =>
+                this.renderXRFrame(
+                    xrTime,
+                    xrFrame
+                )
+        );
     }
 
     getDeltaTime() {
@@ -183,11 +274,13 @@ export class Engine3D {
         return this.elapsedTime;
     }
 
-    getRenderableCount() {
-        return this.renderables.length;
+    getSceneObjects() {
+        return [
+            ...this.sceneObjects
+        ];
     }
 
-    getUpdatableCount() {
-        return this.updatables.length;
+    isRunning() {
+        return this.running;
     }
-}
+} 

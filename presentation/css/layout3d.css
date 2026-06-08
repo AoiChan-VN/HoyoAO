@@ -1,0 +1,178 @@
+/* Thiết lập không gian VR Infinity Skybox phối cảnh 3D thuần */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #020208;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Khung canvas WebGL2 Phong Lighting lót nền */
+#webgl-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Thùng chứa gốc không gian ảo mắt nhìn VR */
+#viewport-vr {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    perspective: 800px;
+    perspective-origin: 50% 50%;
+    z-index: 2;
+}
+
+/* Trục tọa độ xoay chuyển theo góc Camera */
+#scene-3d {
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* Cơ chế đa lớp Infinity Multilayer Skybox Parallax Depth */
+.skybox-layer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2000px;
+    height: 2000px;
+    margin-left: -1000px;
+    margin-top: -1000px;
+    transform-style: preserve-3d;
+    pointer-events: none;
+}
+
+.sky-deep {
+    background: radial-gradient(circle, #0f1026 0%, #03030a 80%);
+    transform: translateZ(-2000px);
+}
+
+.sky-mid {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+    background-size: 40px 40px;
+    transform: translateZ(-1200px);
+}
+
+.sky-near {
+    background-image: radial-gradient(rgba(0, 229, 255, 0.1) 2px, transparent 2px);
+    background-size: 100px 100px;
+    transform: translateZ(-600px);
+}
+
+/* Thiết kế giao diện biểu mẫu HUD / VR Panels chuẩn Enterprise Cyberspace */
+.vr-panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 380px;
+    max-height: 480px;
+    margin-left: -190px;
+    margin-top: -240px;
+    background: rgba(10, 12, 28, 0.85);
+    border: 2px solid #00e5ff;
+    border-radius: 8px;
+    color: #ffffff;
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.3);
+    transform-style: preserve-3d;
+    display: none;
+    will-change: transform;
+    overflow: hidden;
+}
+
+/* Menu chính HUD Central Menu */
+#central-menu {
+    display: block;
+    border: 2px solid #ff007f;
+    box-shadow: 0 0 30px rgba(255, 0, 127, 0.3);
+    transform: translate3d(0, 0, -400px); /* Đẩy cố định lơ lửng tại tâm cấu trúc */
+}
+
+.panel-header, .menu-title {
+    padding: 12px;
+    background: rgba(20, 24, 50, 0.9);
+    font-weight: bold;
+    font-size: 13px;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+    cursor: move;
+}
+
+.menu-title {
+    border-bottom: 1px solid rgba(255, 0, 127, 0.3);
+    text-align: center;
+}
+
+.panel-content {
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+/* Phong cách hóa các nút tương tác hệ thống */
+button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #00e5ff;
+    color: #00e5ff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+#central-menu button {
+    border: 1px solid #ff007f;
+    color: #ff007f;
+}
+
+button:hover, button.active {
+    background: #00e5ff;
+    color: #0a0c1c;
+    box-shadow: 0 0 15px #00e5ff;
+}
+
+#central-menu button:hover {
+    background: #ff007f;
+    color: #ffffff;
+    box-shadow: 0 0 15px #ff007f;
+}
+
+/* Thiết kế phần tử danh sách bài viết tĩnh */
+.post-item {
+    padding: 12px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 3px solid #00e5ff;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.post-item:hover {
+    background: rgba(0, 229, 255, 0.15);
+}
+
+/* Vùng hiển thị Markdown an toàn sau khi ép kiểu Regex */
+.secure-dom-view h1 { font-size: 20px; margin-bottom: 12px; color: #00e5ff; }
+.secure-dom-view p { margin-bottom: 10px; color: #cbd5e1; }
+.secure-dom-view code { background: rgba(255, 255, 255, 0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+.secure-dom-view pre { background: #050510; padding: 10px; border-radius: 6px; overflow-x: auto; margin: 10px 0; border: 1px solid rgba(0, 229, 255, 0.2); }
+ 

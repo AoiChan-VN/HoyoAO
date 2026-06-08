@@ -1,35 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Infinity VR Platform</title>
-    <link rel="stylesheet" href="css/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VR Personal Platform</title>
+    <link rel="stylesheet" href="./presentation/css/layout3d.css">
 </head>
 <body>
-    <!-- Không gian 3D bao cảnh -->
-    <div id="vr-universe">
-        <!-- Cube Skybox 6 mặt tạo môi trường vô cực -->
-        <div class="skybox">
-            <div class="face front"></div>
-            <div class="face back"></div>
-            <div class="face left"></div>
-            <div class="face right"></div>
-            <div class="face top"></div>
-            <div class="face bottom"></div>
-        </div>
 
-        <!-- Bảng điều khiển Dashboard kéo thả tương tác -->
-        <div id="main-dashboard" class="dashboard-panel">
-            <div class="dashboard-header">🛸 CONTROL PANEL (DRAG HERE)</div>
-            <div class="dashboard-body">
-                <h3>System Status: Online</h3>
-                <p>No Framework / Pure Vanilla WebGL</p>
-                <button class="vr-btn">ACTIVATE MATRIX</button>
-            </div>
+    <!-- Lớp đồ họa WebGL2 Phong Lighting chạy ngầm phía sau cấu trúc nền -->
+    <canvas id="webgl-canvas"></canvas>
+
+    <!-- Điểm neo quản lý không gian và góc nhìn VR -->
+    <div id="viewport-vr">
+        <div id="scene-3d">
+            
+            <!-- Hệ thống Đa lớp Parallax Skybox -->
+            <div class="skybox-layer sky-deep"></div>
+            <div class="skybox-layer sky-mid"></div>
+            <div class="skybox-layer sky-near"></div>
+
+            <!-- Khối HUD Central Menu tại tâm tọa độ không gian -->
+            <div id="central-menu" class="vr-panel"></div>
+
+            <!-- Các Panel chức năng phục vụ sinh cấu trúc linh động chuyển dời bằng thuật toán vật lý -->
+            <div id="settings-panel" class="vr-panel"></div>
+            <div id="post-list-panel" class="vr-panel"></div>
+            <div id="reader-panel" class="vr-panel"></div>
+
         </div>
     </div>
-    <script type="module" src="main.js"></script>
+
+    <!-- Điểm kích hoạt khởi động luồng tính toán toàn dự án -->
+    <script type="module" src="./application/AppController.js"></script>
 </body>
 </html>
- 

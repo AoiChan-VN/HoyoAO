@@ -1,60 +1,229 @@
-/**
- * Matrix4.js
- * Lớp ma trận 4x4 thuần chịu trách nhiệm tính toán phối cảnh (Perspective) và ma trận Camera View.
- */
-export class Matrix4 {
-    constructor() {
-        // Khởi tạo mảng Float32Array có độ dài chuẩn 16 phần tử cho ma trận 4x4
-        this.elements = new Float32Array(16);
-        this.identity();
+export default class Vector3 {
+    constructor(x = 0, y = 0, z = 0) {
+        this.x = Number(x);
+        this.y = Number(y);
+        this.z = Number(z);
     }
 
-    identity() {
-        const te = this.elements;
-        te[0] = 1; te[4] = 0; te[8] = 0; te[12] = 0;
-        te[1] = 0; te[5] = 1; te[9] = 0; te[13] = 0;
-        te[2] = 0; te[6] = 0; te[10] = 1; te[14] = 0;
-        te[3] = 0; te[7] = 0; te[11] = 0; te[15] = 1;
+    static zero() {
+        return new Vector3(0, 0, 0);
+    }
+
+    static one() {
+        return new Vector3(1, 1, 1);
+    }
+
+    static up() {
+        return new Vector3(0, 1, 0);
+    }
+
+    static down() {
+        return new Vector3(0, -1, 0);
+    }
+
+    static left() {
+        return new Vector3(-1, 0, 0);
+    }
+
+    static right() {
+        return new Vector3(1, 0, 0);
+    }
+
+    static forward() {
+        return new Vector3(0, 0, -1);
+    }
+
+    static backward() {
+        return new Vector3(0, 0, 1);
+    }
+
+    clone() {
+        return new Vector3(this.x, this.y, this.z);
+    }
+
+    set(x, y, z) {
+        this.x = Number(x);
+        this.y = Number(y);
+        this.z = Number(z);
         return this;
     }
 
-    makePerspective(fov, aspect, near, far) {
-        const te = this.elements;
-        const f = 1.0 / Math.tan((fov * Math.PI) / 360.0);
-        const rangeInv = 1.0 / (near - far);
+    copy(v) {
+        this.x = v.x;
+        this.y = v.y;
+        this.z = v.z;
+        return this;
+    }
 
-        te[0] = f / aspect; te[4] = 0; te[8] = 0; te[12] = 0;
-        te[1] = 0; te[5] = f; te[9] = 0; te[13] = 0;
-        te[2] = 0; te[6] = 0; te[10] = (near + far) * rangeInv; te[14] = (2 * near * far) * rangeInv;
-        te[3] = 0; te[7] = 0; te[11] = -1; te[15] = 0;
+    add(v) {
+        this.x += v.x;
+        this.y += v.y;
+        this.z += v.z;
+        return this;
+    }
+
+    subtract(v) {
+        this.x -= v.x;
+        this.y -= v.y;
+        this.z -= v.z;
+        return this;
+    }
+
+    multiply(v) {
+        this.x *= v.x;
+        this.y *= v.y;
+        this.z *= v.z;
+        return this;
+    }
+
+    multiplyScalar(s) {
+        this.x *= s;
+        this.y *= s;
+        this.z *= s;
+        return this;
+    }
+
+    divideScalar(s) {
+        if (s === 0) {
+            throw new Error("Division by zero.");
+        }
+
+        this.x /= s;
+        this.y /= s;
+        this.z /= s;
 
         return this;
     }
 
-    makeRotationFromEuler(x, y, z) {
-        const te = this.elements;
-        // Chuẩn hóa hệ trục quay YXZ
-        const cX = Math.cos(x), sX = Math.sin(x);
-        const cY = Math.cos(y), sY = Math.sin(y);
-        const cZ = Math.cos(z), sZ = Math.sin(z);
+    negate() {
+        this.x = -this.x;
+        this.y = -this.y;
+        this.z = -this.z;
+        return this;
+    }
 
-        te[0] = cY * cZ + sY * sX * sZ;
-        te[1] = sZ * cX;
-        te[2] = -sY * cZ + cY * sX * sZ;
-        te[3] = 0;
-        
-        te[4] = -cY * sZ + sY * sX * cZ;
-        te[5] = cZ * cX;
-        te[6] = sZ * sY + cY * sX * cZ;
-        te[7] = 0;
-        
-        te[8] = sY * cX;
-        te[9] = -sX;
-        te[10] = cY * cX;
-        te[11] = 0;
+    lengthSquared() {
+        return (
+            this.x * this.x +
+            this.y * this.y +
+            this.z * this.z
+        );
+    }
 
-        te[12] = 0; te[13] = 0; te[14] = 0; te[15] = 1;
+    length() {
+        return Math.sqrt(this.lengthSquared());
+    }
+
+    normalize() {
+        const len = this.length();
+
+        if (len > 0) {
+            this.divideScalar(len);
+        }
 
         return this;
     }
-}
+
+    distanceSquared(v) {
+        const dx = this.x - v.x;
+        const dy = this.y - v.y;
+        const dz = this.z - v.z;
+
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    distance(v) {
+        return Math.sqrt(this.distanceSquared(v));
+    }
+
+    dot(v) {
+        return (
+            this.x * v.x +
+            this.y * v.y +
+            this.z * v.z
+        );
+    }
+
+    cross(v) {
+        const x = this.y * v.z - this.z * v.y;
+        const y = this.z * v.x - this.x * v.z;
+        const z = this.x * v.y - this.y * v.x;
+
+        return new Vector3(x, y, z);
+    }
+
+    angleTo(v) {
+        const denominator =
+            this.length() * v.length();
+
+        if (denominator === 0) {
+            return 0;
+        }
+
+        const theta =
+            this.dot(v) / denominator;
+
+        return Math.acos(
+            Math.max(-1, Math.min(1, theta))
+        );
+    }
+
+    lerp(v, alpha) {
+        this.x += (v.x - this.x) * alpha;
+        this.y += (v.y - this.y) * alpha;
+        this.z += (v.z - this.z) * alpha;
+
+        return this;
+    }
+
+    equals(v, epsilon = 1e-6) {
+        return (
+            Math.abs(this.x - v.x) < epsilon &&
+            Math.abs(this.y - v.y) < epsilon &&
+            Math.abs(this.z - v.z) < epsilon
+        );
+    }
+
+    toArray() {
+        return [this.x, this.y, this.z];
+    }
+
+    fromArray(arr) {
+        this.x = arr[0] ?? 0;
+        this.y = arr[1] ?? 0;
+        this.z = arr[2] ?? 0;
+        return this;
+    }
+
+    static add(a, b) {
+        return a.clone().add(b);
+    }
+
+    static subtract(a, b) {
+        return a.clone().subtract(b);
+    }
+
+    static multiplyScalar(v, scalar) {
+        return v.clone().multiplyScalar(scalar);
+    }
+
+    static normalize(v) {
+        return v.clone().normalize();
+    }
+
+    static dot(a, b) {
+        return a.dot(b);
+    }
+
+    static cross(a, b) {
+        return a.cross(b);
+    }
+
+    static distance(a, b) {
+        return a.distance(b);
+    }
+
+    static lerp(a, b, alpha) {
+        return a.clone().lerp(b, alpha);
+    }
+    }

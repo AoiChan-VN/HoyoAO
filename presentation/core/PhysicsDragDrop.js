@@ -1,6 +1,6 @@
 /**
  * PhysicsDragDrop.js
- * Engine vật lý kéo thả tự do, giả lập lực cản không khí tạo góc nghiêng quán tính cho các Panel UI.
+ * Engine vật lý hiệu chỉnh tọa độ: Đưa các Panel phụ về đúng vị trí lề âm trước khi tính toán lực kéo.
  */
 export class PhysicsDragDrop {
     constructor() {
@@ -12,7 +12,10 @@ export class PhysicsDragDrop {
     }
 
     registerElement(element, initialX, initialY, initialZ) {
-        // Kiểm tra xem phần tử đã được đăng ký trước đó chưa để tránh trùng lặp trạng thái
+        // Áp lề âm cố định để căn giữa phần tử hoàn hảo trước khi dịch chuyển ma trận 3D
+        element.style.marginLeft = "-170px";
+        element.style.marginTop = "-210px";
+
         let state = this.trackedElements.find(item => item.element === element);
         if (!state) {
             state = {
@@ -21,24 +24,17 @@ export class PhysicsDragDrop {
                 velocity: { x: 0, y: 0 },
                 targetAngle: { x: 0, y: 0 },
                 currentAngle: { x: 0, y: 0 },
-                damping: 0.88,
-                stiffness: 14.0
+                damping: 0.85,
+                stiffness: 12.0
             };
             this.trackedElements.push(state);
-
-            element.addEventListener('mousedown', (e) => this.onPointerDown(e, state));
-            element.addEventListener('touchstart', (e) => this.onPointerDown(e, state), { passive: true });
         } else {
-            // Nếu đã tồn tại, reset lại tọa độ mục tiêu khi tái kích hoạt spawn
             state.pos.x = initialX;
             state.pos.y = initialY;
             state.pos.z = initialZ;
             state.velocity.x = 0;
             state.velocity.y = 0;
-            state.targetAngle.x = 0;
-            state.targetAngle.y = 0;
         }
-
         element.style.transform = `translate3d(${state.pos.x}px, ${state.pos.y}px, ${state.pos.z}px) rotateX(0deg) rotateY(0deg)`;
     }
 
@@ -46,8 +42,8 @@ export class PhysicsDragDrop {
         if (e.target.closest('button') || e.target.closest('.post-item') || e.target.closest('.panel-content')) return;
 
         this.activeTarget = state;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const clientX = e.touches ? e.touches.clientX : e.clientX;
+        const clientY = e.touches ? e.touches.clientY : e.clientY;
 
         this.pointerStart.x = clientX;
         this.pointerStart.y = clientY;
@@ -59,8 +55,8 @@ export class PhysicsDragDrop {
         const onPointerMove = (e) => {
             if (!this.activeTarget) return;
 
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const clientX = e.touches ? e.touches.clientX : e.clientX;
+            const clientY = e.touches ? e.touches.clientY : e.clientY;
 
             const deltaX = clientX - this.pointerStart.x;
             const deltaY = clientY - this.pointerStart.y;
@@ -74,8 +70,8 @@ export class PhysicsDragDrop {
             this.activeTarget.pos.x = nextX;
             this.activeTarget.pos.y = nextY;
 
-            this.activeTarget.targetAngle.y = Math.max(-20, Math.min(20, this.activeTarget.velocity.x * 0.3));
-            this.activeTarget.targetAngle.x = Math.max(-20, Math.min(20, -this.activeTarget.velocity.y * 0.3));
+            this.activeTarget.targetAngle.y = Math.max(-15, Math.min(15, this.activeTarget.velocity.x * 0.2));
+            this.activeTarget.targetAngle.x = Math.max(-15, Math.min(15, -this.activeTarget.velocity.y * 0.2));
         };
 
         const onPointerUp = () => {
@@ -100,8 +96,8 @@ export class PhysicsDragDrop {
                 state.velocity.x *= state.damping;
                 state.velocity.y *= state.damping;
 
-                if (Math.abs(state.velocity.x) < 0.005) state.velocity.x = 0;
-                if (Math.abs(state.velocity.y) < 0.005) state.velocity.y = 0;
+                if (Math.abs(state.velocity.x) < 0.01) state.velocity.x = 0;
+                if (Math.abs(state.velocity.y) < 0.01) state.velocity.y = 0;
             }
 
             state.currentAngle.x += (state.targetAngle.x - state.currentAngle.x) * state.stiffness * dt;

@@ -176,3 +176,24 @@ button:hover, button.active {
 .secure-dom-view code { background: rgba(255, 255, 255, 0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
 .secure-dom-view pre { background: #050510; padding: 10px; border-radius: 6px; overflow-x: auto; margin: 10px 0; border: 1px solid rgba(0, 229, 255, 0.2); }
  
+/* Khu vực định vị tối ưu hiển thị Logo vector SVG trong không gian VR HUD */
+.logo-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 20px;
+    padding-bottom: 5px;
+    pointer-events: none; /* Tránh đè lên tương tác kéo thả HUD */
+}
+
+.main-svg-logo {
+    width: 70px;
+    height: 70px;
+    filter: drop-shadow(0 0 12px #ff007f);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#central-menu:hover .main-svg-logo {
+    transform: scale(1.1) rotate(10deg);
+}

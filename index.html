@@ -1,37 +1,109 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VR Personal Platform</title>
-    <link rel="stylesheet" href="./presentation/css/layout3d.css">
+<meta charset="UTF-8">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+/>
+
+<meta
+    http-equiv="Content-Security-Policy"
+    content="
+    default-src 'self';
+    script-src 'self';
+    style-src 'self';
+    img-src 'self' data:;
+    font-src 'self';
+    connect-src 'self';
+    media-src 'self';
+    object-src 'none';
+    frame-src 'none';
+    base-uri 'self';
+    form-action 'self';
+"
+/>
+
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0f16">
+
+<title>Web Engine</title>
+
+<link rel="stylesheet" href="./styles/global.css">
+<link rel="stylesheet" href="./styles/layout.css">
+<link rel="stylesheet" href="./styles/dashboard.css">
+<link rel="stylesheet" href="./styles/cards.css">
+<link rel="stylesheet" href="./styles/panels.css">
 </head>
+
 <body>
 
-    <!-- Lớp đồ họa WebGL2 Phong Lighting chạy ngầm phía sau cấu trúc nền -->
-    <canvas id="webgl-canvas"></canvas>
+<div id="app-shell">
 
-    <!-- Điểm neo quản lý không gian và góc nhìn VR -->
-    <div id="viewport-vr">
-        <div id="scene-3d">
-            
-            <!-- Hệ thống Đa lớp Parallax Skybox -->
-            <div class="skybox-layer sky-deep"></div>
-            <div class="skybox-layer sky-mid"></div>
-            <div class="skybox-layer sky-near"></div>
+    <header id="logo-slot" aria-label="Application Logo">
+        <img
+            id="app-logo"
+            src="./assets/logo.svg"
+            alt="Application Logo"
+            draggable="false"
+        >
+    </header>
 
-            <!-- Khối HUD Central Menu tại tâm tọa độ không gian -->
-            <div id="central-menu" class="vr-panel"></div>
+    <canvas
+        id="webgl-canvas"
+        aria-label="3D World"
+    ></canvas>
 
-            <!-- Các Panel chức năng phục vụ sinh cấu trúc linh động chuyển dời bằng thuật toán vật lý -->
-            <div id="settings-panel" class="vr-panel"></div>
-            <div id="post-list-panel" class="vr-panel"></div>
-            <div id="reader-panel" class="vr-panel"></div>
+    <div
+        id="ui-overlay"
+        aria-hidden="true"
+    ></div>
 
-        </div>
+    <div
+        id="accessibility-layer"
+        aria-hidden="false"
+    >
+
+        <button
+            id="gyro-toggle"
+            type="button"
+        >
+            Enable Gyroscope
+        </button>
+
+        <button
+            id="motion-toggle"
+            type="button"
+        >
+            Reduced Motion
+        </button>
+
     </div>
 
-    <!-- Điểm kích hoạt khởi động luồng tính toán toàn dự án -->
-    <script type="module" src="./application/AppController.js"></script>
+</div>
+
+<noscript>
+    <div
+        style="
+        position:fixed;
+        inset:0;
+        background:#000;
+        color:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-family:sans-serif;
+        z-index:99999;
+        "
+    >
+        JavaScript is required.
+    </div>
+</noscript>
+
+<script
+    type="module"
+    src="./core/bootstrap.js"
+></script>
+
 </body>
 </html>

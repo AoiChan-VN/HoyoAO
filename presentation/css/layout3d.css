@@ -1,26 +1,4 @@
-/* Thiết lập không gian VR Infinity Skybox phối cảnh 3D thuần */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    user-select: none;
-}
-
-body, html {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background-color: #020208;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
-/* Khung canvas WebGL2 Phong Lighting lót nền */
-#webgl-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-/* Khởi tạo không gian phối cảnh vô cực */
+/* Khởi tạo hệ thống không gian VR chuẩn Enterprise */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -33,11 +11,11 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #020208;
+    background-color: #03030a;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Khung xử lý đồ họa nền */
+/* Canvas WebGL lót nền */
 #webgl-canvas {
     position: fixed;
     top: 0;
@@ -48,16 +26,17 @@ body, html {
     pointer-events: none;
 }
 
-/* Khung bao góc nhìn thực tế ảo */
+/* Thùng chứa gốc bắt buộc phải kích hoạt góc nhìn chiều sâu */
 #viewport-vr {
-    position: absolute;
-    width: 100%;
-    height: 100%;
+    position: relative;
+    width: 100vw;
+    height: 100vh;
     perspective: 1000px;
     perspective-origin: 50% 50%;
     z-index: 2;
 }
 
+/* Trục tọa độ xoay chuyển theo góc Camera */
 #scene-3d {
     width: 100%;
     height: 100%;
@@ -65,122 +44,138 @@ body, html {
     will-change: transform;
 }
 
-/* Các lớp Parallax chuyển động đa tầng nền sâu */
+/* Hệ thống Đa lớp Skybox Parallax Depth */
 .skybox-layer {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 2000px;
-    height: 2000px;
-    margin-left: -1000px;
-    margin-top: -1000px;
+    width: 3000px;
+    height: 3000px;
+    margin-left: -1500px;
+    margin-top: -1500px;
     transform-style: preserve-3d;
     pointer-events: none;
 }
 
 .sky-deep {
-    background: radial-gradient(circle, #0e1026 0%, #020207 80%);
-    transform: translateZ(-1500px);
+    background: radial-gradient(circle, #0c0d21 0%, #020205 100%);
+    transform: translateZ(-1200px);
 }
 
 .sky-mid {
-    background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
-    background-size: 50px 50px;
-    transform: translateZ(-1000px);
+    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 60px 60px;
+    transform: translateZ(-800px);
 }
 
+/* FIX CHUYÊN SÂU: Đưa ảnh nhân vật lơ lửng vào không gian 3D phía sau HUD, không để đè 2D */
 .sky-near {
-    background-image: radial-gradient(rgba(0, 229, 255, 0.08) 2px, transparent 2px);
-    background-size: 120px 120px;
-    transform: translateZ(-500px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: translateZ(-500px); /* Đẩy nhân vật ra xa phía sau */
+    background: transparent;
 }
 
-/* Định hình kiến trúc bảng điều khiển ảo HUD */
+/* Định cấu trúc ảnh nhân vật hiển thị tỷ lệ chuẩn không vỡ góc */
+.sky-near::after {
+    content: "";
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    max-width: 600px;
+    max-height: 800px;
+    background-image: url('../../assets/skybox/kanna.webp'); /* Hoặc đường dẫn ảnh của bạn */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.8;
+}
+
+/* Kiến trúc VR Bảng điều khiển HUD ảo chống vỡ layout trên Mobile */
 .vr-panel {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 360px;
-    max-height: 450px;
-    background: rgba(8, 10, 24, 0.9);
-    border: 1px solid rgba(0, 229, 255, 0.5);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    width: 340px;
+    max-height: 420px;
+    background: rgba(8, 10, 24, 0.94);
+    border: 1px solid #00e5ff;
     border-radius: 12px;
     color: #ffffff;
-    box-shadow: 0 0 25px rgba(0, 229, 255, 0.15);
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.2);
     transform-style: preserve-3d;
-    display: none;
+    display: none; /* Khóa ẩn, chỉ hiện khi gọi hàm spawn */
     will-change: transform;
     overflow: hidden;
 }
 
-/* HUD trung tâm đặt cố định */
+/* FIX ĐỊNH VỊ HUD CENTRAL MENU: Loại bỏ translate3d sai lệch trục */
 #central-menu {
-    display: block;
-    border: 1px solid rgba(255, 0, 127, 0.7);
-    box-shadow: 0 0 25px rgba(255, 0, 127, 0.2);
-    transform: translate3d(-50%, -50%, -400px) !important; /* Khóa tâm hình học cố định */
+    display: block; /* Hiện duy nhất bảng này lúc khởi tạo */
+    border: 1px solid #ff007f;
+    box-shadow: 0 0 30px rgba(255, 0, 127, 0.3);
+    /* Dùng lề âm chuẩn xác để đưa về tâm hình học tuyệt đối trong không gian 3D */
+    margin-left: -170px;
+    margin-top: -210px;
+    transform: translate3d(0px, 0px, -300px); 
 }
 
-/* Khu vực hiển thị tệp tin logo.svg riêng biệt */
+/* Thành phần Logo SVG riêng biệt của bạn nằm trên HUD */
 .logo-container {
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 24px 0 8px 0;
-    pointer-events: none;
+    padding: 20px 0 5px 0;
 }
 
 .main-svg-logo {
     width: 64px;
     height: 64px;
     object-fit: contain;
-    filter: drop-shadow(0 0 10px rgba(255, 0, 127, 0.6));
 }
 
 .panel-header, .menu-title {
-    padding: 14px;
-    background: rgba(16, 20, 42, 0.95);
+    padding: 12px 16px;
+    background: rgba(16, 20, 42, 0.98);
     font-weight: 700;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    border-bottom: 1px solid rgba(0, 229, 255, 0.2);
-    cursor: move;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.15);
 }
 
 .menu-title {
     border-bottom: none;
     text-align: center;
     color: #ff007f;
-    padding-top: 4px;
 }
 
 .panel-content {
-    padding: 20px;
-    font-size: 14px;
+    padding: 16px 20px;
+    font-size: 13px;
     line-height: 1.6;
     overflow-y: auto;
-    max-height: 340px;
+    max-height: 300px;
 }
 
-/* Các thành phần nút bấm điều hướng hệ thống */
+/* Định dạng nút bấm chuẩn VR không bị rớt dòng */
 button {
     display: block;
     width: 100%;
     padding: 12px;
     margin: 10px 0;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(0, 229, 255, 0.4);
     color: #00e5ff;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 1px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    transition: all 0.2s ease;
 }
 
 #central-menu button {
@@ -190,37 +185,27 @@ button {
 
 button:hover, button.active {
     background: #00e5ff;
-    color: #050714;
-    box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+    color: #03030a;
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
 }
 
 #central-menu button:hover {
     background: #ff007f;
     color: #ffffff;
-    box-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
+    box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
 }
 
+/* Danh sách bài viết */
 .post-item {
-    padding: 14px;
-    margin-bottom: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
     background: rgba(255, 255, 255, 0.02);
     border-left: 3px solid #00e5ff;
-    border-radius: 0 6px 6px 0;
     cursor: pointer;
-    font-weight: 500;
     transition: all 0.2s ease;
 }
 
 .post-item:hover {
     background: rgba(0, 229, 255, 0.1);
-    border-left-color: #ffffff;
-    padding-left: 18px;
 }
-
-/* Định hình vùng biên dịch Markdown bảo mật */
-.secure-dom-view h1 { font-size: 18px; margin-bottom: 12px; color: #00e5ff; border-bottom: 1px solid rgba(0,229,255,0.2); padding-bottom: 6px; }
-.secure-dom-view p { margin-bottom: 12px; color: #cbd5e1; font-size: 13px; }
-.secure-dom-view code { background: rgba(0, 229, 255, 0.15); color: #00e5ff; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
-.secure-dom-view pre { background: #040612; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 12px 0; border: 1px solid rgba(0, 229, 255, 0.2); }
-.secure-dom-view pre code { background: transparent; color: #ffffff; padding: 0; }
-.loading-text { color: #00e5ff; font-style: italic; text-align: center; }
+ 

@@ -1,0 +1,409 @@
+/* ==========================================================================
+   EXPERIENCE.CSS
+   Native Browser Experience Engine
+   ========================================================================== */
+
+#experience-root{
+    position:relative;
+    width:100%;
+    height:100vh;
+    overflow:hidden;
+}
+
+#experience-scene{
+    position:relative;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    perspective:1800px;
+    transform-style:preserve-3d;
+    touch-action:none;
+}
+
+/* ==========================================================================
+   HDRI BACKGROUND
+   ========================================================================== */
+
+#hdri-container{
+    position:absolute;
+    inset:0;
+    z-index:1;
+    overflow:hidden;
+}
+
+#hdri-image{
+    position:absolute;
+    inset:-5%;
+
+    width:110%;
+    height:110%;
+
+    object-fit:cover;
+
+    transform:
+        translate3d(0,0,0)
+        scale(1.05);
+
+    will-change:transform;
+    pointer-events:none;
+
+    filter:
+        saturate(1.1)
+        contrast(1.05)
+        brightness(.95);
+}
+
+/* ==========================================================================
+   EXPERIENCE CANVAS
+   ========================================================================== */
+
+#experience-canvas{
+    position:absolute;
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    z-index:5;
+
+    pointer-events:none;
+}
+
+/* ==========================================================================
+   SKYBOX
+   ========================================================================== */
+
+#skybox-container{
+    position:absolute;
+    inset:0;
+
+    z-index:10;
+
+    transform-style:preserve-3d;
+    pointer-events:none;
+}
+
+.skybox-layer{
+    position:absolute;
+    inset:0;
+
+    transform-style:preserve-3d;
+
+    will-change:transform;
+}
+
+.face{
+    position:absolute;
+
+    width:100vw;
+    height:100vh;
+
+    object-fit:cover;
+    backface-visibility:hidden;
+    pointer-events:none;
+}
+
+/* Layer 1 */
+
+#skybox-layer-1 .front{
+    transform:translateZ(var(--skybox-layer-1-depth));
+}
+
+#skybox-layer-1 .back{
+    transform:rotateY(180deg)
+    translateZ(var(--skybox-layer-1-depth));
+}
+
+#skybox-layer-1 .left{
+    transform:
+        rotateY(-90deg)
+        translateZ(var(--skybox-layer-1-depth));
+}
+
+#skybox-layer-1 .right{
+    transform:
+        rotateY(90deg)
+        translateZ(var(--skybox-layer-1-depth));
+}
+
+#skybox-layer-1 .top{
+    transform:
+        rotateX(90deg)
+        translateZ(var(--skybox-layer-1-depth));
+}
+
+#skybox-layer-1 .bottom{
+    transform:
+        rotateX(-90deg)
+        translateZ(var(--skybox-layer-1-depth));
+}
+
+/* Layer 2 */
+
+#skybox-layer-2 .front{
+    transform:translateZ(var(--skybox-layer-2-depth));
+}
+
+#skybox-layer-2 .back{
+    transform:rotateY(180deg)
+    translateZ(var(--skybox-layer-2-depth));
+}
+
+#skybox-layer-2 .left{
+    transform:
+        rotateY(-90deg)
+        translateZ(var(--skybox-layer-2-depth));
+}
+
+#skybox-layer-2 .right{
+    transform:
+        rotateY(90deg)
+        translateZ(var(--skybox-layer-2-depth));
+}
+
+#skybox-layer-2 .top{
+    transform:
+        rotateX(90deg)
+        translateZ(var(--skybox-layer-2-depth));
+}
+
+#skybox-layer-2 .bottom{
+    transform:
+        rotateX(-90deg)
+        translateZ(var(--skybox-layer-2-depth));
+}
+
+/* Layer 3 */
+
+#skybox-layer-3 .front{
+    transform:translateZ(var(--skybox-layer-3-depth));
+}
+
+#skybox-layer-3 .back{
+    transform:rotateY(180deg)
+    translateZ(var(--skybox-layer-3-depth));
+}
+
+#skybox-layer-3 .left{
+    transform:
+        rotateY(-90deg)
+        translateZ(var(--skybox-layer-3-depth));
+}
+
+#skybox-layer-3 .right{
+    transform:
+        rotateY(90deg)
+        translateZ(var(--skybox-layer-3-depth));
+}
+
+#skybox-layer-3 .top{
+    transform:
+        rotateX(90deg)
+        translateZ(var(--skybox-layer-3-depth));
+}
+
+#skybox-layer-3 .bottom{
+    transform:
+        rotateX(-90deg)
+        translateZ(var(--skybox-layer-3-depth));
+}
+
+/* ==========================================================================
+   PARALLAX SYSTEM
+   ========================================================================== */
+
+#parallax-container{
+    position:absolute;
+    inset:0;
+
+    z-index:15;
+
+    overflow:hidden;
+    pointer-events:none;
+}
+
+.parallax-layer{
+    position:absolute;
+    inset:-8%;
+
+    will-change:transform;
+    transform:
+        translate3d(0,0,0);
+
+    background-repeat:no-repeat;
+    background-position:center;
+    background-size:cover;
+}
+
+#parallax-layer-back{
+    z-index:1;
+}
+
+#parallax-layer-middle{
+    z-index:2;
+}
+
+#parallax-layer-front{
+    z-index:3;
+}
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+
+#hero-content{
+    position:absolute;
+
+    top:50%;
+    left:50%;
+
+    z-index:100;
+
+    width:min(900px,90vw);
+
+    transform:
+        translate(-50%,-50%);
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+
+    text-align:center;
+
+    gap:var(--space-5);
+}
+
+#hero-logo{
+    width:128px;
+    height:128px;
+
+    object-fit:contain;
+
+    filter:
+        drop-shadow(0 0 24px rgba(255,255,255,.15));
+}
+
+#hero-title{
+    font-size:clamp(
+        2.5rem,
+        5vw,
+        5rem
+    );
+
+    font-weight:var(--font-weight-bold);
+
+    line-height:1;
+
+    text-shadow:
+        0 8px 40px rgba(0,0,0,.45);
+}
+
+#hero-description{
+    max-width:720px;
+
+    font-size:var(--font-size-lg);
+
+    color:var(--color-text-soft);
+
+    text-shadow:
+        0 4px 20px rgba(0,0,0,.35);
+}
+
+#hero-actions{
+    display:flex;
+    gap:var(--space-4);
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+/* ==========================================================================
+   HEADER ACTIONS
+   ========================================================================== */
+
+.header-actions{
+    display:flex;
+    align-items:center;
+    gap:var(--space-3);
+}
+
+/* ==========================================================================
+   ANIMATION HELPERS
+   ========================================================================== */
+
+.experience-hidden{
+    opacity:0;
+}
+
+.experience-visible{
+    opacity:1;
+    transition:
+        opacity var(--transition-slow);
+}
+
+.smooth-transform{
+    will-change:transform;
+}
+
+.hardware-layer{
+    transform:translateZ(0);
+}
+
+/* ==========================================================================
+   MOBILE
+   ========================================================================== */
+
+@media (max-width:1024px){
+
+    #hero-logo{
+        width:104px;
+        height:104px;
+    }
+
+    #hero-description{
+        font-size:1rem;
+    }
+}
+
+@media (max-width:768px){
+
+    #hero-content{
+        width:min(92vw,700px);
+    }
+
+    #hero-actions{
+        width:100%;
+        flex-direction:column;
+    }
+
+    #hero-actions .hero-button,
+    #hero-actions button{
+        width:100%;
+    }
+
+    .header-actions{
+        gap:8px;
+    }
+
+    .header-actions button,
+    .header-actions a{
+        font-size:12px;
+        min-height:40px;
+        padding:0 12px;
+    }
+
+    #hero-logo{
+        width:84px;
+        height:84px;
+    }
+}
+
+@media (max-width:480px){
+
+    #hero-title{
+        font-size:2.1rem;
+    }
+
+    #hero-description{
+        font-size:.95rem;
+    }
+} 

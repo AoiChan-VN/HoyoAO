@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+/>
+
+<meta
+    name="description"
+    content="Local File Wiki Explorer"
+/>
+
+<title>Aoi Wiki</title>
+
+<link rel="stylesheet" href="./css/reset.css">
+<link rel="stylesheet" href="./css/variables.css">
+<link rel="stylesheet" href="./css/main.css">
+<link rel="stylesheet" href="./css/wiki.css">
+
+<link
+    rel="icon"
+    type="image/png"
+    href="./assets/logo/favicon.png"
+/>
+</head>
+
+<body>
+
+<div id="wiki-loading-screen" aria-hidden="false">
+
+    <div class="wiki-loading-wrapper">
+
+        <img
+            src="./assets/logo/logo.png"
+            alt="Logo"
+            class="wiki-loading-logo"
+            draggable="false"
+        >
+
+        <div class="wiki-loading-bar">
+            <div id="wiki-loading-progress"></div>
+        </div>
+
+        <p id="wiki-loading-text">
+            Loading Content Index...
+        </p>
+
+    </div>
+
+</div>
+
+<header id="wiki-header">
+
+    <div id="wiki-header-left">
+
+        <a
+            href="./index.html"
+            id="wiki-logo-link"
+            aria-label="Back To Experience"
+        >
+
+            <img
+                src="./assets/logo/logo.png"
+                alt="Logo"
+                id="wiki-logo"
+                draggable="false"
+            >
+
+        </a>
+
+        <div id="wiki-title-group">
+
+            <h1 id="wiki-title">
+                Local Wiki
+            </h1>
+
+            <span id="wiki-subtitle">
+                File Based Content Explorer
+            </span>
+
+        </div>
+
+    </div>
+
+    <div id="wiki-header-right">
+
+        <label
+            id="search-wrapper"
+            for="wiki-search-input"
+        >
+
+            <input
+                id="wiki-search-input"
+                type="search"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Search title, file, metadata..."
+                aria-label="Search"
+            >
+
+        </label>
+
+        <button
+            id="theme-toggle"
+            type="button"
+            aria-label="Toggle Theme"
+        >
+            Theme
+        </button>
+
+    </div>
+
+</header>
+
+<main id="wiki-layout">
+
+    <aside id="category-panel">
+
+        <div class="panel-header">
+            <h2>Categories</h2>
+        </div>
+
+        <nav
+            id="category-list"
+            aria-label="Categories"
+        ></nav>
+
+    </aside>
+
+    <aside id="file-panel">
+
+        <div class="panel-header">
+            <h2>Files</h2>
+        </div>
+
+        <div
+            id="file-list"
+            aria-label="File Explorer"
+        ></div>
+
+    </aside>
+
+    <section id="viewer-panel">
+
+        <div id="viewer-header">
+
+            <div id="viewer-meta">
+
+                <span id="viewer-category">
+                    -
+                </span>
+
+                <span id="viewer-filename">
+                    -
+                </span>
+
+            </div>
+
+            <div id="viewer-actions">
+
+                <button
+                    id="reload-content-button"
+                    type="button"
+                >
+                    Reload
+                </button>
+
+                <button
+                    id="open-file-button"
+                    type="button"
+                >
+                    Open
+                </button>
+
+            </div>
+
+        </div>
+
+        <div id="viewer-content">
+
+            <section
+                id="markdown-viewer"
+                hidden
+            ></section>
+
+            <section
+                id="pdf-viewer"
+                hidden
+            >
+
+                <iframe
+                    id="pdf-frame"
+                    title="PDF Viewer"
+                    loading="lazy"
+                ></iframe>
+
+            </section>
+
+            <section
+                id="docx-viewer"
+                hidden
+            ></section>
+
+            <section
+                id="empty-viewer"
+            >
+
+                <div class="empty-viewer-content">
+
+                    <img
+                        src="./assets/logo/logo.png"
+                        alt="Logo"
+                        draggable="false"
+                    >
+
+                    <h2>
+                        Select A Document
+                    </h2>
+
+                    <p>
+                        Choose a category and open a file from the explorer.
+                    </p>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </section>
+
+</main>
+
+<footer id="wiki-footer">
+
+    <span>
+        Local Content Discovery Engine
+    </span>
+
+    <span>
+        Recursive JSON Index Loading
+    </span>
+
+</footer>
+
+<template id="category-item-template">
+
+    <button
+        class="category-item"
+        type="button"
+    >
+        <span class="category-name"></span>
+        <span class="category-count"></span>
+    </button>
+
+</template>
+
+<template id="file-item-template">
+
+    <button
+        class="file-item"
+        type="button"
+    >
+        <span class="file-title"></span>
+        <span class="file-name"></span>
+    </button>
+
+</template>
+
+<script type="module" src="./js/main.js"></script>
+
+</body>
+</html> 

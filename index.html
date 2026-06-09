@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+/>
+
+<meta
+    name="description"
+    content="Native Browser Experience Engine with HDRI, Skybox, Parallax and Wiki"
+/>
+
+<title>Aoi Experience</title>
+
+<link rel="stylesheet" href="./css/reset.css">
+<link rel="stylesheet" href="./css/variables.css">
+<link rel="stylesheet" href="./css/main.css">
+<link rel="stylesheet" href="./css/experience.css">
+
+<link
+    rel="icon"
+    type="image/png"
+    href="./assets/logo/favicon.png"
+/>
+</head>
+
+<body>
+
+<div id="loading-screen" aria-hidden="false">
+    <div class="loading-wrapper">
+        <img
+            id="loading-logo"
+            src="./assets/logo/logo.png"
+            alt="Logo"
+            draggable="false"
+        >
+        <div class="loading-bar">
+            <div id="loading-progress"></div>
+        </div>
+        <p id="loading-text">Initializing Experience Engine...</p>
+    </div>
+</div>
+
+<header id="site-header">
+
+    <a
+        class="logo-link"
+        href="./index.html"
+        aria-label="Homepage"
+    >
+        <img
+            src="./assets/logo/logo.png"
+            alt="Logo"
+            class="site-logo"
+            draggable="false"
+        >
+    </a>
+
+    <nav class="header-actions">
+
+        <button
+            id="gyro-button"
+            type="button"
+            aria-label="Enable Gyroscope"
+        >
+            Gyroscope
+        </button>
+
+        <button
+            id="reset-camera-button"
+            type="button"
+            aria-label="Reset Camera"
+        >
+            Reset View
+        </button>
+
+        <a
+            id="wiki-button"
+            href="./wiki.html"
+            aria-label="Open Wiki"
+        >
+            Open Wiki
+        </a>
+
+    </nav>
+
+</header>
+
+<main id="experience-root">
+
+    <section id="experience-scene">
+
+        <div id="hdri-container">
+            <img
+                id="hdri-image"
+                src="./assets/hdri/default.webp"
+                alt=""
+                draggable="false"
+            >
+        </div>
+
+        <div
+            id="skybox-container"
+            aria-hidden="true"
+        >
+
+            <div
+                class="skybox-layer"
+                id="skybox-layer-1"
+                data-layer="1"
+            >
+
+                <img class="face front" src="./assets/skybox/layer1/front.webp" alt="">
+                <img class="face back" src="./assets/skybox/layer1/back.webp" alt="">
+                <img class="face left" src="./assets/skybox/layer1/left.webp" alt="">
+                <img class="face right" src="./assets/skybox/layer1/right.webp" alt="">
+                <img class="face top" src="./assets/skybox/layer1/top.webp" alt="">
+                <img class="face bottom" src="./assets/skybox/layer1/bottom.webp" alt="">
+
+            </div>
+
+            <div
+                class="skybox-layer"
+                id="skybox-layer-2"
+                data-layer="2"
+            >
+
+                <img class="face front" src="./assets/skybox/layer2/front.webp" alt="">
+                <img class="face back" src="./assets/skybox/layer2/back.webp" alt="">
+                <img class="face left" src="./assets/skybox/layer2/left.webp" alt="">
+                <img class="face right" src="./assets/skybox/layer2/right.webp" alt="">
+                <img class="face top" src="./assets/skybox/layer2/top.webp" alt="">
+                <img class="face bottom" src="./assets/skybox/layer2/bottom.webp" alt="">
+
+            </div>
+
+            <div
+                class="skybox-layer"
+                id="skybox-layer-3"
+                data-layer="3"
+            >
+
+                <img class="face front" src="./assets/skybox/layer3/front.webp" alt="">
+                <img class="face back" src="./assets/skybox/layer3/back.webp" alt="">
+                <img class="face left" src="./assets/skybox/layer3/left.webp" alt="">
+                <img class="face right" src="./assets/skybox/layer3/right.webp" alt="">
+                <img class="face top" src="./assets/skybox/layer3/top.webp" alt="">
+                <img class="face bottom" src="./assets/skybox/layer3/bottom.webp" alt="">
+
+            </div>
+
+        </div>
+
+        <div id="parallax-container">
+
+            <div
+                class="parallax-layer"
+                data-depth="0.15"
+                id="parallax-layer-back"
+            ></div>
+
+            <div
+                class="parallax-layer"
+                data-depth="0.45"
+                id="parallax-layer-middle"
+            ></div>
+
+            <div
+                class="parallax-layer"
+                data-depth="0.85"
+                id="parallax-layer-front"
+            ></div>
+
+        </div>
+
+        <div id="hero-content">
+
+            <img
+                src="./assets/logo/logo.png"
+                alt="Logo"
+                id="hero-logo"
+                draggable="false"
+            >
+
+            <h1 id="hero-title">
+                Native Experience Engine
+            </h1>
+
+            <p id="hero-description">
+                HDRI Background • Cube Skybox • Gyroscope • Native Browser Rendering
+            </p>
+
+            <div id="hero-actions">
+
+                <a
+                    href="./wiki.html"
+                    class="hero-button primary"
+                >
+                    Enter Wiki
+                </a>
+
+                <button
+                    id="experience-focus-button"
+                    class="hero-button secondary"
+                    type="button"
+                >
+                    Focus Scene
+                </button>
+
+            </div>
+
+        </div>
+
+        <canvas
+            id="experience-canvas"
+            aria-hidden="true"
+        ></canvas>
+
+    </section>
+
+</main>
+
+<footer id="site-footer">
+
+    <span>
+        Native Browser Experience Engine
+    </span>
+
+    <span>
+        HTML5 • CSS3 • ES2023
+    </span>
+
+</footer>
+
+<script type="module" src="./js/main.js"></script>
+
+</body>
+</html> 

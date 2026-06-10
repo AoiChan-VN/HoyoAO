@@ -1,0 +1,1 @@
+export const search=(items,q)=>items.filter(x=>x.toLowerCase().includes(q.toLowerCase()));

@@ -1,0 +1,1 @@
+export async function router(){const app=document.getElementById('app');const r=location.hash.slice(2)||'';if(r==='about'){app.innerHTML='<div class=card><h2>About</h2></div>';}else if(r==='gallery'){app.innerHTML='<div class=card><h2>Gallery</h2></div>';}else{app.innerHTML='<div class=card><h2>Landing Page</h2></div>';}}

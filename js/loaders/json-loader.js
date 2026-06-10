@@ -1,88 +1,61 @@
 /* ==========================================================================
    js/loaders/json-loader.js
    Native Browser Experience Engine
+   Recursive Content Discovery Loader
    ========================================================================== */
 
 import { CONFIG } from '../core/config.js';
-import { loadJSON } from '../core/cache.js';
+
+const cache =
+    new Map();
 
 /* ==========================================================================
-   PATH HELPERS
+   FETCH JSON
    ========================================================================== */
 
-function normalizePath(path) {
-
-    if (!path) {
-        return '';
-    }
-
-    return path
-        .replace(/\\/g, '/')
-        .replace(/\/{2,}/g, '/');
-
-}
-
-function getDirectory(path) {
-
-    const normalized =
-        normalizePath(path);
-
-    const lastSlash =
-        normalized.lastIndexOf('/');
-
-    if (lastSlash === -1) {
-        return '';
-    }
-
-    return normalized.slice(
-        0,
-        lastSlash + 1
-    );
-
-}
-
-function resolveRelativePath(
-    basePath,
-    relativePath
+export async function fetchJSON(
+    path
 ) {
 
-    if (!relativePath) {
-        return '';
-    }
-
     if (
-        relativePath.startsWith('/') ||
-        relativePath.startsWith('http')
+        CONFIG.CACHE.ENABLED &&
+        cache.has(path)
     ) {
 
-        return relativePath;
+        return cache.get(
+            path
+        );
 
     }
 
-    const baseDir =
-        getDirectory(basePath);
-
-    return normalizePath(
-        `${baseDir}${relativePath}`
-    );
-
-}
-
-/* ==========================================================================
-   LOCALDATA LOADER
-   ========================================================================== */
-
-export async function loadLocalData() {
-
-    const data =
-        await loadJSON(
-            CONFIG.PATHS.LOCAL_DATA
+    const response =
+        await fetch(
+            path,
+            {
+                cache: 'force-cache'
+            }
         );
 
-    if (!Array.isArray(data)) {
+    if (
+        !response.ok
+    ) {
 
         throw new Error(
-            'localdata.json must contain an array'
+            `Failed to load JSON: ${path}`
+        );
+
+    }
+
+    const data =
+        await response.json();
+
+    if (
+        CONFIG.CACHE.ENABLED
+    ) {
+
+        cache.set(
+            path,
+            data
         );
 
     }
@@ -92,91 +65,30 @@ export async function loadLocalData() {
 }
 
 /* ==========================================================================
-   CATEGORY LOADER
-   ========================================================================== */
-
-export async function loadCategoryIndex(
-    indexPath
-) {
-
-    const resolvedPath =
-        normalizePath(indexPath);
-
-    const data =
-        await loadJSON(
-            resolvedPath
-        );
-
-    if (!Array.isArray(data)) {
-
-        throw new Error(
-            `${resolvedPath} must contain an array`
-        );
-
-    }
-
-    return data.map(
-        (item) => ({
-
-            ...item,
-
-            file:
-                resolveRelativePath(
-                    resolvedPath,
-                    item.file || ''
-                )
-
-        })
-    );
-
-}
-
-/* ==========================================================================
-   RECURSIVE DISCOVERY
+   LOCALDATA DISCOVERY
    ========================================================================== */
 
 export async function discoverContent() {
 
     const localData =
-        await loadLocalData();
+        await fetchJSON(
+            CONFIG.DATA.INDEX
+        );
 
     const categories = [];
 
     for (
-        const category of localData
+        const entry of localData
     ) {
 
-        if (
-            !category ||
-            !category.folder
-        ) {
-            continue;
-        }
-
-        const indexPath =
-            normalizePath(
-                category.folder
+        const category =
+            await loadCategory(
+                entry
             );
 
-        const files =
-            await loadCategoryIndex(
-                indexPath
-            );
-
-        categories.push({
-
-            date:
-                category.date || '',
-
-            description:
-                category.description || '',
-
-            folder:
-                indexPath,
-
-            files
-
-        });
+        categories.push(
+            category
+        );
 
     }
 
@@ -185,160 +97,320 @@ export async function discoverContent() {
 }
 
 /* ==========================================================================
-   RECURSIVE INDEX SUPPORT
+   CATEGORY
+   ========================================================================== */
+
+export async function loadCategory(
+    categoryEntry
+) {
+
+    const fileList =
+        await fetchJSON(
+            categoryEntry.folder
+        );
+
+    const files = [];
+
+    for (
+        const item of fileList
+    ) {
+
+        files.push({
+
+            title:
+                item.title,
+
+            file:
+                normalizePath(
+                    item.file,
+                    categoryEntry.folder
+                )
+
+        });
+
+    }
+
+    return {
+
+        date:
+            categoryEntry.date,
+
+        description:
+            categoryEntry.description,
+
+        folder:
+            categoryEntry.folder,
+
+        files
+
+    };
+
+}
+
+/* ==========================================================================
+   RECURSIVE DISCOVERY
    ========================================================================== */
 
 export async function discoverRecursive(
-    rootIndexPath,
-    output = []
+    rootIndex
 ) {
 
-    const items =
-        await loadCategoryIndex(
-            rootIndexPath
-        );
+    const result = [];
 
-    for (
-        const item of items
+    const visited =
+        new Set();
+
+    async function crawl(
+        indexPath
     ) {
 
-        const file =
-            item.file || '';
-
         if (
-            file.endsWith(
-                'list.json'
+            visited.has(
+                indexPath
             )
         ) {
 
-            await discoverRecursive(
-                file,
-                output
+            return;
+
+        }
+
+        visited.add(
+            indexPath
+        );
+
+        const json =
+            await fetchJSON(
+                indexPath
             );
 
-            continue;
-
-        }
-
-        output.push(item);
-
-    }
-
-    return output;
-
-}
-
-/* ==========================================================================
-   SEARCH INDEX CREATION
-   ========================================================================== */
-
-export async function buildSearchIndex() {
-
-    const categories =
-        await discoverContent();
-
-    const index = [];
-
-    for (
-        const category of categories
-    ) {
-
-        for (
-            const file of
-            category.files
+        if (
+            !Array.isArray(
+                json
+            )
         ) {
 
-            index.push({
+            return;
 
-                title:
-                    file.title || '',
+        }
 
-                file:
-                    file.file || '',
+        for (
+            const item of json
+        ) {
 
-                category:
-                    category.description || '',
+            if (
+                item.folder
+            ) {
 
-                date:
-                    category.date || ''
+                await crawl(
+                    item.folder
+                );
 
-            });
+                continue;
+
+            }
+
+            if (
+                item.file
+            ) {
+
+                result.push({
+
+                    title:
+                        item.title,
+
+                    file:
+                        normalizePath(
+                            item.file,
+                            indexPath
+                        )
+
+                });
+
+            }
 
         }
 
     }
 
-    return index;
+    await crawl(
+        rootIndex
+    );
+
+    return result;
 
 }
 
 /* ==========================================================================
-   FILE TYPE HELPERS
-   ========================================================================== */
-
-export function getFileExtension(
-    path
-) {
-
-    const clean =
-        path.split('?')[0];
-
-    const index =
-        clean.lastIndexOf('.');
-
-    if (index === -1) {
-        return '';
-    }
-
-    return clean
-        .slice(index + 1)
-        .toLowerCase();
-
-}
-
-export function getFileType(
-    path
-) {
-
-    const extension =
-        getFileExtension(path);
-
-    switch (extension) {
-
-        case 'md':
-            return 'markdown';
-
-        case 'pdf':
-            return 'pdf';
-
-        case 'docx':
-            return 'docx';
-
-        default:
-            return 'unknown';
-
-    }
-
-}
-
-/* ==========================================================================
-   CATEGORY NAME HELPER
+   CATEGORY LABEL
    ========================================================================== */
 
 export function categoryName(
     category
 ) {
 
-    const label =
-        category.description || '';
+    if (
+        !category
+    ) {
 
-    if (label) {
-        return label;
+        return 'Unknown';
+
     }
 
-    return category.folder
-        .split('/')
-        .filter(Boolean)
-        .pop() || 'Unknown';
+    const label =
+        category.description ||
+        '';
+
+    if (
+        label
+            .toLowerCase()
+            .includes(
+                'markdown'
+            )
+    ) {
+
+        return 'Markdown';
+
+    }
+
+    if (
+        label
+            .toLowerCase()
+            .includes(
+                'pdf'
+            )
+    ) {
+
+        return 'PDF';
+
+    }
+
+    if (
+        label
+            .toLowerCase()
+            .includes(
+                'docx'
+            )
+    ) {
+
+        return 'DOCX';
+
+    }
+
+    return label ||
+        'Category';
+
+}
+
+/* ==========================================================================
+   FILE TYPE
+   ========================================================================== */
+
+export function getFileType(
+    path
+) {
+
+    const lower =
+        path.toLowerCase();
+
+    if (
+        CONFIG.FILE_TYPES
+            .MARKDOWN
+            .some(
+                ext =>
+                    lower.endsWith(
+                        ext
+                    )
+            )
+    ) {
+
+        return 'markdown';
+
+    }
+
+    if (
+        CONFIG.FILE_TYPES
+            .PDF
+            .some(
+                ext =>
+                    lower.endsWith(
+                        ext
+                    )
+            )
+    ) {
+
+        return 'pdf';
+
+    }
+
+    if (
+        CONFIG.FILE_TYPES
+            .DOCX
+            .some(
+                ext =>
+                    lower.endsWith(
+                        ext
+                    )
+            )
+    ) {
+
+        return 'docx';
+
+    }
+
+    return 'unknown';
+
+}
+
+/* ==========================================================================
+   PATH
+   ========================================================================== */
+
+export function normalizePath(
+    file,
+    source
+) {
+
+    if (
+        file.startsWith(
+            './'
+        )
+    ) {
+
+        const base =
+            source.substring(
+                0,
+                source.lastIndexOf(
+                    '/'
+                )
+            );
+
+        return (
+            base +
+            '/' +
+            file.replace(
+                './',
+                ''
+            )
+        );
+
+    }
+
+    return file;
+
+}
+
+/* ==========================================================================
+   CACHE
+   ========================================================================== */
+
+export function clearJSONCache() {
+
+    cache.clear();
+
+}
+
+export function getJSONCacheSize() {
+
+    return cache.size;
 
 } 

@@ -1,247 +1,311 @@
 /* ==========================================================================
    js/core/config.js
    Native Browser Experience Engine
+   Global Configuration
    ========================================================================== */
 
-export const CONFIG = Object.freeze({
+export const CONFIG = {
 
-    APP: Object.freeze({
+    /* ====================================================================== */
+    /* EXPERIENCE */
+    /* ====================================================================== */
 
-        NAME: 'Native Browser Experience Engine',
-
-        VERSION: '1.0.0',
-
-        AUTHOR: 'Aoi Dev'
-
-    }),
-
-    PATHS: Object.freeze({
-
-        LOCAL_DATA: './data/localdata.json',
-
-        MARKDOWN_ROOT: './data/md/',
-
-        PDF_ROOT: './data/pdf/',
-
-        DOCX_ROOT: './data/docs/',
-
-        HDRI_ROOT: './assets/hdri/',
-
-        SKYBOX_ROOT: './assets/skybox/',
-
-        LOGO_ROOT: './assets/logo/'
-
-    }),
-
-    EXPERIENCE: Object.freeze({
+    EXPERIENCE: {
 
         TARGET_FPS: 60,
 
         MAX_DELTA_TIME: 0.05,
 
-        CAMERA_SMOOTHING: 0.08,
-
-        CAMERA_ZOOM_MIN: 0.75,
-
-        CAMERA_ZOOM_MAX: 2.5,
+        /* CAMERA */
 
         CAMERA_DEFAULT_ZOOM: 1,
 
-        CAMERA_ROTATION_LIMIT_X: 35,
+        CAMERA_ZOOM_MIN: 0.75,
 
-        CAMERA_ROTATION_LIMIT_Y: 35,
+        CAMERA_ZOOM_MAX: 2.25,
 
-        POINTER_SENSITIVITY: 0.08,
+        CAMERA_ROTATION_LIMIT_X: 12,
 
-        TOUCH_SENSITIVITY: 0.14,
+        CAMERA_ROTATION_LIMIT_Y: 18,
 
-        GYRO_SENSITIVITY: 0.55,
+        CAMERA_SMOOTHING: 0.08,
 
-        WHEEL_ZOOM_SPEED: 0.0009,
+        WHEEL_ZOOM_SPEED: 0.0012,
 
-        PARALLAX_DAMPING: 0.09,
+        /* PARALLAX */
 
-        PARALLAX_SCROLL_FACTOR: 0.08,
+        PARALLAX_DAMPING: 0.08,
 
-        HDRI_SCALE: 1.05
+        PARALLAX_SCROLL_FACTOR: 0.04,
 
-    }),
+        /* GYROSCOPE */
 
-    SKYBOX: Object.freeze({
+        GYRO_SENSITIVITY: 1.15,
 
-        LAYER_1: Object.freeze({
+        /* HDRI */
 
-            DEPTH: 120,
+        HDRI_SCALE: 1.12,
 
-            SPEED: 0.35
+        /* SKYBOX */
 
-        }),
+        SKYBOX_SMOOTHING: 0.06,
 
-        LAYER_2: Object.freeze({
+        SKYBOX_DEPTH_BACK: 12,
 
-            DEPTH: 260,
+        SKYBOX_DEPTH_MIDDLE: 26,
 
-            SPEED: 0.65
+        SKYBOX_DEPTH_FRONT: 48,
 
-        }),
+        SKYBOX_SPEED_BACK: 0.35,
 
-        LAYER_3: Object.freeze({
+        SKYBOX_SPEED_MIDDLE: 0.65,
 
-            DEPTH: 420,
+        SKYBOX_SPEED_FRONT: 1.0
 
-            SPEED: 1.0
+    },
 
-        })
+    /* ====================================================================== */
+    /* SEARCH */
+    /* ====================================================================== */
 
-    }),
-
-    CACHE: Object.freeze({
-
-        MAX_JSON_CACHE: 128,
-
-        MAX_TEXT_CACHE: 256,
-
-        MAX_BINARY_CACHE: 64
-
-    }),
-
-    SEARCH: Object.freeze({
+    SEARCH: {
 
         MIN_QUERY_LENGTH: 1,
 
-        MAX_RESULTS: 500
+        MAX_RESULTS: 100
 
-    }),
+    },
 
-    THEME: Object.freeze({
+    /* ====================================================================== */
+    /* UI */
+    /* ====================================================================== */
 
-        STORAGE_KEY: 'aoi-theme',
+    UI: {
 
-        DEFAULT_THEME: 'dark'
+        DEFAULT_THEME: 'dark',
 
-    }),
+        LOADING_FADE_DURATION: 300,
 
-    EVENTS: Object.freeze({
+        TRANSITION_DURATION: 220
 
-        RESIZE: 'app:resize',
+    },
 
-        THEME_CHANGED: 'theme:changed',
+    /* ====================================================================== */
+    /* STORAGE */
+    /* ====================================================================== */
 
-        CAMERA_UPDATED: 'camera:updated',
+    STORAGE: {
 
-        CONTENT_LOADED: 'content:loaded',
+        THEME_KEY:
+            'native-wiki-theme'
 
-        CATEGORY_CHANGED: 'category:changed',
+    },
 
-        FILE_OPENED: 'file:opened',
+    /* ====================================================================== */
+    /* DATA */
+    /* ====================================================================== */
 
-        SEARCH_UPDATED: 'search:updated'
+    DATA: {
 
-    })
+        ROOT:
+            './data/',
 
-});
+        INDEX:
+            './data/localdata.json'
 
-/* ==========================================================================
-   DOM HELPERS
-   ========================================================================== */
+    },
 
-export const DOM = Object.freeze({
+    /* ====================================================================== */
+    /* FILE TYPES */
+    /* ====================================================================== */
 
-    html: document.documentElement,
+    FILE_TYPES: {
 
-    body: document.body
+        MARKDOWN: [
 
-});
+            '.md',
+            '.markdown'
 
-/* ==========================================================================
-   FEATURE DETECTION
-   ========================================================================== */
+        ],
 
-export const FEATURES = Object.freeze({
+        PDF: [
 
-    touch:
-        'ontouchstart' in window ||
-        navigator.maxTouchPoints > 0,
+            '.pdf'
 
-    pointer:
-        'PointerEvent' in window,
+        ],
 
-    deviceOrientation:
-        'DeviceOrientationEvent' in window,
+        DOCX: [
 
-    deviceMotion:
-        'DeviceMotionEvent' in window,
+            '.docx'
 
-    intersectionObserver:
-        'IntersectionObserver' in window,
+        ]
 
-    resizeObserver:
-        'ResizeObserver' in window,
+    },
 
-    requestIdleCallback:
-        'requestIdleCallback' in window
+    /* ====================================================================== */
+    /* CACHE */
+    /* ====================================================================== */
 
-});
+    CACHE: {
 
-/* ==========================================================================
-   RUNTIME STATE
-   ========================================================================== */
+        ENABLED: true,
 
-export const RUNTIME = {
+        MAX_ITEMS: 512
 
-    started: false,
+    },
 
-    page: (() => {
+    /* ====================================================================== */
+    /* VIEWER */
+    /* ====================================================================== */
 
-        const path = location.pathname
-            .split('/')
-            .pop()
-            ?.toLowerCase() || '';
+    VIEWER: {
 
-        if (path === 'wiki.html') {
-            return 'wiki';
+        PDF_HEIGHT_RATIO: 0.85,
+
+        DOCX_MAX_SIZE:
+            50 * 1024 * 1024,
+
+        MARKDOWN_MAX_SIZE:
+            20 * 1024 * 1024
+
+    },
+
+    /* ====================================================================== */
+    /* PERFORMANCE */
+    /* ====================================================================== */
+
+    PERFORMANCE: {
+
+        PASSIVE_EVENTS: true,
+
+        LAZY_LOADING: true,
+
+        IMAGE_DECODING: true,
+
+        OBSERVER_THRESHOLD: 0.1
+
+    },
+
+    /* ====================================================================== */
+    /* SKYBOX */
+    /* ====================================================================== */
+
+    SKYBOX: {
+
+        BACKGROUND: {
+
+            front:
+                './assets/skybox/background/front.webp',
+
+            back:
+                './assets/skybox/background/back.webp',
+
+            left:
+                './assets/skybox/background/left.webp',
+
+            right:
+                './assets/skybox/background/right.webp',
+
+            top:
+                './assets/skybox/background/top.webp',
+
+            bottom:
+                './assets/skybox/background/bottom.webp'
+
+        },
+
+        ATMOSPHERE: {
+
+            front:
+                './assets/skybox/atmosphere/front.webp',
+
+            back:
+                './assets/skybox/atmosphere/back.webp',
+
+            left:
+                './assets/skybox/atmosphere/left.webp',
+
+            right:
+                './assets/skybox/atmosphere/right.webp',
+
+            top:
+                './assets/skybox/atmosphere/top.webp',
+
+            bottom:
+                './assets/skybox/atmosphere/bottom.webp'
+
+        },
+
+        FOREGROUND: {
+
+            front:
+                './assets/skybox/foreground/front.webp',
+
+            back:
+                './assets/skybox/foreground/back.webp',
+
+            left:
+                './assets/skybox/foreground/left.webp',
+
+            right:
+                './assets/skybox/foreground/right.webp',
+
+            top:
+                './assets/skybox/foreground/top.webp',
+
+            bottom:
+                './assets/skybox/foreground/bottom.webp'
+
         }
 
-        return 'experience';
-
-    })(),
-
-    width: window.innerWidth,
-
-    height: window.innerHeight,
-
-    pixelRatio: Math.min(
-        window.devicePixelRatio || 1,
-        2
-    ),
-
-    lastFrameTime: performance.now()
+    }
 
 };
 
 /* ==========================================================================
-   ENVIRONMENT
+   IMMUTABLE CONFIG
    ========================================================================== */
 
-export function isWikiPage() {
+Object.freeze(
+    CONFIG
+);
 
-    return RUNTIME.page === 'wiki';
+Object.freeze(
+    CONFIG.EXPERIENCE
+);
 
-}
+Object.freeze(
+    CONFIG.SEARCH
+);
 
-export function isExperiencePage() {
+Object.freeze(
+    CONFIG.UI
+);
 
-    return RUNTIME.page === 'experience';
+Object.freeze(
+    CONFIG.STORAGE
+);
 
-}
+Object.freeze(
+    CONFIG.DATA
+);
 
-export function updateViewportState() {
+Object.freeze(
+    CONFIG.FILE_TYPES
+);
 
-    RUNTIME.width = window.innerWidth;
-    RUNTIME.height = window.innerHeight;
-    RUNTIME.pixelRatio = Math.min(
-        window.devicePixelRatio || 1,
-        2
-    );
+Object.freeze(
+    CONFIG.CACHE
+);
 
-} 
+Object.freeze(
+    CONFIG.VIEWER
+);
+
+Object.freeze(
+    CONFIG.PERFORMANCE
+);
+
+Object.freeze(
+    CONFIG.SKYBOX
+); 

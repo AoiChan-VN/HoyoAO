@@ -1,240 +1,251 @@
+<!-- ==========================================================================
+     index.html
+     Native Browser Experience Engine
+     ========================================================================== -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta
-    name="viewport"
-    content="width=device-width,initial-scale=1,viewport-fit=cover"
-/>
 
-<meta
-    name="description"
-    content="Native Browser Experience Engine with HDRI, Skybox, Parallax and Wiki"
-/>
+    <meta charset="UTF-8">
 
-<title>Aoi Experience</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="./css/reset.css">
-<link rel="stylesheet" href="./css/variables.css">
-<link rel="stylesheet" href="./css/main.css">
-<link rel="stylesheet" href="./css/experience.css">
+    <meta
+        name="theme-color"
+        content="#000000">
 
-<link
-    rel="icon"
-    type="image/png"
-    href="./assets/logo/favicon.png"
-/>
+    <title>
+        Native Experience Engine
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="./css/reset.css">
+
+    <link
+        rel="stylesheet"
+        href="./css/variables.css">
+
+    <link
+        rel="stylesheet"
+        href="./css/experience.css">
+
+    <link
+        rel="stylesheet"
+        href="./css/main.css">
+
 </head>
 
-<body>
+<body
+    data-hdri="./assets/hdri/default.webp">
 
-<div id="loading-screen" aria-hidden="false">
-    <div class="loading-wrapper">
-        <img
-            id="loading-logo"
-            src="./assets/logo/logo.png"
-            alt="Logo"
-            draggable="false"
-        >
-        <div class="loading-bar">
-            <div id="loading-progress"></div>
-        </div>
-        <p id="loading-text">Initializing Experience Engine...</p>
-    </div>
-</div>
+    <!-- =============================================================== -->
+    <!-- LOADING -->
+    <!-- =============================================================== -->
 
-<header id="site-header">
-
-    <a
-        class="logo-link"
-        href="./index.html"
-        aria-label="Homepage"
-    >
-        <img
-            src="./assets/logo/logo.png"
-            alt="Logo"
-            class="site-logo"
-            draggable="false"
-        >
-    </a>
-
-    <nav class="header-actions">
-
-        <button
-            id="gyro-button"
-            type="button"
-            aria-label="Enable Gyroscope"
-        >
-            Gyroscope
-        </button>
-
-        <button
-            id="reset-camera-button"
-            type="button"
-            aria-label="Reset Camera"
-        >
-            Reset View
-        </button>
-
-        <a
-            id="wiki-button"
-            href="./wiki.html"
-            aria-label="Open Wiki"
-        >
-            Open Wiki
-        </a>
-
-    </nav>
-
-</header>
-
-<main id="experience-root">
-
-    <section id="experience-scene">
-
-        <div id="hdri-container">
-            <img
-                id="hdri-image"
-                src="./assets/hdri/default.webp"
-                alt=""
-                draggable="false"
-            >
-        </div>
+    <div
+        id="loading-screen">
 
         <div
-            id="skybox-container"
-            aria-hidden="true"
-        >
+            class="loading-content">
 
             <div
-                class="skybox-layer"
-                id="skybox-layer-1"
-                data-layer="1"
-            >
+                class="loading-logo">
 
-                <img class="face front" src="./assets/skybox/layer1/front.webp" alt="">
-                <img class="face back" src="./assets/skybox/layer1/back.webp" alt="">
-                <img class="face left" src="./assets/skybox/layer1/left.webp" alt="">
-                <img class="face right" src="./assets/skybox/layer1/right.webp" alt="">
-                <img class="face top" src="./assets/skybox/layer1/top.webp" alt="">
-                <img class="face bottom" src="./assets/skybox/layer1/bottom.webp" alt="">
+                AOI
 
             </div>
 
             <div
-                class="skybox-layer"
-                id="skybox-layer-2"
-                data-layer="2"
-            >
-
-                <img class="face front" src="./assets/skybox/layer2/front.webp" alt="">
-                <img class="face back" src="./assets/skybox/layer2/back.webp" alt="">
-                <img class="face left" src="./assets/skybox/layer2/left.webp" alt="">
-                <img class="face right" src="./assets/skybox/layer2/right.webp" alt="">
-                <img class="face top" src="./assets/skybox/layer2/top.webp" alt="">
-                <img class="face bottom" src="./assets/skybox/layer2/bottom.webp" alt="">
-
-            </div>
-
-            <div
-                class="skybox-layer"
-                id="skybox-layer-3"
-                data-layer="3"
-            >
-
-                <img class="face front" src="./assets/skybox/layer3/front.webp" alt="">
-                <img class="face back" src="./assets/skybox/layer3/back.webp" alt="">
-                <img class="face left" src="./assets/skybox/layer3/left.webp" alt="">
-                <img class="face right" src="./assets/skybox/layer3/right.webp" alt="">
-                <img class="face top" src="./assets/skybox/layer3/top.webp" alt="">
-                <img class="face bottom" src="./assets/skybox/layer3/bottom.webp" alt="">
-
+                class="loading-spinner">
             </div>
 
         </div>
 
-        <div id="parallax-container">
+    </div>
 
-            <div
-                class="parallax-layer"
-                data-depth="0.15"
-                id="parallax-layer-back"
-            ></div>
+    <!-- =============================================================== -->
+    <!-- APP -->
+    <!-- =============================================================== -->
 
-            <div
-                class="parallax-layer"
-                data-depth="0.45"
-                id="parallax-layer-middle"
-            ></div>
+    <div
+        id="app">
 
-            <div
-                class="parallax-layer"
-                data-depth="0.85"
-                id="parallax-layer-front"
-            ></div>
+        <!-- =========================================================== -->
+        <!-- HEADER -->
+        <!-- =========================================================== -->
 
-        </div>
+        <header
+            class="site-header">
 
-        <div id="hero-content">
+            <a
+                class="logo"
+                href="./index.html">
 
-            <img
-                src="./assets/logo/logo.png"
-                alt="Logo"
-                id="hero-logo"
-                draggable="false"
-            >
+                <img
+                    src="./assets/logo/logo.webp"
+                    alt="Logo">
 
-            <h1 id="hero-title">
-                Native Experience Engine
-            </h1>
+            </a>
 
-            <p id="hero-description">
-                HDRI Background • Cube Skybox • Gyroscope • Native Browser Rendering
-            </p>
+            <nav
+                class="header-actions">
 
-            <div id="hero-actions">
+                <button
+                    id="enable-gyro"
+                    class="header-button">
+
+                    Enable Gyroscope
+
+                </button>
 
                 <a
                     href="./wiki.html"
-                    class="hero-button primary"
-                >
-                    Enter Wiki
+                    class="header-button">
+
+                    Open Wiki
+
                 </a>
 
-                <button
-                    id="experience-focus-button"
-                    class="hero-button secondary"
-                    type="button"
-                >
-                    Focus Scene
-                </button>
+            </nav>
 
-            </div>
+        </header>
 
-        </div>
+        <!-- =========================================================== -->
+        <!-- EXPERIENCE -->
+        <!-- =========================================================== -->
 
-        <canvas
-            id="experience-canvas"
-            aria-hidden="true"
-        ></canvas>
+        <main
+            id="experience-scene">
 
-    </section>
+            <!-- ======================================================= -->
+            <!-- HDRI -->
+            <!-- ======================================================= -->
 
-</main>
+            <section
+                id="hdri-container">
 
-<footer id="site-footer">
+                <img
+                    id="hdri-image"
+                    alt="HDRI">
 
-    <span>
-        Native Browser Experience Engine
-    </span>
+            </section>
 
-    <span>
-        HTML5 • CSS3 • ES2023
-    </span>
+            <!-- ======================================================= -->
+            <!-- SKYBOX -->
+            <!-- ======================================================= -->
 
-</footer>
+            <section
+                id="skybox-root">
 
-<script type="module" src="./js/main.js"></script>
+                <div
+                    id="skybox-background"
+                    class="skybox-layer">
+                </div>
+
+                <div
+                    id="skybox-atmosphere"
+                    class="skybox-layer">
+                </div>
+
+                <div
+                    id="skybox-foreground"
+                    class="skybox-layer">
+                </div>
+
+            </section>
+
+            <!-- ======================================================= -->
+            <!-- PARALLAX -->
+            <!-- ======================================================= -->
+
+            <section
+                id="parallax-root">
+
+                <div
+                    id="parallax-layer-back"
+                    class="parallax-layer">
+
+                    <img
+                        src="./assets/skybox/parallax/back.webp"
+                        alt="Back Layer">
+
+                </div>
+
+                <div
+                    id="parallax-layer-middle"
+                    class="parallax-layer">
+
+                    <img
+                        src="./assets/skybox/parallax/middle.webp"
+                        alt="Middle Layer">
+
+                </div>
+
+                <div
+                    id="parallax-layer-front"
+                    class="parallax-layer">
+
+                    <img
+                        src="./assets/skybox/parallax/front.webp"
+                        alt="Front Layer">
+
+                </div>
+
+            </section>
+
+            <!-- ======================================================= -->
+            <!-- HERO -->
+            <!-- ======================================================= -->
+
+            <section
+                class="hero">
+
+                <div
+                    class="hero-content">
+
+                    <h1>
+
+                        Native Browser
+                        Experience Engine
+
+                    </h1>
+
+                    <p>
+
+                        HDRI • Skybox •
+                        Gyroscope • Parallax
+
+                    </p>
+
+                    <a
+                        href="./wiki.html"
+                        class="hero-button">
+
+                        Enter Wiki
+
+                    </a>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- SCRIPT -->
+    <!-- =============================================================== -->
+
+    <script
+        type="module"
+        src="./js/main.js">
+    </script>
 
 </body>
+
 </html> 

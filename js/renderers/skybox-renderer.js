@@ -1,6 +1,7 @@
 /* ==========================================================================
    js/renderers/skybox-renderer.js
    Native Browser Experience Engine
+   Triple Layer Cube Skybox Renderer
    ========================================================================== */
 
 import { CONFIG } from '../core/config.js';
@@ -9,35 +10,125 @@ export class SkyboxRenderer {
 
     constructor() {
 
-        this.container =
+        this.background =
             document.getElementById(
-                'skybox-container'
+                'skybox-background'
             );
 
-        this.layer1 =
+        this.atmosphere =
             document.getElementById(
-                'skybox-layer-1'
+                'skybox-atmosphere'
             );
 
-        this.layer2 =
+        this.foreground =
             document.getElementById(
-                'skybox-layer-2'
+                'skybox-foreground'
             );
-
-        this.layer3 =
-            document.getElementById(
-                'skybox-layer-3'
-            );
-
-        this.rotationX = 0;
-        this.rotationY = 0;
 
         this.targetX = 0;
         this.targetY = 0;
 
+        this.currentX = 0;
+        this.currentY = 0;
+
         this.enabled = true;
 
+        this.initialize();
+
     }
+
+    /* ===================================================================== */
+    /* INIT
+    /* ===================================================================== */
+
+    initialize() {
+
+        this.buildLayer(
+
+            this.background,
+
+            CONFIG.SKYBOX
+                .BACKGROUND
+
+        );
+
+        this.buildLayer(
+
+            this.atmosphere,
+
+            CONFIG.SKYBOX
+                .ATMOSPHERE
+
+        );
+
+        this.buildLayer(
+
+            this.foreground,
+
+            CONFIG.SKYBOX
+                .FOREGROUND
+
+        );
+
+    }
+
+    /* ===================================================================== */
+    /* BUILD CUBE
+    /* ===================================================================== */
+
+    buildLayer(
+        container,
+        assets
+    ) {
+
+        if (
+            !container
+        ) {
+            return;
+        }
+
+        container.innerHTML = '';
+
+        const faces = [
+
+            'front',
+            'back',
+            'left',
+            'right',
+            'top',
+            'bottom'
+
+        ];
+
+        for (
+            const face of faces
+        ) {
+
+            const element =
+                document.createElement(
+                    'div'
+                );
+
+            element.className =
+                `skybox-face ${face}`;
+
+            element.style.backgroundImage =
+                `url("${assets[face]}")`;
+
+            element.dataset.face =
+                face;
+
+            container.appendChild(
+                element
+            );
+
+        }
+
+    }
+
+    /* ===================================================================== */
+    /* TARGET
+    /* ===================================================================== */
 
     setTarget(
         x,
@@ -49,90 +140,134 @@ export class SkyboxRenderer {
 
     }
 
+    /* ===================================================================== */
+    /* UPDATE
+    /* ===================================================================== */
+
     update(
         deltaTime = 0.016
     ) {
 
-        if (!this.enabled) {
+        if (
+            !this.enabled
+        ) {
             return;
         }
 
         const smoothing =
             Math.min(
+
                 1,
-                CONFIG.EXPERIENCE.CAMERA_SMOOTHING *
-                (deltaTime * 60)
+
+                CONFIG.EXPERIENCE
+                    .SKYBOX_SMOOTHING *
+
+                (
+                    deltaTime * 60
+                )
+
             );
 
-        this.rotationX +=
+        this.currentX +=
+
             (
                 this.targetX -
-                this.rotationX
+                this.currentX
             ) *
+
             smoothing;
 
-        this.rotationY +=
+        this.currentY +=
+
             (
                 this.targetY -
-                this.rotationY
+                this.currentY
             ) *
+
             smoothing;
 
         this.render();
 
     }
 
+    /* ===================================================================== */
+    /* RENDER
+    /* ===================================================================== */
+
     render() {
 
-        const x =
-            this.rotationX;
+        this.renderLayer(
 
-        const y =
-            this.rotationY;
+            this.background,
 
-        const layer1X =
-            x *
-            CONFIG.SKYBOX.LAYER_1.SPEED;
+            CONFIG.EXPERIENCE
+                .SKYBOX_SPEED_BACK,
 
-        const layer1Y =
-            y *
-            CONFIG.SKYBOX.LAYER_1.SPEED;
+            CONFIG.EXPERIENCE
+                .SKYBOX_DEPTH_BACK
 
-        const layer2X =
-            x *
-            CONFIG.SKYBOX.LAYER_2.SPEED;
+        );
 
-        const layer2Y =
-            y *
-            CONFIG.SKYBOX.LAYER_2.SPEED;
+        this.renderLayer(
 
-        const layer3X =
-            x *
-            CONFIG.SKYBOX.LAYER_3.SPEED;
+            this.atmosphere,
 
-        const layer3Y =
-            y *
-            CONFIG.SKYBOX.LAYER_3.SPEED;
+            CONFIG.EXPERIENCE
+                .SKYBOX_SPEED_MIDDLE,
 
-        this.layer1.style.transform =
+            CONFIG.EXPERIENCE
+                .SKYBOX_DEPTH_MIDDLE
+
+        );
+
+        this.renderLayer(
+
+            this.foreground,
+
+            CONFIG.EXPERIENCE
+                .SKYBOX_SPEED_FRONT,
+
+            CONFIG.EXPERIENCE
+                .SKYBOX_DEPTH_FRONT
+
+        );
+
+    }
+
+    renderLayer(
+        layer,
+        speed,
+        depth
+    ) {
+
+        if (
+            !layer
+        ) {
+            return;
+        }
+
+        const rotateY =
+            this.currentX *
+            speed;
+
+        const rotateX =
+            -this.currentY *
+            speed;
+
+        layer.style.transform =
             `
-            rotateX(${layer1Y}deg)
-            rotateY(${layer1X}deg)
-            `;
+            translateZ(-${depth}px)
 
-        this.layer2.style.transform =
-            `
-            rotateX(${layer2Y}deg)
-            rotateY(${layer2X}deg)
-            `;
+            rotateX(${rotateX}deg)
 
-        this.layer3.style.transform =
-            `
-            rotateX(${layer3Y}deg)
-            rotateY(${layer3X}deg)
+            rotateY(${rotateY}deg)
             `;
 
     }
+
+    /* ===================================================================== */
+    /* RESIZE
+    /* ===================================================================== */
 
     resize() {
 
@@ -140,10 +275,14 @@ export class SkyboxRenderer {
 
     }
 
+    /* ===================================================================== */
+    /* RESET
+    /* ===================================================================== */
+
     reset() {
 
-        this.rotationX = 0;
-        this.rotationY = 0;
+        this.currentX = 0;
+        this.currentY = 0;
 
         this.targetX = 0;
         this.targetY = 0;
@@ -151,6 +290,10 @@ export class SkyboxRenderer {
         this.render();
 
     }
+
+    /* ===================================================================== */
+    /* CONTROL
+    /* ===================================================================== */
 
     enable() {
 
@@ -164,14 +307,44 @@ export class SkyboxRenderer {
 
     }
 
+    /* ===================================================================== */
+    /* DESTROY
+    /* ===================================================================== */
+
     destroy() {
 
         this.disable();
 
-        this.container = null;
-        this.layer1 = null;
-        this.layer2 = null;
-        this.layer3 = null;
+        if (
+            this.background
+        ) {
+
+            this.background.innerHTML =
+                '';
+
+        }
+
+        if (
+            this.atmosphere
+        ) {
+
+            this.atmosphere.innerHTML =
+                '';
+
+        }
+
+        if (
+            this.foreground
+        ) {
+
+            this.foreground.innerHTML =
+                '';
+
+        }
+
+        this.background = null;
+        this.atmosphere = null;
+        this.foreground = null;
 
     }
 

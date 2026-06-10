@@ -1,409 +1,555 @@
 /* ==========================================================================
-   EXPERIENCE.CSS
+   css/experience.css
    Native Browser Experience Engine
+   HDRI + Cube Skybox + Multi Layer Parallax
    ========================================================================== */
 
-#experience-root{
-    position:relative;
-    width:100%;
-    height:100vh;
-    overflow:hidden;
+/* ========================================================================== */
+/* ROOT */
+/* ========================================================================== */
+
+body {
+
+    overflow: hidden;
+
+    background:
+        #000;
+
 }
 
-#experience-scene{
-    position:relative;
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    perspective:1800px;
-    transform-style:preserve-3d;
-    touch-action:none;
+/* ========================================================================== */
+/* EXPERIENCE SCENE */
+/* ========================================================================== */
+
+#experience-scene {
+
+    position: fixed;
+
+    inset: 0;
+
+    overflow: hidden;
+
+    transform-style:
+        preserve-3d;
+
+    perspective:
+        1800px;
+
+    will-change:
+        transform;
+
 }
 
-/* ==========================================================================
-   HDRI BACKGROUND
-   ========================================================================== */
+/* ========================================================================== */
+/* HDRI */
+/* ========================================================================== */
 
-#hdri-container{
-    position:absolute;
-    inset:0;
-    z-index:1;
-    overflow:hidden;
+#hdri-container {
+
+    position: absolute;
+
+    inset: 0;
+
+    overflow: hidden;
+
+    z-index: 1;
+
+    pointer-events: none;
+
 }
 
-#hdri-image{
-    position:absolute;
-    inset:-5%;
+#hdri-image {
 
-    width:110%;
-    height:110%;
+    position: absolute;
 
-    object-fit:cover;
+    left: 50%;
+
+    top: 50%;
+
+    width: 120vw;
+
+    height: 120vh;
+
+    object-fit: cover;
 
     transform:
-        translate3d(0,0,0)
-        scale(1.05);
+        translate3d(
+            -50%,
+            -50%,
+            0
+        );
 
-    will-change:transform;
-    pointer-events:none;
+    will-change:
+        transform;
 
-    filter:
-        saturate(1.1)
-        contrast(1.05)
-        brightness(.95);
+    backface-visibility:
+        hidden;
+
 }
 
-/* ==========================================================================
-   EXPERIENCE CANVAS
-   ========================================================================== */
+/* ========================================================================== */
+/* SKYBOX */
+/* ========================================================================== */
 
-#experience-canvas{
-    position:absolute;
-    inset:0;
+#skybox-root {
 
-    width:100%;
-    height:100%;
+    position: absolute;
 
-    z-index:5;
+    inset: 0;
 
-    pointer-events:none;
+    perspective:
+        2200px;
+
+    transform-style:
+        preserve-3d;
+
+    pointer-events: none;
+
+    z-index: 2;
+
 }
 
-/* ==========================================================================
-   SKYBOX
-   ========================================================================== */
+.skybox-layer {
 
-#skybox-container{
-    position:absolute;
-    inset:0;
+    position: absolute;
 
-    z-index:10;
+    inset: 0;
 
-    transform-style:preserve-3d;
-    pointer-events:none;
+    transform-style:
+        preserve-3d;
+
+    will-change:
+        transform;
+
 }
 
-.skybox-layer{
-    position:absolute;
-    inset:0;
+/* ========================================================================== */
+/* SKYBOX FACE */
+/* ========================================================================== */
 
-    transform-style:preserve-3d;
+.skybox-face {
 
-    will-change:transform;
+    position: absolute;
+
+    width: 3000px;
+
+    height: 3000px;
+
+    left: 50%;
+
+    top: 50%;
+
+    margin-left: -1500px;
+
+    margin-top: -1500px;
+
+    background-repeat:
+        no-repeat;
+
+    background-position:
+        center;
+
+    background-size:
+        cover;
+
+    backface-visibility:
+        hidden;
+
+    transform-style:
+        preserve-3d;
+
 }
 
-.face{
-    position:absolute;
+/* ========================================================================== */
+/* CUBE */
+/* ========================================================================== */
 
-    width:100vw;
-    height:100vh;
-
-    object-fit:cover;
-    backface-visibility:hidden;
-    pointer-events:none;
-}
-
-/* Layer 1 */
-
-#skybox-layer-1 .front{
-    transform:translateZ(var(--skybox-layer-1-depth));
-}
-
-#skybox-layer-1 .back{
-    transform:rotateY(180deg)
-    translateZ(var(--skybox-layer-1-depth));
-}
-
-#skybox-layer-1 .left{
-    transform:
-        rotateY(-90deg)
-        translateZ(var(--skybox-layer-1-depth));
-}
-
-#skybox-layer-1 .right{
-    transform:
-        rotateY(90deg)
-        translateZ(var(--skybox-layer-1-depth));
-}
-
-#skybox-layer-1 .top{
-    transform:
-        rotateX(90deg)
-        translateZ(var(--skybox-layer-1-depth));
-}
-
-#skybox-layer-1 .bottom{
-    transform:
-        rotateX(-90deg)
-        translateZ(var(--skybox-layer-1-depth));
-}
-
-/* Layer 2 */
-
-#skybox-layer-2 .front{
-    transform:translateZ(var(--skybox-layer-2-depth));
-}
-
-#skybox-layer-2 .back{
-    transform:rotateY(180deg)
-    translateZ(var(--skybox-layer-2-depth));
-}
-
-#skybox-layer-2 .left{
-    transform:
-        rotateY(-90deg)
-        translateZ(var(--skybox-layer-2-depth));
-}
-
-#skybox-layer-2 .right{
-    transform:
-        rotateY(90deg)
-        translateZ(var(--skybox-layer-2-depth));
-}
-
-#skybox-layer-2 .top{
-    transform:
-        rotateX(90deg)
-        translateZ(var(--skybox-layer-2-depth));
-}
-
-#skybox-layer-2 .bottom{
-    transform:
-        rotateX(-90deg)
-        translateZ(var(--skybox-layer-2-depth));
-}
-
-/* Layer 3 */
-
-#skybox-layer-3 .front{
-    transform:translateZ(var(--skybox-layer-3-depth));
-}
-
-#skybox-layer-3 .back{
-    transform:rotateY(180deg)
-    translateZ(var(--skybox-layer-3-depth));
-}
-
-#skybox-layer-3 .left{
-    transform:
-        rotateY(-90deg)
-        translateZ(var(--skybox-layer-3-depth));
-}
-
-#skybox-layer-3 .right{
-    transform:
-        rotateY(90deg)
-        translateZ(var(--skybox-layer-3-depth));
-}
-
-#skybox-layer-3 .top{
-    transform:
-        rotateX(90deg)
-        translateZ(var(--skybox-layer-3-depth));
-}
-
-#skybox-layer-3 .bottom{
-    transform:
-        rotateX(-90deg)
-        translateZ(var(--skybox-layer-3-depth));
-}
-
-/* ==========================================================================
-   PARALLAX SYSTEM
-   ========================================================================== */
-
-#parallax-container{
-    position:absolute;
-    inset:0;
-
-    z-index:15;
-
-    overflow:hidden;
-    pointer-events:none;
-}
-
-.parallax-layer{
-    position:absolute;
-    inset:-8%;
-
-    will-change:transform;
-    transform:
-        translate3d(0,0,0);
-
-    background-repeat:no-repeat;
-    background-position:center;
-    background-size:cover;
-}
-
-#parallax-layer-back{
-    z-index:1;
-}
-
-#parallax-layer-middle{
-    z-index:2;
-}
-
-#parallax-layer-front{
-    z-index:3;
-}
-
-/* ==========================================================================
-   HERO
-   ========================================================================== */
-
-#hero-content{
-    position:absolute;
-
-    top:50%;
-    left:50%;
-
-    z-index:100;
-
-    width:min(900px,90vw);
+.skybox-face.front {
 
     transform:
-        translate(-50%,-50%);
+        translateZ(
+            -1500px
+        );
 
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-
-    text-align:center;
-
-    gap:var(--space-5);
 }
 
-#hero-logo{
-    width:128px;
-    height:128px;
+.skybox-face.back {
 
-    object-fit:contain;
+    transform:
 
-    filter:
-        drop-shadow(0 0 24px rgba(255,255,255,.15));
+        rotateY(
+            180deg
+        )
+
+        translateZ(
+            -1500px
+        );
+
 }
 
-#hero-title{
-    font-size:clamp(
-        2.5rem,
-        5vw,
-        5rem
-    );
+.skybox-face.left {
 
-    font-weight:var(--font-weight-bold);
+    transform:
 
-    line-height:1;
+        rotateY(
+            -90deg
+        )
 
-    text-shadow:
-        0 8px 40px rgba(0,0,0,.45);
+        translateZ(
+            -1500px
+        );
+
 }
 
-#hero-description{
-    max-width:720px;
+.skybox-face.right {
 
-    font-size:var(--font-size-lg);
+    transform:
 
-    color:var(--color-text-soft);
+        rotateY(
+            90deg
+        )
 
-    text-shadow:
-        0 4px 20px rgba(0,0,0,.35);
+        translateZ(
+            -1500px
+        );
+
 }
 
-#hero-actions{
-    display:flex;
-    gap:var(--space-4);
-    flex-wrap:wrap;
-    justify-content:center;
+.skybox-face.top {
+
+    transform:
+
+        rotateX(
+            90deg
+        )
+
+        translateZ(
+            -1500px
+        );
+
 }
 
-/* ==========================================================================
-   HEADER ACTIONS
-   ========================================================================== */
+.skybox-face.bottom {
 
-.header-actions{
-    display:flex;
-    align-items:center;
-    gap:var(--space-3);
+    transform:
+
+        rotateX(
+            -90deg
+        )
+
+        translateZ(
+            -1500px
+        );
+
 }
 
-/* ==========================================================================
-   ANIMATION HELPERS
-   ========================================================================== */
+/* ========================================================================== */
+/* PARALLAX */
+/* ========================================================================== */
 
-.experience-hidden{
-    opacity:0;
+#parallax-root {
+
+    position: absolute;
+
+    inset: 0;
+
+    overflow: hidden;
+
+    z-index: 5;
+
+    pointer-events: none;
+
 }
 
-.experience-visible{
-    opacity:1;
+.parallax-layer {
+
+    position: absolute;
+
+    inset: 0;
+
+    will-change:
+        transform;
+
+}
+
+.parallax-layer img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+
+    user-select: none;
+
+    pointer-events: none;
+
+}
+
+/* ========================================================================== */
+/* HERO */
+/* ========================================================================== */
+
+.hero {
+
+    position: relative;
+
+    z-index: 10;
+
+    width: 100vw;
+
+    height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 2rem;
+
+}
+
+.hero-content {
+
+    max-width: 900px;
+
+    text-align: center;
+
+    backdrop-filter:
+        blur(
+            12px
+        );
+
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            0.28
+        );
+
+    border:
+
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+    border-radius:
+        20px;
+
+    padding:
+
+        2.5rem
+        2rem;
+
+}
+
+.hero-content h1 {
+
+    font-size:
+        clamp(
+            2.4rem,
+            5vw,
+            5rem
+        );
+
+    line-height:
+        1.1;
+
+    margin-bottom:
+        1rem;
+
+}
+
+.hero-content p {
+
+    font-size:
+        clamp(
+            1rem,
+            2vw,
+            1.25rem
+        );
+
+    opacity:
+        0.85;
+
+    margin-bottom:
+        2rem;
+
+}
+
+.hero-button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 180px;
+
+    height: 52px;
+
+    padding:
+        0 1.5rem;
+
+    border-radius:
+        999px;
+
+    text-decoration:
+        none;
+
     transition:
-        opacity var(--transition-slow);
+        transform .2s ease,
+        opacity .2s ease;
+
 }
 
-.smooth-transform{
-    will-change:transform;
+.hero-button:hover {
+
+    transform:
+        translateY(
+            -2px
+        );
+
 }
 
-.hardware-layer{
-    transform:translateZ(0);
+/* ========================================================================== */
+/* HEADER */
+/* ========================================================================== */
+
+.site-header {
+
+    position: fixed;
+
+    top: 0;
+
+    left: 0;
+
+    right: 0;
+
+    z-index: 50;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding:
+
+        1rem
+        1.5rem;
+
 }
 
-/* ==========================================================================
-   MOBILE
-   ========================================================================== */
+.logo {
 
-@media (max-width:1024px){
+    display: flex;
 
-    #hero-logo{
-        width:104px;
-        height:104px;
-    }
+    align-items: center;
 
-    #hero-description{
-        font-size:1rem;
-    }
 }
 
-@media (max-width:768px){
+.logo img {
 
-    #hero-content{
-        width:min(92vw,700px);
-    }
+    height: 48px;
 
-    #hero-actions{
-        width:100%;
-        flex-direction:column;
-    }
+    width: auto;
 
-    #hero-actions .hero-button,
-    #hero-actions button{
-        width:100%;
-    }
-
-    .header-actions{
-        gap:8px;
-    }
-
-    .header-actions button,
-    .header-actions a{
-        font-size:12px;
-        min-height:40px;
-        padding:0 12px;
-    }
-
-    #hero-logo{
-        width:84px;
-        height:84px;
-    }
 }
 
-@media (max-width:480px){
+.header-actions {
 
-    #hero-title{
-        font-size:2.1rem;
+    display: flex;
+
+    gap: .75rem;
+
+}
+
+.header-button {
+
+    appearance: none;
+
+    border: 0;
+
+    outline: 0;
+
+    cursor: pointer;
+
+    padding:
+
+        .8rem
+        1rem;
+
+    border-radius:
+        12px;
+
+    text-decoration:
+        none;
+
+}
+
+/* ========================================================================== */
+/* MOBILE */
+/* ========================================================================== */
+
+@media (
+    max-width: 768px
+) {
+
+    .site-header {
+
+        flex-direction:
+            column;
+
+        gap: 1rem;
+
     }
 
-    #hero-description{
-        font-size:.95rem;
+    .hero-content {
+
+        padding:
+            2rem
+            1.25rem;
+
     }
+
+    .header-actions {
+
+        flex-wrap:
+            wrap;
+
+        justify-content:
+            center;
+
+    }
+
+}
+
+/* ========================================================================== */
+/* REDUCED MOTION */
+/* ========================================================================== */
+
+@media (
+    prefers-reduced-motion: reduce
+) {
+
+    * {
+
+        animation:
+            none !important;
+
+        transition:
+            none !important;
+
+    }
+
 } 

@@ -1,55 +1,86 @@
 /* ==========================================================================
    js/loaders/content-loader.js
    Native Browser Experience Engine
+   Markdown + PDF + DOCX Native Loader
    ========================================================================== */
-
-import {
-    loadText,
-    loadBlob,
-    loadObjectURL
-} from '../core/cache.js';
 
 import {
     getFileType
 } from './json-loader.js';
 
+const contentCache =
+    new Map();
+
 /* ==========================================================================
-   CONTENT LOADERS
+   LOAD CONTENT
    ========================================================================== */
 
 export async function loadContent(
-    filePath
+    path
 ) {
+
+    if (
+        contentCache.has(
+            path
+        )
+    ) {
+
+        return contentCache.get(
+            path
+        );
+
+    }
 
     const type =
         getFileType(
-            filePath
+            path
         );
+
+    let result;
 
     switch (type) {
 
         case 'markdown':
-            return loadMarkdown(
-                filePath
-            );
+
+            result =
+                await loadMarkdown(
+                    path
+                );
+
+            break;
 
         case 'pdf':
-            return loadPDF(
-                filePath
-            );
+
+            result =
+                await loadPDF(
+                    path
+                );
+
+            break;
 
         case 'docx':
-            return loadDOCX(
-                filePath
-            );
+
+            result =
+                await loadDOCX(
+                    path
+                );
+
+            break;
 
         default:
 
             throw new Error(
-                `Unsupported file type: ${filePath}`
+                `Unsupported file type: ${path}`
             );
 
     }
+
+    contentCache.set(
+        path,
+        result
+    );
+
+    return result;
 
 }
 
@@ -58,19 +89,36 @@ export async function loadContent(
    ========================================================================== */
 
 export async function loadMarkdown(
-    filePath
+    path
 ) {
 
-    const content =
-        await loadText(
-            filePath
+    const response =
+        await fetch(
+            path,
+            {
+                cache: 'force-cache'
+            }
         );
+
+    if (
+        !response.ok
+    ) {
+
+        throw new Error(
+            `Markdown load failed: ${path}`
+        );
+
+    }
+
+    const content =
+        await response.text();
 
     return {
 
-        type: 'markdown',
+        type:
+            'markdown',
 
-        path: filePath,
+        path,
 
         content
 
@@ -83,21 +131,36 @@ export async function loadMarkdown(
    ========================================================================== */
 
 export async function loadPDF(
-    filePath
+    path
 ) {
 
-    const objectURL =
-        await loadObjectURL(
-            filePath
+    const response =
+        await fetch(
+            path,
+            {
+                cache: 'force-cache'
+            }
         );
+
+    if (
+        !response.ok
+    ) {
+
+        throw new Error(
+            `PDF load failed: ${path}`
+        );
+
+    }
 
     return {
 
-        type: 'pdf',
+        type:
+            'pdf',
 
-        path: filePath,
+        path,
 
-        url: objectURL
+        url:
+            path
 
     };
 
@@ -108,24 +171,36 @@ export async function loadPDF(
    ========================================================================== */
 
 export async function loadDOCX(
-    filePath
+    path
 ) {
 
-    const blob =
-        await loadBlob(
-            filePath
+    const response =
+        await fetch(
+            path,
+            {
+                cache: 'force-cache'
+            }
         );
 
+    if (
+        !response.ok
+    ) {
+
+        throw new Error(
+            `DOCX load failed: ${path}`
+        );
+
+    }
+
     const arrayBuffer =
-        await blob.arrayBuffer();
+        await response.arrayBuffer();
 
     return {
 
-        type: 'docx',
+        type:
+            'docx',
 
-        path: filePath,
-
-        blob,
+        path,
 
         arrayBuffer
 
@@ -134,82 +209,37 @@ export async function loadDOCX(
 }
 
 /* ==========================================================================
-   FILE DOWNLOAD
+   DOWNLOAD
    ========================================================================== */
 
-export async function downloadFile(
-    filePath,
-    fileName = ''
+export function downloadFile(
+    url,
+    filename
 ) {
-
-    const blob =
-        await loadBlob(
-            filePath
-        );
-
-    const url =
-        URL.createObjectURL(
-            blob
-        );
 
     const anchor =
         document.createElement(
             'a'
         );
 
-    anchor.href = url;
+    anchor.href =
+        url;
 
     anchor.download =
-        fileName ||
-        filePath
-            .split('/')
-            .pop() ||
-        'download';
+        filename ||
+        '';
 
-    document.body.appendChild(
-        anchor
-    );
+    anchor.rel =
+        'noopener';
+
+    document.body
+        .appendChild(
+            anchor
+        );
 
     anchor.click();
 
     anchor.remove();
-
-    URL.revokeObjectURL(
-        url
-    );
-
-}
-
-/* ==========================================================================
-   FILE INFO
-   ========================================================================== */
-
-export async function getFileInfo(
-    filePath
-) {
-
-    const blob =
-        await loadBlob(
-            filePath
-        );
-
-    return {
-
-        path: filePath,
-
-        type:
-            getFileType(
-                filePath
-            ),
-
-        size:
-            blob.size,
-
-        mime:
-            blob.type ||
-            'application/octet-stream'
-
-    };
 
 }
 
@@ -217,229 +247,180 @@ export async function getFileInfo(
    DOCX XML EXTRACTION
    ========================================================================== */
 
-async function inflateRawDeflate(
-    compressedData
+export async function extractDOCXText(
+    arrayBuffer
 ) {
 
+    const zip =
+        await parseZip(
+            arrayBuffer
+        );
+
+    const documentXML =
+        zip[
+            'word/document.xml'
+        ];
+
     if (
-        typeof DecompressionStream ===
-        'undefined'
+        !documentXML
     ) {
 
         throw new Error(
-            'DecompressionStream API unavailable'
+            'document.xml not found'
         );
 
     }
 
-    const stream =
-        new Blob([
-            compressedData
-        ])
-        .stream()
-        .pipeThrough(
-            new DecompressionStream(
-                'deflate-raw'
-            )
-        );
-
-    const response =
-        new Response(
-            stream
-        );
-
-    return response.arrayBuffer();
-
-}
-
-function readUint16(
-    view,
-    offset
-) {
-
-    return view.getUint16(
-        offset,
-        true
-    );
-
-}
-
-function readUint32(
-    view,
-    offset
-) {
-
-    return view.getUint32(
-        offset,
-        true
+    return decodeText(
+        documentXML
     );
 
 }
 
 /* ==========================================================================
-   DOCX PARSER
-   Native ZIP Reader
+   ZIP PARSER
+   Pure Native ZIP Reader
+   Supports DOCX containers
    ========================================================================== */
 
-export async function extractDOCXText(
-    arrayBuffer
+async function parseZip(
+    buffer
 ) {
 
-    const bytes =
-        new Uint8Array(
-            arrayBuffer
-        );
+    const files = {};
 
     const view =
         new DataView(
-            arrayBuffer
+            buffer
         );
-
-    const files =
-        [];
 
     let offset = 0;
 
+    const LOCAL_FILE_HEADER =
+        0x04034b50;
+
     while (
         offset <
-        bytes.length - 30
+        view.byteLength
     ) {
 
         const signature =
-            readUint32(
-                view,
-                offset
+            view.getUint32(
+                offset,
+                true
             );
 
         if (
             signature !==
-            0x04034b50
+            LOCAL_FILE_HEADER
         ) {
 
-            offset++;
-            continue;
+            break;
 
         }
 
         const compression =
-            readUint16(
-                view,
-                offset + 8
+            view.getUint16(
+                offset + 8,
+                true
             );
 
         const compressedSize =
-            readUint32(
-                view,
-                offset + 18
+            view.getUint32(
+                offset + 18,
+                true
             );
 
         const fileNameLength =
-            readUint16(
-                view,
-                offset + 26
+            view.getUint16(
+                offset + 26,
+                true
             );
 
         const extraLength =
-            readUint16(
-                view,
-                offset + 28
+            view.getUint16(
+                offset + 28,
+                true
             );
 
-        const nameStart =
+        const fileNameStart =
             offset + 30;
 
-        const nameEnd =
-            nameStart +
+        const fileNameEnd =
+            fileNameStart +
             fileNameLength;
 
         const fileName =
-            new TextDecoder()
-            .decode(
-                bytes.slice(
-                    nameStart,
-                    nameEnd
+            decodeText(
+
+                buffer.slice(
+                    fileNameStart,
+                    fileNameEnd
                 )
+
             );
 
         const dataStart =
-            nameEnd +
+            fileNameEnd +
             extraLength;
 
         const dataEnd =
             dataStart +
             compressedSize;
 
-        files.push({
-
-            fileName,
-
-            compression,
-
-            data:
-                bytes.slice(
-                    dataStart,
-                    dataEnd
-                )
-
-        });
-
-        offset = dataEnd;
-
-    }
-
-    const documentXML =
-        files.find(
-            (file) =>
-                file.fileName ===
-                'word/document.xml'
-        );
-
-    if (!documentXML) {
-
-        throw new Error(
-            'word/document.xml not found'
-        );
-
-    }
-
-    let xmlBuffer;
-
-    if (
-        documentXML.compression === 0
-    ) {
-
-        xmlBuffer =
-            documentXML.data.buffer.slice(
-                documentXML.data.byteOffset,
-                documentXML.data.byteOffset +
-                documentXML.data.byteLength
+        const fileData =
+            buffer.slice(
+                dataStart,
+                dataEnd
             );
 
-    }
-    else if (
-        documentXML.compression === 8
-    ) {
+        if (
+            compression === 0
+        ) {
 
-        xmlBuffer =
-            await inflateRawDeflate(
-                documentXML.data
-            );
+            files[
+                fileName
+            ] = fileData;
 
-    }
-    else {
+        }
 
-        throw new Error(
-            `Unsupported DOCX compression: ${documentXML.compression}`
-        );
+        offset =
+            dataEnd;
 
     }
 
-    const xmlText =
-        new TextDecoder()
-        .decode(
-            xmlBuffer
-        );
+    return files;
 
-    return xmlText;
+}
+
+/* ==========================================================================
+   TEXT DECODER
+   ========================================================================== */
+
+function decodeText(
+    buffer
+) {
+
+    return new TextDecoder(
+        'utf-8'
+    ).decode(
+        buffer
+    );
+
+}
+
+/* ==========================================================================
+   CACHE
+   ========================================================================== */
+
+export function clearContentCache() {
+
+    contentCache.clear();
+
+}
+
+export function getContentCacheSize() {
+
+    return contentCache.size;
 
 } 

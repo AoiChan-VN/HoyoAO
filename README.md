@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/assets/icons/logo.svg" alt="Logo Dự Án" width="50" />
+  <img src="assets/icons/logo.svg" alt="Logo Dự Án" width="50" />
   <h1 align="center">𝓐𝓸𝓲𝓒𝓱𝓪𝓷︵❤</h1>
 </p>
 

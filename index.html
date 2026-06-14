@@ -1,1 +1,253 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cinematic Site</title><link rel="stylesheet" href="styles/base.css"><link rel="stylesheet" href="styles/layout.css"><link rel="stylesheet" href="styles/components.css"><link rel="stylesheet" href="styles/animations.css"><link rel="stylesheet" href="styles/pseudo3d.css"></head><body><aside id="sidebar"><h1>LOGO</h1><nav><a href="#/">Home</a><a href="#/about">About</a><a href="#/gallery">Gallery</a></nav></aside><main id="app"></main><script type="module" src="scripts/app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    >
+
+    <title>Aoi's World</title>
+
+    <meta
+        name="description"
+        content="Aoi Personal Knowledge Base Entrance"
+    >
+
+    <meta
+        http-equiv="Content-Security-Policy"
+        content="
+            default-src 'self';
+            script-src 'self';
+            style-src 'self';
+            img-src 'self' data:;
+            connect-src 'self';
+            font-src 'self';
+            object-src 'none';
+            base-uri 'self';
+            form-action 'self';
+            frame-ancestors 'none';
+            upgrade-insecure-requests;
+        "
+    >
+
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="color-scheme" content="dark">
+
+    <link rel="icon" href="./assets/images/avatar.webp">
+
+    <link rel="stylesheet" href="./assets/css/reset.css">
+    <link rel="stylesheet" href="./assets/css/variables.css">
+    <link rel="stylesheet" href="./assets/css/skybox.css">
+    <link rel="stylesheet" href="./assets/css/index.css">
+</head>
+<body>
+
+    <div
+        id="app"
+        class="landing-app"
+    >
+
+        <div
+            id="skybox"
+            class="skybox"
+            aria-hidden="true"
+        >
+            <div class="skybox__cube">
+
+                <div
+                    class="skybox__face skybox__face--front"
+                    data-face="front"
+                ></div>
+
+                <div
+                    class="skybox__face skybox__face--back"
+                    data-face="back"
+                ></div>
+
+                <div
+                    class="skybox__face skybox__face--left"
+                    data-face="left"
+                ></div>
+
+                <div
+                    class="skybox__face skybox__face--right"
+                    data-face="right"
+                ></div>
+
+                <div
+                    class="skybox__face skybox__face--top"
+                    data-face="top"
+                ></div>
+
+                <div
+                    class="skybox__face skybox__face--bottom"
+                    data-face="bottom"
+                ></div>
+
+            </div>
+        </div>
+
+        <div
+            id="parallax-root"
+            class="parallax-root"
+            aria-hidden="true"
+        >
+
+            <div
+                class="parallax-layer parallax-layer--far"
+                data-depth="0.08"
+            ></div>
+
+            <div
+                class="parallax-layer parallax-layer--mid"
+                data-depth="0.16"
+            ></div>
+
+            <div
+                class="parallax-layer parallax-layer--near"
+                data-depth="0.32"
+            ></div>
+
+        </div>
+
+        <main
+            class="landing-content"
+            role="main"
+        >
+
+            <section
+                class="hero"
+                aria-labelledby="hero-title"
+            >
+
+                <img
+                    class="hero__avatar"
+                    src="./assets/images/avatar.webp"
+                    alt="Aoi Avatar"
+                    width="256"
+                    height="256"
+                    loading="eager"
+                    decoding="async"
+                >
+
+                <h1
+                    id="hero-title"
+                    class="hero__title"
+                >
+                    Aoi's World
+                </h1>
+
+                <p class="hero__subtitle">
+                    Personal Knowledge Base • Articles • Notes • Documentation
+                </p>
+
+                <nav
+                    class="hero__actions"
+                    aria-label="Primary Navigation"
+                >
+
+                    <a
+                        href="./app.html"
+                        class="hero__button hero__button--primary"
+                    >
+                        Enter Library
+                    </a>
+
+                    <button
+                        type="button"
+                        id="aboutButton"
+                        class="hero__button"
+                    >
+                        About
+                    </button>
+
+                    <button
+                        type="button"
+                        id="linksButton"
+                        class="hero__button"
+                    >
+                        Links
+                    </button>
+
+                </nav>
+
+            </section>
+
+        </main>
+
+        <aside
+            id="infoPanel"
+            class="info-panel"
+            hidden
+            aria-live="polite"
+        >
+            <div class="info-panel__content">
+                <button
+                    id="closePanelButton"
+                    class="info-panel__close"
+                    type="button"
+                    aria-label="Close"
+                >
+                    ×
+                </button>
+
+                <div id="panelContent"></div>
+            </div>
+        </aside>
+
+    </div>
+
+    <script type="module">
+        const aboutButton = document.getElementById("aboutButton");
+        const linksButton = document.getElementById("linksButton");
+        const infoPanel = document.getElementById("infoPanel");
+        const panelContent = document.getElementById("panelContent");
+        const closePanelButton = document.getElementById("closePanelButton");
+
+        function openPanel(html) {
+            panelContent.innerHTML = html;
+            infoPanel.hidden = false;
+            document.body.classList.add("panel-open");
+        }
+
+        function closePanel() {
+            infoPanel.hidden = true;
+            panelContent.replaceChildren();
+            document.body.classList.remove("panel-open");
+        }
+
+        aboutButton.addEventListener("click", () => {
+            openPanel(`
+                <h2>About</h2>
+                <p>
+                    Welcome to Aoi's World.
+                    A personal knowledge base powered by Markdown content.
+                </p>
+            `);
+        });
+
+        linksButton.addEventListener("click", () => {
+            openPanel(`
+                <h2>Links</h2>
+                <ul>
+                    <li>
+                        <a href="./app.html">
+                            Open Library
+                        </a>
+                    </li>
+                </ul>
+            `);
+        });
+
+        closePanelButton.addEventListener("click", closePanel);
+
+        infoPanel.addEventListener("click", (event) => {
+            if (event.target === infoPanel) {
+                closePanel();
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,1 +1,0 @@
-export async function loadContent(path){const r=await fetch(path);return r.text();}

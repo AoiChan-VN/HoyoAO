@@ -1,0 +1,177 @@
+.skybox {
+    position: fixed;
+    inset: 0;
+
+    z-index: var(--z-skybox);
+
+    overflow: hidden;
+
+    perspective: 1800px;
+
+    transform-style: preserve-3d;
+
+    pointer-events: none;
+}
+
+.skybox__cube {
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 4000px;
+    height: 4000px;
+
+    transform-style: preserve-3d;
+
+    transform:
+        translate3d(-50%, -50%, 0);
+}
+
+.skybox__face {
+    position: absolute;
+
+    width: 4000px;
+    height: 4000px;
+
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+
+    backface-visibility: hidden;
+
+    will-change: transform;
+}
+
+.skybox__face--front {
+    background-image:
+        url("../backgrounds/skybox_front.webp");
+
+    transform:
+        rotateY(0deg)
+        translateZ(2000px);
+}
+
+.skybox__face--back {
+    background-image:
+        url("../backgrounds/skybox_back.webp");
+
+    transform:
+        rotateY(180deg)
+        translateZ(2000px);
+}
+
+.skybox__face--left {
+    background-image:
+        url("../backgrounds/skybox_left.webp");
+
+    transform:
+        rotateY(-90deg)
+        translateZ(2000px);
+}
+
+.skybox__face--right {
+    background-image:
+        url("../backgrounds/skybox_right.webp");
+
+    transform:
+        rotateY(90deg)
+        translateZ(2000px);
+}
+
+.skybox__face--top {
+    background-image:
+        url("../backgrounds/skybox_top.webp");
+
+    transform:
+        rotateX(90deg)
+        translateZ(2000px);
+}
+
+.skybox__face--bottom {
+    background-image:
+        url("../backgrounds/skybox_bottom.webp");
+
+    transform:
+        rotateX(-90deg)
+        translateZ(2000px);
+}
+
+.parallax-root {
+    position: fixed;
+    inset: 0;
+
+    overflow: hidden;
+
+    z-index: var(--z-parallax);
+
+    pointer-events: none;
+}
+
+.parallax-layer {
+    position: absolute;
+    inset: -10%;
+
+    will-change:
+        transform;
+
+    transform:
+        translate3d(0,0,0);
+
+    transition:
+        transform 120ms linear;
+}
+
+.parallax-layer--far {
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(96,165,250,0.10),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 80% 70%,
+            rgba(147,197,253,0.06),
+            transparent 40%
+        );
+}
+
+.parallax-layer--mid {
+    background:
+        radial-gradient(
+            circle at 70% 25%,
+            rgba(255,255,255,0.05),
+            transparent 25%
+        ),
+        radial-gradient(
+            circle at 30% 80%,
+            rgba(96,165,250,0.08),
+            transparent 30%
+        );
+}
+
+.parallax-layer--near {
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(255,255,255,0.02),
+            transparent 50%
+        );
+}
+
+.skybox,
+.skybox__cube,
+.skybox__face,
+.parallax-root,
+.parallax-layer {
+    transform-style:
+        preserve-3d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .skybox,
+    .parallax-root {
+        display: none;
+    }
+} 

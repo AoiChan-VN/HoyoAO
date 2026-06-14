@@ -1,11 +1,17 @@
-<p align="center">
-  <img src="assets/icons/aoi-logo.svg" alt="Logo Dự Án" width="50" />
-  <h1 align="center">𝓐𝓸𝓲𝓒𝓱𝓪𝓷︵❤</h1>
-</p>
+<div align="center">
 
-<p align="center">
-  Production VR-XR Platform.
-</p>
+<img
+  src="assets/icons/aoi-logo.svg"
+  alt="AoiChan Logo"
+  width="50"
+  style="border-radius:50%;"
+/>
+
+# 𝓐𝓸𝓲𝓒𝓱𝓪𝓷︵❤
+
+### ✦ Production VR-XR Platform ✦
+
+</div>
 
 <details>
   <summary><b>【Hướng dẫn】</b></summary>

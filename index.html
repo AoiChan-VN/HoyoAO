@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Skybox 360 - Camera At Center</title>
+    <title>3D Skybox Fixed Center</title>
     <style>
         * {
             margin: 0;
@@ -18,53 +18,55 @@
             font-family: Arial, sans-serif;
         }
 
-        /* --- KHÔNG GIAN 3D: ĐẶT MẮT NGƯỜI XEM Ở TÂM --- */
+        /* --- VÙNG NHÌN 3D --- */
         .scene {
             width: 100vw;
             height: 100vh;
-            perspective: 500px; /* Tiêu cự tạo độ sâu vừa phải cho mắt nhìn */
+            perspective: 500px; /* Tiêu cự camera cố định */
             display: flex;
             justify-content: center;
             align-items: center;
-            perspective-origin: center;
+            perspective-origin: 50% 50%;
         }
 
-        /* --- KHỐI LẬP PHƯƠNG BAO QUANH CAMERA --- */
+        /* --- KHỐI LẬP PHƯƠNG XOAY QUANH TÂM CAMERA --- */
         .cube {
             width: 1000px;
             height: 1000px;
             position: relative;
             transform-style: preserve-3d;
             will-change: transform;
-            /* Khởi tạo góc nhìn ban đầu */
             transform: rotateX(0deg) rotateY(0deg);
-            transition: transform 0.1s ease-out; /* Tạo độ mượt khi vuốt */
         }
 
-        /* --- CẤU HÌNH 6 MẶT HƯỚNG VÀO TRONG --- */
+        /* --- CẤU HÌNH TỪNG MẶT: KHÓA CHẶT GỐC TỌA ĐỘ VÀO TÂM --- */
         .face {
             position: absolute;
             width: 1000px;
             height: 1000px;
-            background-size: 101% 101%; /* Tránh các khe hở nhỏ giữa các cạnh */
+            background-size: 102% 102%; /* Khít hoàn toàn các đường viền cạnh */
             background-position: center;
             background-repeat: no-repeat;
-            /* QUAN TRỌNG: Lật mặt ảnh vào trong tâm để không bị ngược hình */
-            backface-visibility: visible; 
+            
+            /* Dịch chuyển tâm xoay của TỪNG mặt lùi về sau 500px (đúng tâm hình lập phương) */
+            transform-origin: center center -500px; 
+            
+            /* Chỉ hiển thị mặt quay vào trong mắt người xem */
+            backface-visibility: hidden; 
         }
 
         /* 
-           Kích thước cạnh là 1000px, tâm khối là 0. 
-           Do đó, mỗi mặt phải lùi ra xa tâm một khoảng bằng bán kính = 500px.
+           Xoay các mặt theo đúng hướng bao bọc xung quanh camera.
+           Do tâm xoay đã được lùi -500px ở trên, nên ở đây CHỈ CẦN XOAY góc, không cần dùng translateZ nữa.
         */
-        .front  { transform: rotateY(  0deg) translateZ(-500px); background-image: url('assets/skybox/front.webp'); }
-        .back   { transform: rotateY(180deg) translateZ(-500px); background-image: url('assets/skybox/back.webp'); }
-        .right  { transform: rotateY(-90deg) translateZ(-500px); background-image: url('assets/skybox/right.webp'); }
-        .left   { transform: rotateY( 90deg) translateZ(-500px); background-image: url('assets/skybox/left.webp'); }
-        .top    { transform: rotateX(-90deg) translateZ(-500px); background-image: url('assets/skybox/top.webp'); }
-        .bottom { transform: rotateX( 90deg) translateZ(-500px); background-image: url('assets/skybox/bottom.webp'); }
+        .front  { transform: rotateY(  0deg); background-image: url('assets/skybox/front.webp'); }
+        .back   { transform: rotateY(180deg); background-image: url('assets/skybox/back.webp'); }
+        .right  { transform: rotateY( 90deg); background-image: url('assets/skybox/right.webp'); }
+        .left   { transform: rotateY(-90deg); background-image: url('assets/skybox/left.webp'); }
+        .top    { transform: rotateX( 90deg); background-image: url('assets/skybox/top.webp'); }
+        .bottom { transform: rotateX(-90deg); background-image: url('assets/skybox/bottom.webp'); }
 
-        /* GIAO DIỆN CHỮ */
+        /* GIAO DIỆN TEXT */
         .overlay {
             position: absolute;
             top: 50%;
@@ -72,14 +74,14 @@
             transform: translate(-50%, -50%);
             color: white;
             text-align: center;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.9);
             pointer-events: none; 
             z-index: 10;
         }
         .overlay h1 {
-            font-size: 2.2rem;
+            font-size: 2rem;
             margin-bottom: 8px;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
         }
         .overlay p {
             font-size: 0.9rem;
@@ -101,24 +103,21 @@
     </div>
 
     <div class="overlay">
-        <h1>CENTER 360° VIEW</h1>
-        <p>Vuốt tự do để xoay toàn cảnh bầu trời</p>
+        <h1>TRUE 360° SKYBOX</h1>
+        <p>Vuốt để xoay (Camera đã khóa ở tâm)</p>
     </div>
 
     <script>
         const cube = document.getElementById('skybox');
-        
-        // Độ nhạy khi vuốt (giảm xuống một chút để xoay mượt, không bị chóng mặt)
-        const sensitivity = 0.2; 
+        const sensitivity = 0.25; // Tốc độ xoay camera
         
         let currentX = 0; 
         let currentY = 0; 
-        
         let startX = 0;   
         let startY = 0;
         let isDragging = false;
 
-        // --- SỰ KIỆN TRÊN ĐIỆN THOẠI ---
+        // --- XỬ LÝ TRÊN ĐIỆN THOẠI (TOUCH) ---
         window.addEventListener('touchstart', (e) => {
             isDragging = true;
             startX = e.touches[0].clientX;
@@ -134,11 +133,11 @@
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
             
-            // Khi đứng ở TRONG tâm, vuốt sang phải thì camera phải quay sang trái (đảo dấu)
-            currentY -= deltaX * sensitivity;
-            currentX += deltaY * sensitivity;
+            // Đảo dấu để hướng xoay camera tự nhiên như thật
+            currentY += deltaX * sensitivity;
+            currentX -= deltaY * sensitivity;
             
-            // Giới hạn góc ngước lên/xuống 85 độ để tránh bị đảo lộn đầu
+            // Khóa góc ngước lên/nhìn xuống tránh lỗi lật ngửa camera
             currentX = Math.max(-85, Math.min(85, currentX));
             
             cube.style.transform = `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
@@ -148,7 +147,7 @@
             isDragging = false;
         });
 
-        // --- SỰ KIỆN TRÊN MÁY TÍNH (ĐỂ TEST) ---
+        // --- XỬ LÝ TRÊN MÁY TÍNH (MOUSE) ---
         window.addEventListener('mousedown', (e) => {
             isDragging = true;
             startX = e.clientX;
@@ -163,8 +162,8 @@
             startX = e.clientX;
             startY = e.clientY;
             
-            currentY -= deltaX * sensitivity;
-            currentX += deltaY * sensitivity;
+            currentY += deltaX * sensitivity;
+            currentX -= deltaY * sensitivity;
             currentX = Math.max(-85, Math.min(85, currentX));
             
             cube.style.transform = `rotateX(${currentX}deg) rotateY(${currentY}deg)`;

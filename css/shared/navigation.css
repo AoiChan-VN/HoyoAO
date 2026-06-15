@@ -1,0 +1,290 @@
+/* ========================================================= */
+/* NAVIGATION ROOT                                           */
+/* ========================================================= */
+
+#navigation-root {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+    right: 0;
+
+    z-index: var(--z-navigation);
+
+    width: 100%;
+}
+
+/* ========================================================= */
+/* NAVIGATION BAR                                            */
+/* ========================================================= */
+
+.app-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    height: var(--navigation-height);
+
+    padding-inline: var(--space-6);
+
+    background-color: var(--color-overlay-dark);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    box-shadow: var(--shadow-md);
+}
+
+/* ========================================================= */
+/* BRAND                                                     */
+/* ========================================================= */
+
+.app-navigation__brand {
+    display: flex;
+    align-items: center;
+
+    min-width: 0;
+
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+
+    color: var(--color-white);
+
+    letter-spacing: 0.02em;
+
+    user-select: none;
+}
+
+.app-navigation__brand-link {
+    display: inline-flex;
+    align-items: center;
+
+    color: inherit;
+
+    transition:
+        opacity var(--transition-fast);
+}
+
+.app-navigation__brand-link:hover {
+    opacity: 0.85;
+}
+
+/* ========================================================= */
+/* NAVIGATION MENU                                           */
+/* ========================================================= */
+
+.app-navigation__menu {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.app-navigation__item {
+    display: flex;
+}
+
+/* ========================================================= */
+/* NAVIGATION LINK                                           */
+/* ========================================================= */
+
+.app-navigation__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 44px;
+
+    padding-inline: var(--space-4);
+
+    border-radius: var(--radius-md);
+
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+
+    color: var(--color-white);
+
+    transition:
+        background-color var(--transition-fast),
+        color var(--transition-fast),
+        opacity var(--transition-fast);
+}
+
+.app-navigation__link:hover {
+    background-color: var(--color-overlay-light);
+}
+
+.app-navigation__link:active {
+    transform: translateY(1px);
+}
+
+/* ========================================================= */
+/* ACTIVE LINK                                               */
+/* ========================================================= */
+
+.app-navigation__link--active {
+    background-color: rgba(37, 99, 235, 0.18);
+
+    color: var(--color-white);
+}
+
+/* ========================================================= */
+/* MOBILE TOGGLE                                             */
+/* ========================================================= */
+
+.app-navigation__toggle {
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 44px;
+    height: 44px;
+
+    border-radius: var(--radius-md);
+
+    color: var(--color-white);
+
+    transition:
+        background-color var(--transition-fast);
+}
+
+.app-navigation__toggle:hover {
+    background-color: var(--color-overlay-light);
+}
+
+/* ========================================================= */
+/* MOBILE ICON                                               */
+/* ========================================================= */
+
+.app-navigation__toggle-icon {
+    display: block;
+
+    width: 22px;
+    height: 2px;
+
+    background-color: currentColor;
+
+    position: relative;
+}
+
+.app-navigation__toggle-icon::before,
+.app-navigation__toggle-icon::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: currentColor;
+}
+
+.app-navigation__toggle-icon::before {
+    top: -6px;
+}
+
+.app-navigation__toggle-icon::after {
+    top: 6px;
+}
+
+/* ========================================================= */
+/* MOBILE PANEL                                              */
+/* ========================================================= */
+
+.app-navigation__mobile-panel {
+    display: none;
+
+    flex-direction: column;
+
+    width: 100%;
+
+    background-color: rgba(0, 0, 0, 0.95);
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.08);
+}
+
+.app-navigation__mobile-panel--open {
+    display: flex;
+}
+
+.app-navigation__mobile-link {
+    display: flex;
+    align-items: center;
+
+    min-height: 52px;
+
+    padding-inline: var(--space-6);
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.05);
+
+    font-size: var(--font-size-md);
+
+    color: var(--color-white);
+}
+
+.app-navigation__mobile-link:hover {
+    background-color: var(--color-overlay-light);
+}
+
+/* ========================================================= */
+/* RESPONSIVE                                                */
+/* ========================================================= */
+
+@media (max-width: 768px) {
+
+    .app-navigation {
+        padding-inline: var(--space-4);
+    }
+
+    .app-navigation__menu {
+        display: none;
+    }
+
+    .app-navigation__toggle {
+        display: inline-flex;
+    }
+}
+
+/* ========================================================= */
+/* LARGE SCREEN                                              */
+/* ========================================================= */
+
+@media (min-width: 769px) {
+
+    .app-navigation__mobile-panel {
+        display: none !important;
+    }
+}
+
+/* ========================================================= */
+/* ACCESSIBILITY                                             */
+/* ========================================================= */
+
+.app-navigation a:focus-visible,
+.app-navigation button:focus-visible {
+    outline:
+        var(--focus-outline-width)
+        solid
+        var(--focus-outline-color);
+
+    outline-offset: 2px;
+}
+
+/* ========================================================= */
+/* REDUCED MOTION                                            */
+/* ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .app-navigation__link,
+    .app-navigation__toggle,
+    .app-navigation__brand-link {
+        transition: none;
+    }
+} 

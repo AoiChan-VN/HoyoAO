@@ -23,7 +23,7 @@ import { NavigationHandler } from './shared/navigation-handler.js';
 class Application {
     #viewer;
     #overlay;
-
+    
     #mouseInput;
     #touchInput;
 
@@ -37,7 +37,7 @@ class Application {
 
     initialize() {
         try {
-            const skyboxRoot =
+            const skyboxRoot = 
                 document.getElementById(
                     'home-skybox-root'
                 );
@@ -338,114 +338,107 @@ class Application {
             const imageSet =
                 skyboxRepository.getByIndex(
                     nextIndex
-                ); /* tiếp tục cách 4 ô cho những hàng dưới */
+                ); 
 
-        stateManager.setCurrentIndex(
-            nextIndex
-        );
-
-        stateManager.setCurrentImageSet(
-            imageSet
-        );
-    }
-
-    #showPreviousSkybox() {
-        const currentIndex =
-            stateManager.getCurrentIndex();
-
-        const previousIndex =
-            skyboxRepository.getPreviousIndex(
-                currentIndex
+            stateManager.setCurrentIndex(
+                nextIndex
             );
 
-        const imageSet =
-            skyboxRepository.getByIndex(
+            stateManager.setCurrentImageSet(
+                imageSet
+            );
+        }
+        
+        #showPreviousSkybox() {
+            const currentIndex =
+                stateManager.getCurrentIndex();
+
+            const previousIndex =
+                skyboxRepository.getPreviousIndex(
+                    currentIndex
+                );
+
+            const imageSet =
+                skyboxRepository.getByIndex(
+                    previousIndex
+                );
+
+            stateManager.setCurrentIndex(
                 previousIndex
             );
 
-        stateManager.setCurrentIndex(
-            previousIndex
-        );
+            stateManager.setCurrentImageSet(
+                imageSet
+            );
+        }
 
-        stateManager.setCurrentImageSet(
-            imageSet
-        );
-    }
+        /**
+        * ------------------------------------------------------------------------
+        * Fatal Error
+        * ------------------------------------------------------------------------
+        */
 
-    /**
-     * ------------------------------------------------------------------------
-     * Fatal Error
-     * ------------------------------------------------------------------------
-     */
+        #handleFatalError(error) {
+            console.error(
+                '[Application Fatal Error]',
+                error
+            );
 
-    #handleFatalError(error) {
-        console.error(
-            '[Application Fatal Error]',
-            error
-        );
-
-        document.body.innerHTML =
-            `
-            <div
-                style="
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    min-height:100vh;
-                    padding:24px;
-                    text-align:center;
-                    font-family:sans-serif;
-                "
-            >
+            document.body.innerHTML =
+                `
+                <div style="
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                min-height:100vh;
+                padding:24px;
+                text-align:center;
+                font-family:sans-serif;">
                 <div>
-                    <h1>
-                        Application Initialization Failed
-                    </h1>
-                    <p>
-                        Please check browser console.
-                    </p>
+                <h1> Application Initialization Failed </h1>
+                <p> Please check browser console. </p>
                 </div>
-            </div>
-            `;
+                </div>
+                `;
+        }
+
+        /**
+        * ------------------------------------------------------------------------
+        * Diagnostics
+        * ------------------------------------------------------------------------
+        */
+
+        getDiagnostics() {
+            return Object.freeze({
+                state:
+                    stateManager.getDiagnostics(),
+                repository:
+                    skyboxRepository.getDiagnostics(),
+                viewer:
+                    this.#viewer?.getDiagnostics?.(),
+                overlay:
+                    this.#overlay?.getDiagnostics?.(),
+                mouse:
+                    this.#mouseInput?.getDiagnostics?.(),
+                touch:
+                    this.#touchInput?.getDiagnostics?.(),
+                navigation:
+                    this.#navigation?.getDiagnostics?.()
+            });
+        }
     }
 
-    /**
-     * ------------------------------------------------------------------------
-     * Diagnostics
-     * ------------------------------------------------------------------------
-     */
-
-    getDiagnostics() {
-        return Object.freeze({
-            state:
-                stateManager.getDiagnostics(),
-            repository:
-                skyboxRepository.getDiagnostics(),
-            viewer:
-                this.#viewer?.getDiagnostics?.(),
-            overlay:
-                this.#overlay?.getDiagnostics?.(),
-            mouse:
-                this.#mouseInput?.getDiagnostics?.(),
-            touch:
-                this.#touchInput?.getDiagnostics?.(),
-            navigation:
-                this.#navigation?.getDiagnostics?.()
-        });
-    }
-}
-
-const application =
+    const application = 
     new Application();
 
-document.addEventListener(
-    'DOMContentLoaded',
+    document.addEventListener(
+        'DOMContentLoaded',
     () => {
         application.initialize();
     },
-    {
-        once: true
-    }
+{
+    once: true
+}
 );
 
 export { application }; 

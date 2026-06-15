@@ -1,38 +1,29 @@
 /**
- * ==========================================================
- * Mouse Input Controller
+ * ============================================================================
  * File: js/controllers/mouse-input.js
- * ==========================================================
+ * Purpose: Desktop Mouse Input Controller
+ * Domain: Home (3D Skybox Experience)
+ * ============================================================================
  */
 
-import { CONFIG } from "../core/config.js";
-import { eventBus } from "../core/event-bus.js";
+import { APP_CONFIG } from '../core/config.js';
+import { eventBus } from '../core/event-bus.js';
 
 export class MouseInputController {
-
     #targetElement;
-
     #isDragging;
-
-    #startX;
-
-    #startY;
-
     #lastX;
-
     #lastY;
 
     #boundMouseDown;
-
     #boundMouseMove;
-
     #boundMouseUp;
+    #boundMouseLeave;
 
     constructor(targetElement) {
-
         if (!(targetElement instanceof HTMLElement)) {
             throw new TypeError(
-                "MouseInputController: targetElement must be a valid HTMLElement."
+                '[MouseInputController] targetElement must be a valid HTMLElement.'
             );
         }
 
@@ -40,109 +31,103 @@ export class MouseInputController {
 
         this.#isDragging = false;
 
-        this.#startX = 0;
-        this.#startY = 0;
-
         this.#lastX = 0;
         this.#lastY = 0;
 
-        this.#boundMouseDown =
-            this.#handleMouseDown.bind(this);
-
-        this.#boundMouseMove =
-            this.#handleMouseMove.bind(this);
-
-        this.#boundMouseUp =
-            this.#handleMouseUp.bind(this);
+        this.#boundMouseDown = this.#handleMouseDown.bind(this);
+        this.#boundMouseMove = this.#handleMouseMove.bind(this);
+        this.#boundMouseUp = this.#handleMouseUp.bind(this);
+        this.#boundMouseLeave = this.#handleMouseLeave.bind(this);
     }
 
     /**
-     * ======================================================
-     * Initialize
-     * ======================================================
+     * ------------------------------------------------------------------------
+     * Lifecycle
+     * ------------------------------------------------------------------------
      */
+
     initialize() {
+        this.#targetElement.addEventListener(
+            'mousedown',
+            this.#boundMouseDown
+        );
+
+        window.addEventListener(
+            'mousemove',
+            this.#boundMouseMove
+        );
+
+        window.addEventListener(
+            'mouseup',
+            this.#boundMouseUp
+        );
 
         this.#targetElement.addEventListener(
-            "mousedown",
-            this.#boundMouseDown
-        );
-
-        window.addEventListener(
-            "mousemove",
-            this.#boundMouseMove
-        );
-
-        window.addEventListener(
-            "mouseup",
-            this.#boundMouseUp
+            'mouseleave',
+            this.#boundMouseLeave
         );
     }
 
-    /**
-     * ======================================================
-     * Destroy
-     * ======================================================
-     */
     destroy() {
+        this.#targetElement.removeEventListener(
+            'mousedown',
+            this.#boundMouseDown
+        );
+
+        window.removeEventListener(
+            'mousemove',
+            this.#boundMouseMove
+        );
+
+        window.removeEventListener(
+            'mouseup',
+            this.#boundMouseUp
+        );
 
         this.#targetElement.removeEventListener(
-            "mousedown",
-            this.#boundMouseDown
+            'mouseleave',
+            this.#boundMouseLeave
         );
-
-        window.removeEventListener(
-            "mousemove",
-            this.#boundMouseMove
-        );
-
-        window.removeEventListener(
-            "mouseup",
-            this.#boundMouseUp
-        );
-
-        this.#isDragging = false;
     }
 
     /**
-     * ======================================================
-     * Mouse Down
-     * ======================================================
+     * ------------------------------------------------------------------------
+     * Internal Helpers
+     * ------------------------------------------------------------------------
      */
-    #handleMouseDown(event) {
 
-        if (event.button !== 0) {
-            return;
-        }
-
-        this.#isDragging = true;
-
-        this.#startX = event.clientX;
-        this.#startY = event.clientY;
-
-        this.#lastX = event.clientX;
-        this.#lastY = event.clientY;
-
+    #publishRotation(deltaYaw, deltaPitch) {
         eventBus.publish(
-            CONFIG.EVENTS.INPUT_DRAG_STARTED,
+            APP_CONFIG.EVENTS.SKYBOX_ROTATION_REQUESTED,
             {
-                source: "mouse",
-
-                startX: event.clientX,
-                startY: event.clientY,
-
-                timestamp: performance.now()
+                deltaYaw,
+                deltaPitch,
+                source: 'mouse'
             }
         );
     }
 
     /**
-     * ======================================================
-     * Mouse Move
-     * ======================================================
+     * ------------------------------------------------------------------------
+     * Event Handlers
+     * ------------------------------------------------------------------------
      */
-    #handleMouseMove(event) {
 
+    #handleMouseDown(event) {
+        if (
+            event.button !==
+            APP_CONFIG.INPUT.MOUSE_BUTTON_PRIMARY
+        ) {
+            return;
+        }
+
+        this.#isDragging = true;
+
+        this.#lastX = event.clientX;
+        this.#lastY = event.clientY;
+    }
+
+    #handleMouseMove(event) {
         if (!this.#isDragging) {
             return;
         }
@@ -153,66 +138,42 @@ export class MouseInputController {
         const deltaY =
             event.clientY - this.#lastY;
 
-        const totalDeltaX =
-            event.clientX - this.#startX;
-
-        const totalDeltaY =
-            event.clientY - this.#startY;
-
-        if (
-            Math.abs(deltaX) <
-                CONFIG.INPUT.MIN_DRAG_DISTANCE &&
-            Math.abs(deltaY) <
-                CONFIG.INPUT.MIN_DRAG_DISTANCE
-        ) {
-            return;
-        }
-
         this.#lastX = event.clientX;
         this.#lastY = event.clientY;
 
-        eventBus.publish(
-            CONFIG.EVENTS.INPUT_DRAG_MOVED,
-            {
-                source: "mouse",
+        const deltaYaw =
+            deltaX *
+            APP_CONFIG.SKYBOX.ROTATION_SENSITIVITY_MOUSE;
 
-                currentX: event.clientX,
-                currentY: event.clientY,
+        const deltaPitch =
+            -deltaY *
+            APP_CONFIG.SKYBOX.ROTATION_SENSITIVITY_MOUSE;
 
-                deltaX,
-                deltaY,
-
-                totalDeltaX,
-                totalDeltaY,
-
-                timestamp: performance.now()
-            }
+        this.#publishRotation(
+            deltaYaw,
+            deltaPitch
         );
     }
 
-    /**
-     * ======================================================
-     * Mouse Up
-     * ======================================================
-     */
-    #handleMouseUp(event) {
-
-        if (!this.#isDragging) {
-            return;
-        }
-
+    #handleMouseUp() {
         this.#isDragging = false;
+    }
 
-        eventBus.publish(
-            CONFIG.EVENTS.INPUT_DRAG_ENDED,
-            {
-                source: "mouse",
+    #handleMouseLeave() {
+        this.#isDragging = false;
+    }
 
-                endX: event.clientX,
-                endY: event.clientY,
+    /**
+     * ------------------------------------------------------------------------
+     * Diagnostics
+     * ------------------------------------------------------------------------
+     */
 
-                timestamp: performance.now()
-            }
-        );
+    getDiagnostics() {
+        return Object.freeze({
+            isDragging: this.#isDragging,
+            lastX: this.#lastX,
+            lastY: this.#lastY
+        });
     }
 } 

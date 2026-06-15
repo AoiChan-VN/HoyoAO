@@ -1,0 +1,332 @@
+/* ========================================================= */
+/* HOME DOMAIN ROOT                                          */
+/* ========================================================= */
+
+.home-domain {
+    position: relative;
+
+    width: 100%;
+    min-height: 100vh;
+
+    overflow-x: hidden;
+    overflow-y: hidden;
+
+    background-color: var(--color-black);
+}
+
+/* ========================================================= */
+/* HOME APPLICATION ROOT                                     */
+/* ========================================================= */
+
+.home-domain #home-app {
+    position: relative;
+
+    width: 100%;
+    min-height: 100vh;
+
+    overflow: hidden;
+
+    isolation: isolate;
+}
+
+/* ========================================================= */
+/* SKYBOX SCENE LAYER                                        */
+/* ========================================================= */
+
+.home-domain #skybox-container {
+    position: relative;
+
+    width: 100%;
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: var(--z-base);
+
+    overflow: hidden;
+
+    perspective: var(--skybox-perspective);
+    perspective-origin: center center;
+
+    touch-action: none;
+}
+
+/* ========================================================= */
+/* OVERLAY LAYER                                             */
+/* ========================================================= */
+
+.home-domain #overlay-container {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: var(--z-overlay);
+
+    display: flex;
+    flex-direction: column;
+
+    pointer-events: none;
+}
+
+/* ========================================================= */
+/* OVERLAY SAFE REGION                                       */
+/* ========================================================= */
+
+.home-domain .home-overlay-content {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding-top:
+        calc(
+            var(--navigation-height)
+            + var(--space-6)
+        );
+
+    padding-right:
+        max(
+            var(--space-6),
+            var(--safe-area-right)
+        );
+
+    padding-bottom:
+        max(
+            var(--space-6),
+            var(--safe-area-bottom)
+        );
+
+    padding-left:
+        max(
+            var(--space-6),
+            var(--safe-area-left)
+        );
+
+    pointer-events: none;
+}
+
+/* ========================================================= */
+/* INTERACTIVE OVERLAY AREA                                  */
+/* ========================================================= */
+
+.home-domain .home-overlay-interactive {
+    pointer-events: auto;
+}
+
+/* ========================================================= */
+/* HERO BLOCK                                                */
+/* ========================================================= */
+
+.home-domain .home-hero {
+    max-width: 720px;
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.home-domain .home-hero__title {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+
+    line-height: var(--line-height-tight);
+
+    color: var(--color-white);
+
+    text-wrap: balance;
+}
+
+.home-domain .home-hero__description {
+    max-width: 60ch;
+
+    font-size: var(--font-size-lg);
+
+    line-height: var(--line-height-relaxed);
+
+    color: var(--color-gray-200);
+}
+
+/* ========================================================= */
+/* ACTION GROUP                                              */
+/* ========================================================= */
+
+.home-domain .home-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.home-domain .home-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 48px;
+
+    padding:
+        var(--space-3)
+        var(--space-6);
+
+    border-radius: var(--radius-full);
+
+    background-color:
+        rgba(255, 255, 255, 0.08);
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    color: var(--color-white);
+
+    transition:
+        background-color var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.home-domain .home-action-button:hover {
+    background-color:
+        rgba(255, 255, 255, 0.15);
+}
+
+.home-domain .home-action-button:active {
+    transform: scale(0.98);
+}
+
+/* ========================================================= */
+/* STATUS PANEL                                              */
+/* ========================================================= */
+
+.home-domain .home-status-panel {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+
+    padding:
+        var(--space-4)
+        var(--space-5);
+
+    border-radius: var(--radius-lg);
+
+    background-color:
+        rgba(0, 0, 0, 0.45);
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    width: fit-content;
+}
+
+.home-domain .home-status-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.home-domain .home-status-label {
+    font-size: var(--font-size-xs);
+
+    color: var(--color-gray-400);
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.08em;
+}
+
+.home-domain .home-status-value {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+
+    color: var(--color-white);
+}
+
+/* ========================================================= */
+/* MOBILE                                                    */
+/* ========================================================= */
+
+@media (max-width: 768px) {
+
+    .home-domain .home-overlay-content {
+
+        padding-top:
+            calc(
+                var(--navigation-height)
+                + var(--space-4)
+            );
+
+        padding-right:
+            max(
+                var(--space-4),
+                var(--safe-area-right)
+            );
+
+        padding-bottom:
+            max(
+                var(--space-4),
+                var(--safe-area-bottom)
+            );
+
+        padding-left:
+            max(
+                var(--space-4),
+                var(--safe-area-left)
+            );
+    }
+
+    .home-domain .home-hero__title {
+        font-size: var(--font-size-3xl);
+    }
+
+    .home-domain .home-hero__description {
+        font-size: var(--font-size-md);
+    }
+
+    .home-domain .home-status-panel {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ========================================================= */
+/* SMALL MOBILE                                              */
+/* ========================================================= */
+
+@media (max-width: 480px) {
+
+    .home-domain .home-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .home-domain .home-action-button {
+        width: 100%;
+    }
+}
+
+/* ========================================================= */
+/* LARGE DESKTOP                                             */
+/* ========================================================= */
+
+@media (min-width: 1440px) {
+
+    .home-domain .home-hero {
+        max-width: 840px;
+    }
+
+    .home-domain .home-hero__title {
+        font-size: 3.5rem;
+    }
+}
+
+/* ========================================================= */
+/* REDUCED MOTION                                            */
+/* ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .home-domain .home-action-button {
+        transition: none;
+    }
+} 

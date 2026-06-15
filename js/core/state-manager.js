@@ -1,338 +1,238 @@
 /**
- * ==========================================================
- * State Manager
+ * ============================================================================
  * File: js/core/state-manager.js
- * ==========================================================
+ * Purpose: Centralized Application State Manager
+ * Domain: Home (3D Skybox Experience)
+ * ============================================================================
  */
 
-import { CONFIG } from "./config.js";
-import { eventBus } from "./event-bus.js";
+import { APP_CONFIG } from './config.js';
+import { eventBus } from './event-bus.js';
 
-export class StateManager {
-
+class StateManager {
     #state;
 
     constructor() {
-
-        this.#state = Object.freeze({
-            application: {
-                initialized: false,
-                version: CONFIG.APPLICATION.VERSION
-            },
-
+        this.#state = {
             skybox: {
-                rotationX:
-                    CONFIG.SKYBOX.INITIAL_ROTATION_X,
-
-                rotationY:
-                    CONFIG.SKYBOX.INITIAL_ROTATION_Y,
-
-                activeImageSet: null,
-
-                isLoading: false,
-
-                lastUpdated: null
-            },
-
-            articles: {
-                currentArticleId: null,
-
-                searchQuery: "",
-
-                selectedCategory: null
+                yaw: APP_CONFIG.SKYBOX.INITIAL_YAW,
+                pitch: APP_CONFIG.SKYBOX.INITIAL_PITCH,
+                currentIndex: 0,
+                currentImageSet: null
             }
-        });
+        };
     }
 
     /**
-     * ======================================================
-     * Get Entire State
-     * ======================================================
-     *
-     * @returns {object}
+     * ------------------------------------------------------------------------
+     * Internal Helpers
+     * ------------------------------------------------------------------------
      */
+
+    #deepClone(value) {
+        return structuredClone(value);
+    }
+
+    #emitStateUpdate() {
+        eventBus.publish(
+            APP_CONFIG.EVENTS.SKYBOX_ROTATION_UPDATED,
+            this.getSkyboxState()
+        );
+    }
+
+    #validateNumber(value, fieldName) {
+        if (!Number.isFinite(value)) {
+            throw new TypeError(
+                `[StateManager] "${fieldName}" must be a finite number.`
+            );
+        }
+    }
+
+    #clampPitch(pitch) {
+        return Math.max(
+            APP_CONFIG.SKYBOX.MIN_PITCH_DEGREE,
+            Math.min(
+                APP_CONFIG.SKYBOX.MAX_PITCH_DEGREE,
+                pitch
+            )
+        );
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Read APIs
+     * ------------------------------------------------------------------------
+     */
+
     getState() {
         return this.#deepClone(this.#state);
     }
 
-    /**
-     * ======================================================
-     * Get State Section
-     * ======================================================
-     *
-     * @param {string} section
-     *
-     * @returns {*}
-     */
-    getSection(section) {
-
-        this.#validateKey(section);
-
-        const value = this.#state[section];
-
-        if (typeof value === "undefined") {
-            throw new Error(
-                `StateManager: Unknown state section "${section}".`
-            );
-        }
-
-        return this.#deepClone(value);
+    getSkyboxState() {
+        return this.#deepClone(this.#state.skybox);
     }
 
-    /**
-     * ======================================================
-     * Replace Section
-     * ======================================================
-     *
-     * @param {string} section
-     * @param {object} data
-     */
-    replaceSection(section, data) {
+    getYaw() {
+        return this.#state.skybox.yaw;
+    }
 
-        this.#validateKey(section);
-        this.#validateObject(data);
+    getPitch() {
+        return this.#state.skybox.pitch;
+    }
 
-        if (!(section in this.#state)) {
-            throw new Error(
-                `StateManager: Unknown state section "${section}".`
-            );
-        }
+    getCurrentIndex() {
+        return this.#state.skybox.currentIndex;
+    }
 
-        const nextState = {
-            ...this.#state,
-            [section]: this.#deepClone(data)
-        };
-
-        this.#commitState(
-            nextState,
-            {
-                section,
-                type: "replace"
-            }
+    getCurrentImageSet() {
+        return this.#deepClone(
+            this.#state.skybox.currentImageSet
         );
     }
 
     /**
-     * ======================================================
-     * Merge Section
-     * ======================================================
-     *
-     * @param {string} section
-     * @param {object} partialData
+     * ------------------------------------------------------------------------
+     * Rotation APIs
+     * ------------------------------------------------------------------------
      */
-    mergeSection(section, partialData) {
 
-        this.#validateKey(section);
-        this.#validateObject(partialData);
+    setRotation(yaw, pitch) {
+        this.#validateNumber(yaw, 'yaw');
+        this.#validateNumber(pitch, 'pitch');
 
-        const currentSection =
-            this.#state[section];
+        this.#state.skybox.yaw = yaw;
+        this.#state.skybox.pitch = this.#clampPitch(pitch);
 
+        this.#emitStateUpdate();
+    }
+
+    updateRotation(deltaYaw, deltaPitch) {
+        this.#validateNumber(deltaYaw, 'deltaYaw');
+        this.#validateNumber(deltaPitch, 'deltaPitch');
+
+        const nextYaw =
+            this.#state.skybox.yaw + deltaYaw;
+
+        const nextPitch =
+            this.#state.skybox.pitch + deltaPitch;
+
+        this.#state.skybox.yaw = nextYaw;
+        this.#state.skybox.pitch =
+            this.#clampPitch(nextPitch);
+
+        this.#emitStateUpdate();
+    }
+
+    resetRotation() {
+        this.#state.skybox.yaw =
+            APP_CONFIG.SKYBOX.INITIAL_YAW;
+
+        this.#state.skybox.pitch =
+            APP_CONFIG.SKYBOX.INITIAL_PITCH;
+
+        this.#emitStateUpdate();
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Skybox Index APIs
+     * ------------------------------------------------------------------------
+     */
+
+    setCurrentIndex(index) {
         if (
-            typeof currentSection !== "object" ||
-            currentSection === null
+            !Number.isInteger(index) ||
+            index < 0
         ) {
-            throw new Error(
-                `StateManager: Section "${section}" is not mergeable.`
+            throw new RangeError(
+                '[StateManager] Invalid skybox index.'
             );
         }
 
-        const nextState = {
-            ...this.#state,
-            [section]: {
-                ...currentSection,
-                ...this.#deepClone(partialData)
-            }
-        };
+        this.#state.skybox.currentIndex = index;
 
-        this.#commitState(
-            nextState,
-            {
-                section,
-                type: "merge"
+        try {
+            localStorage.setItem(
+                APP_CONFIG.STORAGE.CURRENT_SKYBOX_INDEX,
+                String(index)
+            );
+        } catch (error) {
+            console.warn(
+                '[StateManager] Failed to persist skybox index.',
+                error
+            );
+        }
+    }
+
+    restoreCurrentIndex() {
+        try {
+            const storedValue = localStorage.getItem(
+                APP_CONFIG.STORAGE.CURRENT_SKYBOX_INDEX
+            );
+
+            if (storedValue === null) {
+                return;
             }
-        );
+
+            const parsedValue =
+                Number.parseInt(storedValue, 10);
+
+            if (
+                Number.isInteger(parsedValue) &&
+                parsedValue >= 0
+            ) {
+                this.#state.skybox.currentIndex =
+                    parsedValue;
+            }
+        } catch (error) {
+            console.warn(
+                '[StateManager] Failed to restore skybox index.',
+                error
+            );
+        }
     }
 
     /**
-     * ======================================================
-     * Update Nested Value
-     * ======================================================
-     *
-     * Example:
-     * update("skybox", "rotationX", 20)
-     *
-     * @param {string} section
-     * @param {string} property
-     * @param {*} value
+     * ------------------------------------------------------------------------
+     * Skybox Image APIs
+     * ------------------------------------------------------------------------
      */
-    update(section, property, value) {
 
-        this.#validateKey(section);
-        this.#validateKey(property);
-
-        const currentSection =
-            this.#state[section];
-
+    setCurrentImageSet(imageSet) {
         if (
-            typeof currentSection !== "object" ||
-            currentSection === null
+            imageSet === null ||
+            typeof imageSet !== 'object'
         ) {
-            throw new Error(
-                `StateManager: Section "${section}" is not updateable.`
+            throw new TypeError(
+                '[StateManager] Invalid image set.'
             );
         }
 
-        const nextState = {
-            ...this.#state,
-            [section]: {
-                ...currentSection,
-                [property]: value
-            }
-        };
+        this.#state.skybox.currentImageSet =
+            this.#deepClone(imageSet);
 
-        this.#commitState(
-            nextState,
-            {
-                section,
-                property,
-                type: "update"
-            }
+        eventBus.publish(
+            APP_CONFIG.EVENTS.SKYBOX_IMAGE_CHANGED,
+            this.getCurrentImageSet()
         );
     }
 
     /**
-     * ======================================================
-     * Reset State
-     * ======================================================
+     * ------------------------------------------------------------------------
+     * Diagnostics
+     * ------------------------------------------------------------------------
      */
-    reset() {
 
-        this.#state = Object.freeze({
-            application: {
-                initialized: false,
-                version: CONFIG.APPLICATION.VERSION
-            },
-
-            skybox: {
-                rotationX:
-                    CONFIG.SKYBOX.INITIAL_ROTATION_X,
-
-                rotationY:
-                    CONFIG.SKYBOX.INITIAL_ROTATION_Y,
-
-                activeImageSet: null,
-
-                isLoading: false,
-
-                lastUpdated: null
-            },
-
-            articles: {
-                currentArticleId: null,
-
-                searchQuery: "",
-
-                selectedCategory: null
-            }
+    getDiagnostics() {
+        return Object.freeze({
+            yaw: this.#state.skybox.yaw,
+            pitch: this.#state.skybox.pitch,
+            currentIndex:
+                this.#state.skybox.currentIndex,
+            hasImageSet:
+                this.#state.skybox.currentImageSet !== null
         });
-
-        eventBus.publish(
-            CONFIG.EVENTS.STATE_UPDATED,
-            {
-                type: "reset",
-                state: this.getState()
-            }
-        );
-    }
-
-    /**
-     * ======================================================
-     * Commit State
-     * ======================================================
-     *
-     * @param {object} nextState
-     * @param {object} metadata
-     */
-    #commitState(nextState, metadata) {
-
-        const previousState =
-            this.getState();
-
-        this.#state =
-            Object.freeze(nextState);
-
-        eventBus.publish(
-            CONFIG.EVENTS.STATE_UPDATED,
-            {
-                ...metadata,
-
-                previousState,
-
-                currentState:
-                    this.getState()
-            }
-        );
-    }
-
-    /**
-     * ======================================================
-     * Validation
-     * ======================================================
-     */
-
-    #validateKey(value) {
-
-        if (
-            typeof value !== "string" ||
-            value.trim().length === 0
-        ) {
-            throw new TypeError(
-                "StateManager: key must be a non-empty string."
-            );
-        }
-    }
-
-    #validateObject(value) {
-
-        if (
-            typeof value !== "object" ||
-            value === null ||
-            Array.isArray(value)
-        ) {
-            throw new TypeError(
-                "StateManager: value must be an object."
-            );
-        }
-    }
-
-    /**
-     * ======================================================
-     * Safe Clone
-     * ======================================================
-     *
-     * @param {*} value
-     *
-     * @returns {*}
-     */
-    #deepClone(value) {
-
-        if (typeof structuredClone === "function") {
-            return structuredClone(value);
-        }
-
-        return JSON.parse(
-            JSON.stringify(value)
-        );
     }
 }
 
-/**
- * ==========================================================
- * Global Singleton
- * ==========================================================
- */
-
-export const stateManager = Object.freeze(
-    new StateManager()
-); 
+export const stateManager = new StateManager(); 

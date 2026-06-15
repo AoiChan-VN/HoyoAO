@@ -1,223 +1,248 @@
 /**
- * ==========================================================
- * Skybox Repository
+ * ============================================================================
  * File: js/data/skybox-repository.js
- * ==========================================================
+ * Purpose: Skybox Data Repository
+ * Domain: Home (3D Skybox Experience)
+ * ============================================================================
  */
 
-export class SkyboxRepository {
+import { APP_CONFIG } from '../core/config.js';
 
+class SkyboxRepository {
     #skyboxes;
 
     constructor() {
-
-        this.#skyboxes = Object.freeze([
-            Object.freeze({
-                id: "skybox-001",
-                name: "Mountain Sunrise",
-
-                faces: Object.freeze({
-                    front: "./assets/skybox/mountain/front.jpg",
-                    back: "./assets/skybox/mountain/back.jpg",
-                    left: "./assets/skybox/mountain/left.jpg",
-                    right: "./assets/skybox/mountain/right.jpg",
-                    top: "./assets/skybox/mountain/top.jpg",
-                    bottom: "./assets/skybox/mountain/bottom.jpg"
-                })
-            }),
-
-            Object.freeze({
-                id: "skybox-002",
-                name: "Ocean View",
-
-                faces: Object.freeze({
-                    front: "./assets/skybox/ocean/front.jpg",
-                    back: "./assets/skybox/ocean/back.jpg",
-                    left: "./assets/skybox/ocean/left.jpg",
-                    right: "./assets/skybox/ocean/right.jpg",
-                    top: "./assets/skybox/ocean/top.jpg",
-                    bottom: "./assets/skybox/ocean/bottom.jpg"
-                })
-            }),
-
-            Object.freeze({
-                id: "skybox-003",
-                name: "Night City",
-
-                faces: Object.freeze({
-                    front: "./assets/skybox/city/front.jpg",
-                    back: "./assets/skybox/city/back.jpg",
-                    left: "./assets/skybox/city/left.jpg",
-                    right: "./assets/skybox/city/right.jpg",
-                    top: "./assets/skybox/city/top.jpg",
-                    bottom: "./assets/skybox/city/bottom.jpg"
-                })
-            })
-        ]);
+        this.#skyboxes = [];
     }
 
     /**
-     * ======================================================
-     * Get All Skyboxes
-     * ======================================================
-     *
-     * @returns {Array}
+     * ------------------------------------------------------------------------
+     * Validation
+     * ------------------------------------------------------------------------
      */
-    getAll() {
-        return this.#clone(this.#skyboxes);
-    }
 
-    /**
-     * ======================================================
-     * Get By Id
-     * ======================================================
-     *
-     * @param {string} id
-     *
-     * @returns {object|null}
-     */
-    getById(id) {
-
-        this.#validateId(id);
-
-        const skybox = this.#skyboxes.find(
-            (item) => item.id === id
-        );
-
-        if (!skybox) {
-            return null;
-        }
-
-        return this.#clone(skybox);
-    }
-
-    /**
-     * ======================================================
-     * Get First Available
-     * ======================================================
-     *
-     * @returns {object|null}
-     */
-    getDefault() {
-
-        if (this.#skyboxes.length === 0) {
-            return null;
-        }
-
-        return this.#clone(
-            this.#skyboxes[0]
-        );
-    }
-
-    /**
-     * ======================================================
-     * Exists
-     * ======================================================
-     *
-     * @param {string} id
-     *
-     * @returns {boolean}
-     */
-    exists(id) {
-
-        this.#validateId(id);
-
-        return this.#skyboxes.some(
-            (item) => item.id === id
-        );
-    }
-
-    /**
-     * ======================================================
-     * Count
-     * ======================================================
-     *
-     * @returns {number}
-     */
-    count() {
-        return this.#skyboxes.length;
-    }
-
-    /**
-     * ======================================================
-     * Face Validation
-     * ======================================================
-     *
-     * @param {object} faces
-     *
-     * @returns {boolean}
-     */
-    validateFaces(faces) {
-
-        if (
-            typeof faces !== "object" ||
-            faces === null
-        ) {
+    #isValidUrl(value) {
+        if (typeof value !== 'string' || value.trim().length === 0) {
             return false;
         }
 
-        const requiredFaces = [
-            "front",
-            "back",
-            "left",
-            "right",
-            "top",
-            "bottom"
-        ];
+        try {
+            const url = new URL(value, window.location.origin);
 
-        return requiredFaces.every(
-            (face) =>
-                typeof faces[face] === "string" &&
-                faces[face].trim().length > 0
-        );
+            return (
+                url.protocol === 'http:' ||
+                url.protocol === 'https:' ||
+                url.protocol === 'file:'
+            );
+        } catch {
+            return false;
+        }
     }
 
-    /**
-     * ======================================================
-     * Validation
-     * ======================================================
-     */
-
-    #validateId(id) {
-
-        if (
-            typeof id !== "string" ||
-            id.trim().length === 0
-        ) {
+    #validateFace(faceName, value) {
+        if (!this.#isValidUrl(value)) {
             throw new TypeError(
-                "SkyboxRepository: id must be a non-empty string."
+                `[SkyboxRepository] Invalid URL for face "${faceName}".`
             );
         }
     }
 
-    /**
-     * ======================================================
-     * Clone Utility
-     * ======================================================
-     *
-     * @param {*} value
-     *
-     * @returns {*}
-     */
-    #clone(value) {
-
-        if (typeof structuredClone === "function") {
-            return structuredClone(value);
+    #validateImageSet(imageSet) {
+        if (
+            imageSet === null ||
+            typeof imageSet !== 'object'
+        ) {
+            throw new TypeError(
+                '[SkyboxRepository] Image set must be an object.'
+            );
         }
 
-        return JSON.parse(
-            JSON.stringify(value)
+        const requiredFaces = [
+            'front',
+            'back',
+            'left',
+            'right',
+            'top',
+            'bottom'
+        ];
+
+        for (const face of requiredFaces) {
+            if (!(face in imageSet)) {
+                throw new Error(
+                    `[SkyboxRepository] Missing skybox face "${face}".`
+                );
+            }
+
+            this.#validateFace(face, imageSet[face]);
+        }
+    }
+
+    #clone(value) {
+        return structuredClone(value);
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Repository Management
+     * ------------------------------------------------------------------------
+     */
+
+    add(imageSet) {
+        this.#validateImageSet(imageSet);
+
+        if (
+            this.#skyboxes.length >=
+            APP_CONFIG.REPOSITORY.SKYBOX_IMAGE_LIMIT
+        ) {
+            throw new RangeError(
+                `[SkyboxRepository] Maximum skybox limit exceeded (${APP_CONFIG.REPOSITORY.SKYBOX_IMAGE_LIMIT}).`
+            );
+        }
+
+        this.#skyboxes.push(
+            Object.freeze(this.#clone(imageSet))
         );
+    }
+
+    addMany(imageSets) {
+        if (!Array.isArray(imageSets)) {
+            throw new TypeError(
+                '[SkyboxRepository] Expected array of image sets.'
+            );
+        }
+
+        for (const imageSet of imageSets) {
+            this.add(imageSet);
+        }
+    }
+
+    clear() {
+        this.#skyboxes.length = 0;
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Read APIs
+     * ------------------------------------------------------------------------
+     */
+
+    getAll() {
+        return this.#clone(this.#skyboxes);
+    }
+
+    getCount() {
+        return this.#skyboxes.length;
+    }
+
+    isEmpty() {
+        return this.#skyboxes.length === 0;
+    }
+
+    getByIndex(index) {
+        if (!Number.isInteger(index)) {
+            throw new TypeError(
+                '[SkyboxRepository] Index must be an integer.'
+            );
+        }
+
+        if (
+            index < 0 ||
+            index >= this.#skyboxes.length
+        ) {
+            throw new RangeError(
+                '[SkyboxRepository] Index out of range.'
+            );
+        }
+
+        return this.#clone(
+            this.#skyboxes[index]
+        );
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Navigation APIs
+     * ------------------------------------------------------------------------
+     */
+
+    getNextIndex(currentIndex) {
+        if (this.isEmpty()) {
+            return 0;
+        }
+
+        return (
+            (currentIndex + 1) %
+            this.#skyboxes.length
+        );
+    }
+
+    getPreviousIndex(currentIndex) {
+        if (this.isEmpty()) {
+            return 0;
+        }
+
+        return (
+            (currentIndex - 1 + this.#skyboxes.length) %
+            this.#skyboxes.length
+        );
+    }
+
+    getNext(currentIndex) {
+        return this.getByIndex(
+            this.getNextIndex(currentIndex)
+        );
+    }
+
+    getPrevious(currentIndex) {
+        return this.getByIndex(
+            this.getPreviousIndex(currentIndex)
+        );
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Seed Data
+     * ------------------------------------------------------------------------
+     */
+
+    loadDefaultData() {
+        this.clear();
+
+        this.addMany([
+            {
+                front: './assets/skybox/sky-01/front.jpg',
+                back: './assets/skybox/sky-01/back.jpg',
+                left: './assets/skybox/sky-01/left.jpg',
+                right: './assets/skybox/sky-01/right.jpg',
+                top: './assets/skybox/sky-01/top.jpg',
+                bottom: './assets/skybox/sky-01/bottom.jpg'
+            },
+            {
+                front: './assets/skybox/sky-02/front.jpg',
+                back: './assets/skybox/sky-02/back.jpg',
+                left: './assets/skybox/sky-02/left.jpg',
+                right: './assets/skybox/sky-02/right.jpg',
+                top: './assets/skybox/sky-02/top.jpg',
+                bottom: './assets/skybox/sky-02/bottom.jpg'
+            }
+        ]);
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Diagnostics
+     * ------------------------------------------------------------------------
+     */
+
+    getDiagnostics() {
+        return Object.freeze({
+            totalSkyboxes: this.#skyboxes.length,
+            repositoryLimit:
+                APP_CONFIG.REPOSITORY.SKYBOX_IMAGE_LIMIT,
+            isEmpty: this.isEmpty()
+        });
     }
 }
 
-/**
- * ==========================================================
- * Singleton Instance
- * ==========================================================
- */
-
 export const skyboxRepository =
-    Object.freeze(
-        new SkyboxRepository()
-    ); 
+    new SkyboxRepository(); 

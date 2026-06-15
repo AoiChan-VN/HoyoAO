@@ -1,0 +1,272 @@
+/* ========================================================= */
+/* ROOT DOCUMENT                                             */
+/* ========================================================= */
+
+html {
+    min-height: 100%;
+
+    background-color: var(--color-black);
+}
+
+/* ========================================================= */
+/* BODY                                                      */
+/* ========================================================= */
+
+body {
+    min-height: 100vh;
+
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-normal);
+
+    color: var(--color-white);
+
+    background-color: var(--color-black);
+
+    overflow-x: hidden;
+}
+
+/* ========================================================= */
+/* TYPOGRAPHY                                                */
+/* ========================================================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-family-heading);
+    line-height: var(--line-height-tight);
+
+    color: inherit;
+}
+
+h1 {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+}
+
+h2 {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+}
+
+h3 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+}
+
+h4 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+}
+
+h5 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+}
+
+h6 {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium);
+}
+
+p {
+    color: inherit;
+}
+
+/* ========================================================= */
+/* LINKS                                                     */
+/* ========================================================= */
+
+a {
+    transition:
+        color var(--transition-fast),
+        opacity var(--transition-fast);
+}
+
+a:hover {
+    opacity: 0.85;
+}
+
+/* ========================================================= */
+/* BUTTONS                                                   */
+/* ========================================================= */
+
+button {
+    user-select: none;
+
+    transition:
+        opacity var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+button:hover {
+    opacity: 0.95;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* ========================================================= */
+/* MEDIA                                                     */
+/* ========================================================= */
+
+img {
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+video {
+    max-width: 100%;
+}
+
+/* ========================================================= */
+/* FORM ELEMENTS                                             */
+/* ========================================================= */
+
+input,
+textarea,
+select {
+    width: 100%;
+}
+
+textarea {
+    min-height: 120px;
+}
+
+/* ========================================================= */
+/* ACCESSIBILITY FOCUS                                       */
+/* ========================================================= */
+
+:focus-visible {
+    outline:
+        var(--focus-outline-width)
+        solid
+        var(--focus-outline-color);
+
+    outline-offset: 2px;
+}
+
+/* ========================================================= */
+/* TEXT SELECTION                                            */
+/* ========================================================= */
+
+::selection {
+    color: var(--color-white);
+    background-color: rgba(37, 99, 235, 0.35);
+}
+
+/* ========================================================= */
+/* SCROLLBAR                                                 */
+/* ========================================================= */
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color:
+        var(--color-gray-600)
+        var(--color-gray-900);
+}
+
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+    background-color: var(--color-gray-900);
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: var(--color-gray-600);
+
+    border-radius: var(--radius-full);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-gray-500);
+}
+
+/* ========================================================= */
+/* ROOT APPLICATION NODES                                    */
+/* ========================================================= */
+
+#navigation-root,
+#footer-root {
+    width: 100%;
+}
+
+#home-app {
+    width: 100%;
+}
+
+main {
+    display: block;
+}
+
+/* ========================================================= */
+/* CONTAINER UTILITY                                         */
+/* ========================================================= */
+
+.container {
+    width: 100%;
+
+    max-width: var(--container-width-xl);
+
+    margin-inline: auto;
+
+    padding-inline: var(--space-4);
+}
+
+/* ========================================================= */
+/* SCREEN READER ONLY                                        */
+/* ========================================================= */
+
+.visually-hidden {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    margin: -1px;
+    padding: 0;
+
+    overflow: hidden;
+
+    border: 0;
+
+    white-space: nowrap;
+
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+}
+
+/* ========================================================= */
+/* SAFE AREA SUPPORT                                         */
+/* ========================================================= */
+
+body {
+    padding-top: var(--safe-area-top);
+    padding-right: var(--safe-area-right);
+    padding-bottom: var(--safe-area-bottom);
+    padding-left: var(--safe-area-left);
+}
+
+/* ========================================================= */
+/* REDUCED MOTION                                            */
+/* ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    html {
+        scroll-behavior: auto;
+    }
+
+    button,
+    a {
+        transition: none;
+    }
+} 

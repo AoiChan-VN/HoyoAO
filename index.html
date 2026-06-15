@@ -1,95 +1,117 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0">
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <meta
         name="description"
-        content="3D Skybox Experience Platform built with Vanilla HTML5, CSS3 and JavaScript ES6+">
+        content="Vanilla JavaScript 3D Skybox Experience"
+    >
 
     <meta
         name="theme-color"
-        content="#000000">
+        content="#000000"
+    >
 
     <title>3D Skybox Experience</title>
 
-    <!-- Core CSS -->
-    <link rel="stylesheet" href="./css/core/reset.css">
-    <link rel="stylesheet" href="./css/core/design-tokens.css">
-    <link rel="stylesheet" href="./css/core/global.css">
+    <!-- ================================================================== -->
+    <!-- Core CSS                                                           -->
+    <!-- ================================================================== -->
 
-    <!-- Shared CSS -->
-    <link rel="stylesheet" href="./css/shared/navigation.css">
-    <link rel="stylesheet" href="./css/shared/footer.css">
+    <link
+        rel="stylesheet"
+        href="./css/core/reset.css"
+    >
 
-    <!-- Home Domain CSS -->
-    <link rel="stylesheet" href="./css/pages/home/layout.css">
-    <link rel="stylesheet" href="./css/pages/home/skybox-cube.css">
+    <link
+        rel="stylesheet"
+        href="./css/core/design-tokens.css"
+    >
 
-    <!-- Utilities -->
-    <link rel="stylesheet" href="./css/utils/helpers.css">
+    <link
+        rel="stylesheet"
+        href="./css/core/global.css"
+    >
+
+    <!-- ================================================================== -->
+    <!-- Shared CSS                                                         -->
+    <!-- ================================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="./css/shared/navigation.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="./css/shared/footer.css"
+    >
+
+    <!-- ================================================================== -->
+    <!-- Home Domain CSS                                                    -->
+    <!-- ================================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="./css/pages/home/layout.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="./css/pages/home/skybox-cube.css"
+    >
+
+    <!-- ================================================================== -->
+    <!-- Utilities                                                          -->
+    <!-- ================================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="./css/utils/helpers.css"
+    >
 </head>
 
-<body class="home-domain">
+<body>
+    <!-- =============================================================== -->
+    <!-- Home Domain Root                                                -->
+    <!-- =============================================================== -->
 
-    <!-- ===================================================== -->
-    <!-- Shared Navigation Mount Point                         -->
-    <!-- Rendered by navigation-handler.js                     -->
-    <!-- ===================================================== -->
-    <header
-        id="navigation-root"
-        role="banner"
-        aria-label="Application Navigation">
-    </header>
-
-    <!-- ===================================================== -->
-    <!-- Home Domain Root                                      -->
-    <!-- ===================================================== -->
     <main
-        id="home-app"
-        role="main"
-        aria-label="3D Skybox Experience">
+        class="home-domain"
+        id="home-domain"
+        aria-label="3D Skybox Experience"
+    >
+        <!-- =========================================================== -->
+        <!-- Skybox Render Target                                        -->
+        <!-- =========================================================== -->
 
-        <!-- ================================================ -->
-        <!-- 3D Skybox Mount Point                            -->
-        <!-- Managed by skybox-viewer.js                      -->
-        <!-- ================================================ -->
-        <section
-            id="skybox-container"
-            aria-label="3D Skybox Viewer">
-        </section>
+        <div
+            id="home-skybox-root"
+            aria-hidden="true"
+        ></div>
 
-        <!-- ================================================ -->
-        <!-- Overlay User Interface                           -->
-        <!-- Managed by overlay-ui.js                         -->
-        <!-- ================================================ -->
-        <section
-            id="overlay-container"
-            aria-label="Skybox Overlay Interface">
-        </section>
+        <!-- =========================================================== -->
+        <!-- Overlay Render Target                                       -->
+        <!-- =========================================================== -->
 
+        <div
+            id="home-overlay-root"
+        ></div>
     </main>
 
-    <!-- ===================================================== -->
-    <!-- Shared Footer Mount Point                             -->
-    <!-- Rendered by shared footer component                   -->
-    <!-- ===================================================== -->
-    <footer
-        id="footer-root"
-        role="contentinfo"
-        aria-label="Application Footer">
-    </footer>
+    <!-- =============================================================== -->
+    <!-- Application Bootstrap                                           -->
+    <!-- =============================================================== -->
 
-    <!-- ===================================================== -->
-    <!-- Application Bootstrapper                              -->
-    <!-- ===================================================== -->
     <script
         type="module"
-        src="./js/app.js">
-    </script>
-
+        src="./js/app.js"
+    ></script>
 </body>
-</html> 
+</html>

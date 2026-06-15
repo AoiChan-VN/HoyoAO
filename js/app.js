@@ -283,12 +283,34 @@ class Application {
      */
 
     #loadInitialSkybox() {
-        const currentIndex =
+        const currentIndex = 
             stateManager.getCurrentIndex();
 
-        const imageSet =
+        const repositorySize = 
+            skyboxRepository.getAll().length;
+
+        if (repositorySize === 0) {
+            throw new Error(
+                '[Application] No skybox data available.'
+            );
+        }
+
+        const safeIndex =
+        
+            Math.min(
+                Math.max(currentIndex, 0),
+                repositorySize - 1
+            );
+
+        if (safeIndex !== currentIndex) {
+            stateManager.setCurrentIndex(
+                safeIndex
+            );
+        }
+
+        const imageSet = 
             skyboxRepository.getByIndex(
-                currentIndex
+                safeIndex
             );
 
         stateManager.setCurrentImageSet(
@@ -297,7 +319,7 @@ class Application {
 
         stateManager.resetRotation();
     }
-
+    
     #showNextSkybox() {
         const currentIndex =
             stateManager.getCurrentIndex();

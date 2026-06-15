@@ -1,0 +1,462 @@
+=== config.js ===
+export const APP_CONFIG = Object.freeze({
+    APPLICATION: Object.freeze({
+        NAME: 'Vanilla Skybox Platform',
+        VERSION: '1.0.0'
+    }),
+
+    SKYBOX: Object.freeze({
+        ROTATION_SENSITIVITY_MOUSE: 0.15,
+        ROTATION_SENSITIVITY_TOUCH: 0.18,
+
+        MIN_PITCH_DEGREE: -85,
+        MAX_PITCH_DEGREE: 85,
+
+        INITIAL_YAW: 0,
+        INITIAL_PITCH: 0,
+
+        PERSPECTIVE_PX: 1200,
+
+        CUBE_SIZE_PX: 2000,
+
+        TRANSITION_DURATION_MS: 120,
+
+        WILL_CHANGE_PROPERTY: 'transform'
+    }),
+
+    INPUT: Object.freeze({
+        MOUSE_BUTTON_PRIMARY: 0,
+
+        TOUCH_MIN_POINTS: 1,
+
+        PASSIVE_EVENT_OPTIONS: Object.freeze({
+            passive: true
+        }),
+
+        ACTIVE_EVENT_OPTIONS: Object.freeze({
+            passive: false
+        })
+    }),
+
+    EVENTS: Object.freeze({
+        SKYBOX_ROTATION_REQUESTED: 'skybox.rotation.requested',
+
+        SKYBOX_ROTATION_UPDATED: 'skybox.rotation.updated',
+
+        SKYBOX_IMAGE_CHANGED: 'skybox.image.changed',
+
+        OVERLAY_ACTION_TRIGGERED: 'overlay.action.triggered',
+
+        OVERLAY_NEXT_SKYBOX_REQUESTED: 'overlay.next.skybox.requested',
+
+        OVERLAY_PREVIOUS_SKYBOX_REQUESTED: 'overlay.previous.skybox.requested',
+
+        OVERLAY_RESET_VIEW_REQUESTED: 'overlay.reset.view.requested',
+        
+        NAVIGATION_REQUESTED: 'navigation.requested',
+
+        APPLICATION_ERROR: 'application.error'
+    }),
+
+    STORAGE: Object.freeze({
+        CURRENT_SKYBOX_INDEX: 'skybox_current_index'
+    }),
+
+    REPOSITORY: Object.freeze({
+        SKYBOX_IMAGE_LIMIT: 100
+    })
+});  
+
+```
+=== event-bus.js ===
+
+export class EventBus {
+    #eventRegistry;
+
+    constructor() {
+        this.#eventRegistry = new Map();
+    }
+
+    /**
+     * Subscribe to an event
+     * @param {string} eventName
+     * @param {Function} listener
+     * @returns {Function} unsubscribe callback
+     */
+    subscribe(eventName, listener) {
+        if (typeof eventName !== 'string' || eventName.trim().length === 0) {
+            throw new TypeError(
+                '[EventBus] Invalid event name supplied.'
+            );
+        }
+
+        if (typeof listener !== 'function') {
+            throw new TypeError(
+                `[EventBus] Listener for "${eventName}" must be a function.`
+            );
+        }
+
+        if (!this.#eventRegistry.has(eventName)) {
+            this.#eventRegistry.set(eventName, new Set());
+        }
+
+        const listeners = this.#eventRegistry.get(eventName);
+
+        listeners.add(listener);
+
+        return () => {
+            this.unsubscribe(eventName, listener);
+        };
+    }
+
+    /**
+     * Remove specific listener
+     * @param {string} eventName
+     * @param {Function} listener
+     */
+    unsubscribe(eventName, listener) {
+        const listeners = this.#eventRegistry.get(eventName);
+
+        if (!listeners) {
+            return;
+        }
+
+        listeners.delete(listener);
+
+        if (listeners.size === 0) {
+            this.#eventRegistry.delete(eventName);
+        }
+    }
+
+    /**
+     * Publish event with payload
+     * @param {string} eventName
+     * @param {*} payload
+     */
+    publish(eventName, payload = null) {
+        if (typeof eventName !== 'string' || eventName.trim().length === 0) {
+            throw new TypeError(
+                '[EventBus] Invalid event name supplied.'
+            );
+        }
+
+        const listeners = this.#eventRegistry.get(eventName);
+
+        if (!listeners || listeners.size === 0) {
+            return;
+        }
+
+        const snapshot = [...listeners];
+
+        for (const listener of snapshot) {
+            try {
+                listener(payload);
+            } catch (error) {
+                console.error(
+                    `[EventBus] Listener execution failed for event "${eventName}".`,
+                    error
+                );
+            }
+        }
+    }
+
+    /**
+     * Remove all listeners from one event
+     * @param {string} eventName
+     */
+    clearEvent(eventName) {
+        if (
+            typeof eventName === 'string' &&
+            this.#eventRegistry.has(eventName)
+        ) {
+            this.#eventRegistry.delete(eventName);
+        }
+    }
+
+    /**
+     * Remove all listeners from all events
+     */
+    clearAll() {
+        this.#eventRegistry.clear();
+    }
+
+    /**
+     * Check if event exists
+     * @param {string} eventName
+     * @returns {boolean}
+     */
+    hasEvent(eventName) {
+        return this.#eventRegistry.has(eventName);
+    }
+
+    /**
+     * Count listeners for event
+     * @param {string} eventName
+     * @returns {number}
+     */
+    listenerCount(eventName) {
+        const listeners = this.#eventRegistry.get(eventName);
+
+        return listeners ? listeners.size : 0;
+    }
+
+    /**
+     * Debug information
+     * @returns {Object}
+     */
+    getDiagnostics() {
+        const diagnostics = {};
+
+        for (const [eventName, listeners] of this.#eventRegistry.entries()) {
+            diagnostics[eventName] = listeners.size;
+        }
+
+        return Object.freeze({
+            totalEvents: this.#eventRegistry.size,
+            events: diagnostics
+        });
+    }
+}
+
+/**
+ * Singleton instance
+ * Entire application must use this instance
+ */
+export const eventBus = new EventBus(); 
+
+
+```
+
+=== state-manager.js ===
+
+import { APP_CONFIG } from './config.js';
+import { eventBus } from './event-bus.js';
+
+class StateManager {
+    #state;
+
+    constructor() {
+        this.#state = {
+            skybox: {
+                yaw: APP_CONFIG.SKYBOX.INITIAL_YAW,
+                pitch: APP_CONFIG.SKYBOX.INITIAL_PITCH,
+                currentIndex: 0,
+                currentImageSet: null
+            }
+        };
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Internal Helpers
+     * ------------------------------------------------------------------------
+     */
+
+    #deepClone(value) {
+        return structuredClone(value);
+    }
+
+    #emitStateUpdate() {
+        eventBus.publish(
+            APP_CONFIG.EVENTS.SKYBOX_ROTATION_UPDATED,
+            this.getSkyboxState()
+        );
+    }
+
+    #validateNumber(value, fieldName) {
+        if (!Number.isFinite(value)) {
+            throw new TypeError(
+                `[StateManager] "${fieldName}" must be a finite number.`
+            );
+        }
+    }
+
+    #clampPitch(pitch) {
+        return Math.max(
+            APP_CONFIG.SKYBOX.MIN_PITCH_DEGREE,
+            Math.min(
+                APP_CONFIG.SKYBOX.MAX_PITCH_DEGREE,
+                pitch
+            )
+        );
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Read APIs
+     * ------------------------------------------------------------------------
+     */
+
+    getState() {
+        return this.#deepClone(this.#state);
+    }
+
+    getSkyboxState() {
+        return this.#deepClone(this.#state.skybox);
+    }
+
+    getYaw() {
+        return this.#state.skybox.yaw;
+    }
+
+    getPitch() {
+        return this.#state.skybox.pitch;
+    }
+
+    getCurrentIndex() {
+        return this.#state.skybox.currentIndex;
+    }
+
+    getCurrentImageSet() {
+        return this.#deepClone(
+            this.#state.skybox.currentImageSet
+        );
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Rotation APIs
+     * ------------------------------------------------------------------------
+     */
+
+    setRotation(yaw, pitch) {
+        this.#validateNumber(yaw, 'yaw');
+        this.#validateNumber(pitch, 'pitch');
+
+        this.#state.skybox.yaw = yaw;
+        this.#state.skybox.pitch = this.#clampPitch(pitch);
+
+        this.#emitStateUpdate();
+    }
+
+    updateRotation(deltaYaw, deltaPitch) {
+        this.#validateNumber(deltaYaw, 'deltaYaw');
+        this.#validateNumber(deltaPitch, 'deltaPitch');
+
+        const nextYaw =
+            this.#state.skybox.yaw + deltaYaw;
+
+        const nextPitch =
+            this.#state.skybox.pitch + deltaPitch;
+
+        this.#state.skybox.yaw = nextYaw;
+        this.#state.skybox.pitch =
+            this.#clampPitch(nextPitch);
+
+        this.#emitStateUpdate();
+    }
+
+    resetRotation() {
+        this.#state.skybox.yaw =
+            APP_CONFIG.SKYBOX.INITIAL_YAW;
+
+        this.#state.skybox.pitch =
+            APP_CONFIG.SKYBOX.INITIAL_PITCH;
+
+        this.#emitStateUpdate();
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Skybox Index APIs
+     * ------------------------------------------------------------------------
+     */
+
+    setCurrentIndex(index) {
+        if (
+            !Number.isInteger(index) ||
+            index < 0
+        ) {
+            throw new RangeError(
+                '[StateManager] Invalid skybox index.'
+            );
+        }
+
+        this.#state.skybox.currentIndex = index;
+
+        try {
+            localStorage.setItem(
+                APP_CONFIG.STORAGE.CURRENT_SKYBOX_INDEX,
+                String(index)
+            );
+        } catch (error) {
+            console.warn(
+                '[StateManager] Failed to persist skybox index.',
+                error
+            );
+        }
+    }
+
+    restoreCurrentIndex() {
+        try {
+            const storedValue = localStorage.getItem(
+                APP_CONFIG.STORAGE.CURRENT_SKYBOX_INDEX
+            );
+
+            if (storedValue === null) {
+                return;
+            }
+
+            const parsedValue =
+                Number.parseInt(storedValue, 10);
+
+            if (
+                Number.isInteger(parsedValue) &&
+                parsedValue >= 0
+            ) {
+                this.#state.skybox.currentIndex =
+                    parsedValue;
+            }
+        } catch (error) {
+            console.warn(
+                '[StateManager] Failed to restore skybox index.',
+                error
+            );
+        }
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Skybox Image APIs
+     * ------------------------------------------------------------------------
+     */
+
+    setCurrentImageSet(imageSet) {
+        if (
+            imageSet === null ||
+            typeof imageSet !== 'object'
+        ) {
+            throw new TypeError(
+                '[StateManager] Invalid image set.'
+            );
+        }
+
+        this.#state.skybox.currentImageSet =
+            this.#deepClone(imageSet);
+
+        eventBus.publish(
+            APP_CONFIG.EVENTS.SKYBOX_IMAGE_CHANGED,
+            this.getCurrentImageSet()
+        );
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Diagnostics
+     * ------------------------------------------------------------------------
+     */
+
+    getDiagnostics() {
+        return Object.freeze({
+            yaw: this.#state.skybox.yaw,
+            pitch: this.#state.skybox.pitch,
+            currentIndex:
+                this.#state.skybox.currentIndex,
+            hasImageSet:
+                this.#state.skybox.currentImageSet !== null
+        });
+    }
+}
+
+export const stateManager = new StateManager(); 
+```

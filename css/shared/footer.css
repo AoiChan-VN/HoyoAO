@@ -1,178 +1,55 @@
-/* ========================================================= */
-/* FOOTER ROOT                                               */
-/* ========================================================= */
+/**
+ * ============================================================================
+ * File: css/shared/footer.css
+ * Purpose: Shared Footer Styling
+ * Domain: Shared
+ * ============================================================================
+ */
 
-#footer-root {
+.shared-footer {
     position: relative;
 
-    width: 100%;
-
-    z-index: var(--z-content);
-}
-
-/* ========================================================= */
-/* FOOTER CONTAINER                                          */
-/* ========================================================= */
-
-.app-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: var(--space-4);
-
-    width: 100%;
-    min-height: var(--footer-min-height);
+    z-index: var(--z-base);
 
     padding:
-        var(--space-5)
+        var(--space-8)
         var(--space-6);
 
-    background-color: rgba(0, 0, 0, 0.85);
+    text-align: center;
 
     border-top:
-        1px solid rgba(255, 255, 255, 0.08);
+        var(--border-width-thin)
+        solid
+        var(--border-color);
+
+    background:
+        rgba(0, 0, 0, 0.4);
+
+    backdrop-filter: blur(10px);
 }
 
-/* ========================================================= */
-/* FOOTER LEFT                                               */
-/* ========================================================= */
-
-.app-footer__left {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-}
-
-.app-footer__title {
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
-
-    color: var(--color-white);
-}
-
-.app-footer__copyright {
+.shared-footer__copyright {
     font-size: var(--font-size-sm);
 
-    color: var(--color-gray-400);
+    color: var(--text-muted);
 }
 
-/* ========================================================= */
-/* FOOTER RIGHT                                              */
-/* ========================================================= */
+.shared-footer__links {
+    margin-top: var(--space-3);
 
-.app-footer__right {
     display: flex;
-    align-items: center;
-    gap: var(--space-4);
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
 }
 
-/* ========================================================= */
-/* FOOTER LINKS                                              */
-/* ========================================================= */
-
-.app-footer__link {
-    display: inline-flex;
-    align-items: center;
-
-    min-height: 44px;
-
-    color: var(--color-gray-300);
-
-    font-size: var(--font-size-sm);
+.shared-footer__link {
+    color: var(--text-secondary);
 
     transition:
-        color var(--transition-fast),
-        opacity var(--transition-fast);
+        color var(--transition-fast);
 }
 
-.app-footer__link:hover {
-    color: var(--color-white);
-}
-
-/* ========================================================= */
-/* FOOTER SEPARATOR                                          */
-/* ========================================================= */
-
-.app-footer__separator {
-    width: 1px;
-    height: 16px;
-
-    background-color:
-        rgba(255, 255, 255, 0.15);
-}
-
-/* ========================================================= */
-/* FOOTER BADGE                                              */
-/* ========================================================= */
-
-.app-footer__badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    min-height: 32px;
-
-    padding-inline: var(--space-3);
-
-    border-radius: var(--radius-full);
-
-    background-color:
-        rgba(255, 255, 255, 0.08);
-
-    color: var(--color-gray-200);
-
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-
-    white-space: nowrap;
-}
-
-/* ========================================================= */
-/* ACCESSIBILITY                                             */
-/* ========================================================= */
-
-.app-footer a:focus-visible {
-    outline:
-        var(--focus-outline-width)
-        solid
-        var(--focus-outline-color);
-
-    outline-offset: 2px;
-}
-
-/* ========================================================= */
-/* MOBILE                                                    */
-/* ========================================================= */
-
-@media (max-width: 768px) {
-
-    .app-footer {
-        flex-direction: column;
-        align-items: flex-start;
-
-        padding:
-            var(--space-5)
-            var(--space-4);
-    }
-
-    .app-footer__right {
-        flex-wrap: wrap;
-        gap: var(--space-3);
-    }
-
-    .app-footer__separator {
-        display: none;
-    }
-}
-
-/* ========================================================= */
-/* REDUCED MOTION                                            */
-/* ========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-
-    .app-footer__link {
-        transition: none;
-    }
+.shared-footer__link:hover {
+    color: var(--text-primary);
 } 

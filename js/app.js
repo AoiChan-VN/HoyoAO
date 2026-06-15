@@ -201,26 +201,25 @@ class Application {
                 }
             );
 
-        window.addEventListener(
-            'error',
+        this.#windowErrorHandler =
             (event) => {
                 eventBus.publish(
                     APP_CONFIG.EVENTS
-                        .APPLICATION_ERROR,
+                    .APPLICATION_ERROR,
                     {
-                        source: 'window.error',
-                        error: event.error
+                        source:
+                            'window.error',
+                        error:
+                            event.error
                     }
                 );
-            }
-        );
+            };
 
-        window.addEventListener(
-            'unhandledrejection',
+        this.#windowUnhandledRejectionHandler =
             (event) => {
                 eventBus.publish(
                     APP_CONFIG.EVENTS
-                        .APPLICATION_ERROR,
+                    .APPLICATION_ERROR,
                     {
                         source:
                             'window.unhandledrejection',
@@ -228,111 +227,118 @@ class Application {
                             event.reason
                     }
                 );
-            }
+            };
+
+        window.addEventListener(
+            'error',
+            this.#windowErrorHandler
         );
-    }
 
-    /**
-     * ------------------------------------------------------------------------
-     * Rotation
-     * ------------------------------------------------------------------------
-     */
-
-    #handleRotationRequested(
-        payload
-    ) {
-        if (
-            payload === null ||
-            typeof payload !== 'object'
-        ) {
-            return;
-        }
-
-        const {
-            deltaYaw,
-            deltaPitch
-        } = payload;
-
-        if (
-            !Number.isFinite(deltaYaw) ||
-            !Number.isFinite(deltaPitch)
-        ) {
-            return;
-        }
-
-        stateManager.updateRotation(
-            deltaYaw,
-            deltaPitch
+        window.addEventListener(
+            'unhandledrejection',
+            this.#windowUnhandledRejectionHandler
         );
-    }
 
-    /**
-     * ------------------------------------------------------------------------
-     * State Restore
-     * ------------------------------------------------------------------------
-     */
-
-    #restoreState() {
-        stateManager.restoreCurrentIndex();
-    }
-
-    /**
-     * ------------------------------------------------------------------------
-     * Skybox Loading
-     * ------------------------------------------------------------------------
-     */
-
-    #loadInitialSkybox() {
-        const currentIndex = 
-            stateManager.getCurrentIndex();
-
-        const repositorySize = 
-            skyboxRepository.getAll().length;
-
-        if (repositorySize === 0) {
-            throw new Error(
-                '[Application] No skybox data available.'
-            );
-        }
-
-        const safeIndex =
+        /**
+        * ------------------------------------------------------------------------
+        * Rotation
+        * ------------------------------------------------------------------------
+        */
         
-            Math.min(
-                Math.max(currentIndex, 0),
-                repositorySize - 1
-            );
+        #handleRotationRequested(
+            payload
+        ) {
+            if (
+                payload === null ||
+                typeof payload !== 'object'
+            ) {
+                return;
+            }
 
-        if (safeIndex !== currentIndex) {
-            stateManager.setCurrentIndex(
-                safeIndex
+            const {
+                deltaYaw,
+                deltaPitch
+            } = payload;
+
+            if (
+                !Number.isFinite(deltaYaw) ||
+                !Number.isFinite(deltaPitch)
+            ) {
+                return;
+            }
+
+            stateManager.updateRotation(
+                deltaYaw,
+                deltaPitch
             );
         }
 
-        const imageSet = 
-            skyboxRepository.getByIndex(
-                safeIndex
+        /**
+        * ------------------------------------------------------------------------
+        * State Restore
+        * ------------------------------------------------------------------------
+        */
+
+        #restoreState() {
+            stateManager.restoreCurrentIndex();
+        }
+
+        /**
+        * ------------------------------------------------------------------------
+        * Skybox Loading
+        * ------------------------------------------------------------------------
+        */
+
+        #loadInitialSkybox() {
+            const currentIndex = 
+                stateManager.getCurrentIndex();
+
+            const repositorySize = 
+                skyboxRepository.getAll().length;
+
+            if (repositorySize === 0) {
+                throw new Error(
+                    '[Application] No skybox data available.'
+                );
+            }
+
+            const safeIndex =
+                Math.min(
+                    Math.max(currentIndex, 0),
+                    repositorySize - 1
+                );
+
+            if (safeIndex !== currentIndex) {
+                stateManager.setCurrentIndex(
+                    safeIndex
+                );
+            }
+
+            const imageSet = 
+                skyboxRepository.getByIndex(
+                    safeIndex
+                );
+
+            stateManager.setCurrentImageSet(
+                imageSet
             );
 
-        stateManager.setCurrentImageSet(
-            imageSet
-        );
-
-        stateManager.resetRotation();
-    }
+            stateManager.resetRotation();
+        }
     
-    #showNextSkybox() {
-        const currentIndex =
-            stateManager.getCurrentIndex();
+        #showNextSkybox() {
+            const currentIndex =
+                stateManager.getCurrentIndex();
 
-        const nextIndex =
-            skyboxRepository.getNextIndex(
-                currentIndex
-            );
+            const nextIndex =
+                skyboxRepository.getNextIndex(
+                    currentIndex
+                );
 
-        const imageSet =
-            skyboxRepository.getByIndex(
-                nextIndex
-            );
+            const imageSet =
+                skyboxRepository.getByIndex(
+                    nextIndex
+                ); /* tiếp tục cách 4 ô cho những hàng dưới */
 
         stateManager.setCurrentIndex(
             nextIndex

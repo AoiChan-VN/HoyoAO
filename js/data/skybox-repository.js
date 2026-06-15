@@ -210,20 +210,20 @@ class SkyboxRepository {
 
         this.addMany([
             {
-                front: './assets/skybox/sky-01/front.jpg',
-                back: './assets/skybox/sky-01/back.jpg',
-                left: './assets/skybox/sky-01/left.jpg',
-                right: './assets/skybox/sky-01/right.jpg',
-                top: './assets/skybox/sky-01/top.jpg',
-                bottom: './assets/skybox/sky-01/bottom.jpg'
+                front: './assets/skybox/sky-01/front.webp',
+                back: './assets/skybox/sky-01/back.webp',
+                left: './assets/skybox/sky-01/left.webp',
+                right: './assets/skybox/sky-01/right.webp',
+                top: './assets/skybox/sky-01/top.webp',
+                bottom: './assets/skybox/sky-01/bottom.webp'
             },
             {
-                front: './assets/skybox/sky-02/front.jpg',
-                back: './assets/skybox/sky-02/back.jpg',
-                left: './assets/skybox/sky-02/left.jpg',
-                right: './assets/skybox/sky-02/right.jpg',
-                top: './assets/skybox/sky-02/top.jpg',
-                bottom: './assets/skybox/sky-02/bottom.jpg'
+                front: './assets/skybox/sky-02/front.webp',
+                back: './assets/skybox/sky-02/back.webp',
+                left: './assets/skybox/sky-02/left.webp',
+                right: './assets/skybox/sky-02/right.webp',
+                top: './assets/skybox/sky-02/top.webp',
+                bottom: './assets/skybox/sky-02/bottom.webp'
             }
         ]);
     }

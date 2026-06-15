@@ -23,7 +23,7 @@ import { NavigationHandler } from './shared/navigation-handler.js';
 class Application {
     #viewer;
     #overlay;
-    
+
     #mouseInput;
     #touchInput;
 
@@ -35,9 +35,12 @@ class Application {
     #unsubscribeReset;
     #unsubscribeError;
 
+    #windowErrorHandler;
+    #windowUnhandledRejectionHandler;
+
     initialize() {
         try {
-            const skyboxRoot = 
+            const skyboxRoot =
                 document.getElementById(
                     'home-skybox-root'
                 );
@@ -205,7 +208,7 @@ class Application {
             (event) => {
                 eventBus.publish(
                     APP_CONFIG.EVENTS
-                    .APPLICATION_ERROR,
+                        .APPLICATION_ERROR,
                     {
                         source:
                             'window.error',
@@ -219,7 +222,7 @@ class Application {
             (event) => {
                 eventBus.publish(
                     APP_CONFIG.EVENTS
-                    .APPLICATION_ERROR,
+                        .APPLICATION_ERROR,
                     {
                         source:
                             'window.unhandledrejection',
@@ -238,207 +241,264 @@ class Application {
             'unhandledrejection',
             this.#windowUnhandledRejectionHandler
         );
+    }
 
-        /**
-        * ------------------------------------------------------------------------
-        * Rotation
-        * ------------------------------------------------------------------------
-        */
-        
-        #handleRotationRequested(
-            payload
+    /**
+     * ------------------------------------------------------------------------
+     * Rotation
+     * ------------------------------------------------------------------------
+     */
+
+    #handleRotationRequested(
+        payload
+    ) {
+        if (
+            payload === null ||
+            typeof payload !== 'object'
         ) {
-            if (
-                payload === null ||
-                typeof payload !== 'object'
-            ) {
-                return;
-            }
+            return;
+        }
 
-            const {
-                deltaYaw,
-                deltaPitch
-            } = payload;
+        const {
+            deltaYaw,
+            deltaPitch
+        } = payload;
 
-            if (
-                !Number.isFinite(deltaYaw) ||
-                !Number.isFinite(deltaPitch)
-            ) {
-                return;
-            }
+        if (
+            !Number.isFinite(deltaYaw) ||
+            !Number.isFinite(deltaPitch)
+        ) {
+            return;
+        }
 
-            stateManager.updateRotation(
-                deltaYaw,
-                deltaPitch
+        stateManager.updateRotation(
+            deltaYaw,
+            deltaPitch
+        );
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * State Restore
+     * ------------------------------------------------------------------------
+     */
+
+    #restoreState() {
+        stateManager.restoreCurrentIndex();
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Skybox Loading
+     * ------------------------------------------------------------------------
+     */
+
+    #loadInitialSkybox() {
+        const currentIndex =
+            stateManager.getCurrentIndex();
+
+        const repositorySize =
+            skyboxRepository.getAll().length;
+
+        if (repositorySize === 0) {
+            throw new Error(
+                '[Application] No skybox data available.'
             );
         }
 
-        /**
-        * ------------------------------------------------------------------------
-        * State Restore
-        * ------------------------------------------------------------------------
-        */
-
-        #restoreState() {
-            stateManager.restoreCurrentIndex();
-        }
-
-        /**
-        * ------------------------------------------------------------------------
-        * Skybox Loading
-        * ------------------------------------------------------------------------
-        */
-
-        #loadInitialSkybox() {
-            const currentIndex = 
-                stateManager.getCurrentIndex();
-
-            const repositorySize = 
-                skyboxRepository.getAll().length;
-
-            if (repositorySize === 0) {
-                throw new Error(
-                    '[Application] No skybox data available.'
-                );
-            }
-
-            const safeIndex =
-                Math.min(
-                    Math.max(currentIndex, 0),
-                    repositorySize - 1
-                );
-
-            if (safeIndex !== currentIndex) {
-                stateManager.setCurrentIndex(
-                    safeIndex
-                );
-            }
-
-            const imageSet = 
-                skyboxRepository.getByIndex(
-                    safeIndex
-                );
-
-            stateManager.setCurrentImageSet(
-                imageSet
+        const safeIndex =
+            Math.min(
+                Math.max(
+                    currentIndex,
+                    0
+                ),
+                repositorySize - 1
             );
 
-            stateManager.resetRotation();
-        }
-    
-        #showNextSkybox() {
-            const currentIndex =
-                stateManager.getCurrentIndex();
-
-            const nextIndex =
-                skyboxRepository.getNextIndex(
-                    currentIndex
-                );
-
-            const imageSet =
-                skyboxRepository.getByIndex(
-                    nextIndex
-                ); 
-
+        if (
+            safeIndex !== currentIndex
+        ) {
             stateManager.setCurrentIndex(
+                safeIndex
+            );
+        }
+
+        const imageSet =
+            skyboxRepository.getByIndex(
+                safeIndex
+            );
+
+        stateManager.setCurrentImageSet(
+            imageSet
+        );
+
+        stateManager.resetRotation();
+    }
+
+    #showNextSkybox() {
+        const currentIndex =
+            stateManager.getCurrentIndex();
+
+        const nextIndex =
+            skyboxRepository.getNextIndex(
+                currentIndex
+            );
+
+        const imageSet =
+            skyboxRepository.getByIndex(
                 nextIndex
             );
 
-            stateManager.setCurrentImageSet(
-                imageSet
+        stateManager.setCurrentIndex(
+            nextIndex
+        );
+
+        stateManager.setCurrentImageSet(
+            imageSet
+        );
+    }
+
+    #showPreviousSkybox() {
+        const currentIndex =
+            stateManager.getCurrentIndex();
+
+        const previousIndex =
+            skyboxRepository.getPreviousIndex(
+                currentIndex
             );
-        }
-        
-        #showPreviousSkybox() {
-            const currentIndex =
-                stateManager.getCurrentIndex();
 
-            const previousIndex =
-                skyboxRepository.getPreviousIndex(
-                    currentIndex
-                );
-
-            const imageSet =
-                skyboxRepository.getByIndex(
-                    previousIndex
-                );
-
-            stateManager.setCurrentIndex(
+        const imageSet =
+            skyboxRepository.getByIndex(
                 previousIndex
             );
 
-            stateManager.setCurrentImageSet(
-                imageSet
-            );
-        }
+        stateManager.setCurrentIndex(
+            previousIndex
+        );
 
-        /**
-        * ------------------------------------------------------------------------
-        * Fatal Error
-        * ------------------------------------------------------------------------
-        */
-
-        #handleFatalError(error) {
-            console.error(
-                '[Application Fatal Error]',
-                error
-            );
-
-            document.body.innerHTML =
-                `
-                <div style="
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                min-height:100vh;
-                padding:24px;
-                text-align:center;
-                font-family:sans-serif;">
-                <div>
-                <h1> Application Initialization Failed </h1>
-                <p> Please check browser console. </p>
-                </div>
-                </div>
-                `;
-        }
-
-        /**
-        * ------------------------------------------------------------------------
-        * Diagnostics
-        * ------------------------------------------------------------------------
-        */
-
-        getDiagnostics() {
-            return Object.freeze({
-                state:
-                    stateManager.getDiagnostics(),
-                repository:
-                    skyboxRepository.getDiagnostics(),
-                viewer:
-                    this.#viewer?.getDiagnostics?.(),
-                overlay:
-                    this.#overlay?.getDiagnostics?.(),
-                mouse:
-                    this.#mouseInput?.getDiagnostics?.(),
-                touch:
-                    this.#touchInput?.getDiagnostics?.(),
-                navigation:
-                    this.#navigation?.getDiagnostics?.()
-            });
-        }
+        stateManager.setCurrentImageSet(
+            imageSet
+        );
     }
 
-    const application = 
+    /**
+     * ------------------------------------------------------------------------
+     * Cleanup
+     * ------------------------------------------------------------------------
+     */
+
+    destroy() {
+        this.#unsubscribeRotation?.();
+        this.#unsubscribeNext?.();
+        this.#unsubscribePrevious?.();
+        this.#unsubscribeReset?.();
+        this.#unsubscribeError?.();
+
+        if (
+            this.#windowErrorHandler
+        ) {
+            window.removeEventListener(
+                'error',
+                this.#windowErrorHandler
+            );
+        }
+
+        if (
+            this.#windowUnhandledRejectionHandler
+        ) {
+            window.removeEventListener(
+                'unhandledrejection',
+                this.#windowUnhandledRejectionHandler
+            );
+        }
+
+        this.#mouseInput?.destroy?.();
+        this.#touchInput?.destroy?.();
+        this.#navigation?.destroy?.();
+        this.#viewer?.destroy?.();
+        this.#overlay?.destroy?.();
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Fatal Error
+     * ------------------------------------------------------------------------
+     */
+
+    #handleFatalError(error) {
+        console.error(
+            '[Application Fatal Error]',
+            error
+        );
+
+        document.body.innerHTML =
+            `
+            <div
+                style="
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    min-height:100vh;
+                    padding:24px;
+                    text-align:center;
+                    font-family:sans-serif;
+                "
+            >
+                <div>
+                    <h1>
+                        Application Initialization Failed
+                    </h1>
+                    <p>
+                        Please check browser console.
+                    </p>
+                </div>
+            </div>
+            `;
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Diagnostics
+     * ------------------------------------------------------------------------
+     */
+
+    getDiagnostics() {
+        return Object.freeze({
+            state:
+                stateManager.getDiagnostics(),
+
+            repository:
+                skyboxRepository.getDiagnostics(),
+
+            viewer:
+                this.#viewer?.getDiagnostics?.(),
+
+            overlay:
+                this.#overlay?.getDiagnostics?.(),
+
+            mouse:
+                this.#mouseInput?.getDiagnostics?.(),
+
+            touch:
+                this.#touchInput?.getDiagnostics?.(),
+
+            navigation:
+                this.#navigation?.getDiagnostics?.()
+        });
+    }
+}
+
+const application =
     new Application();
 
-    document.addEventListener(
-        'DOMContentLoaded',
+document.addEventListener(
+    'DOMContentLoaded',
     () => {
         application.initialize();
     },
-{
-    once: true
-}
+    {
+        once: true
+    }
 );
 
 export { application }; 

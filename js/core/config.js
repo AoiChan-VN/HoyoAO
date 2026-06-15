@@ -54,6 +54,12 @@ export const APP_CONFIG = Object.freeze({
 
         OVERLAY_ACTION_TRIGGERED: 'overlay.action.triggered',
 
+        OVERLAY_NEXT_SKYBOX_REQUESTED: 'overlay.next.skybox.requested',
+
+        OVERLAY_PREVIOUS_SKYBOX_REQUESTED: 'overlay.previous.skybox.requested',
+
+        OVERLAY_RESET_VIEW_REQUESTED: 'overlay.reset.view.requested',
+        
         NAVIGATION_REQUESTED: 'navigation.requested',
 
         APPLICATION_ERROR: 'application.error'

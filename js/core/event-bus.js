@@ -1,249 +1,161 @@
 /**
- * ==========================================================
- * Event Bus
+ * ============================================================================
  * File: js/core/event-bus.js
- * ==========================================================
+ * Purpose: Global Event Bus (Mediator Pattern)
+ * Domain: Shared Core Infrastructure
+ * ============================================================================
  */
 
 export class EventBus {
-
-    #listeners;
+    #eventRegistry;
 
     constructor() {
-        this.#listeners = new Map();
+        this.#eventRegistry = new Map();
     }
 
     /**
-     * ======================================================
-     * Subscribe
-     * ======================================================
-     *
+     * Subscribe to an event
      * @param {string} eventName
-     * @param {Function} callback
-     *
-     * @returns {Function}
+     * @param {Function} listener
+     * @returns {Function} unsubscribe callback
      */
-    subscribe(eventName, callback) {
-
-        this.#validateEventName(eventName);
-        this.#validateCallback(callback);
-
-        if (!this.#listeners.has(eventName)) {
-            this.#listeners.set(eventName, new Set());
+    subscribe(eventName, listener) {
+        if (typeof eventName !== 'string' || eventName.trim().length === 0) {
+            throw new TypeError(
+                '[EventBus] Invalid event name supplied.'
+            );
         }
 
-        const listeners = this.#listeners.get(eventName);
+        if (typeof listener !== 'function') {
+            throw new TypeError(
+                `[EventBus] Listener for "${eventName}" must be a function.`
+            );
+        }
 
-        listeners.add(callback);
+        if (!this.#eventRegistry.has(eventName)) {
+            this.#eventRegistry.set(eventName, new Set());
+        }
+
+        const listeners = this.#eventRegistry.get(eventName);
+
+        listeners.add(listener);
 
         return () => {
-            this.unsubscribe(eventName, callback);
+            this.unsubscribe(eventName, listener);
         };
     }
 
     /**
-     * ======================================================
-     * Subscribe Once
-     * ======================================================
-     *
+     * Remove specific listener
      * @param {string} eventName
-     * @param {Function} callback
-     *
-     * @returns {Function}
+     * @param {Function} listener
      */
-    subscribeOnce(eventName, callback) {
+    unsubscribe(eventName, listener) {
+        const listeners = this.#eventRegistry.get(eventName);
 
-        this.#validateEventName(eventName);
-        this.#validateCallback(callback);
-
-        const wrapper = (payload) => {
-
-            try {
-                callback(payload);
-            } finally {
-                this.unsubscribe(eventName, wrapper);
-            }
-        };
-
-        return this.subscribe(eventName, wrapper);
-    }
-
-    /**
-     * ======================================================
-     * Publish
-     * ======================================================
-     *
-     * @param {string} eventName
-     * @param {*} payload
-     *
-     * @returns {number}
-     */
-    publish(eventName, payload = null) {
-
-        this.#validateEventName(eventName);
-
-        const listeners = this.#listeners.get(eventName);
-
-        if (!listeners || listeners.size === 0) {
-            return 0;
+        if (!listeners) {
+            return;
         }
 
-        const snapshot = Array.from(listeners);
+        listeners.delete(listener);
 
-        let executedCount = 0;
+        if (listeners.size === 0) {
+            this.#eventRegistry.delete(eventName);
+        }
+    }
+
+    /**
+     * Publish event with payload
+     * @param {string} eventName
+     * @param {*} payload
+     */
+    publish(eventName, payload = null) {
+        if (typeof eventName !== 'string' || eventName.trim().length === 0) {
+            throw new TypeError(
+                '[EventBus] Invalid event name supplied.'
+            );
+        }
+
+        const listeners = this.#eventRegistry.get(eventName);
+
+        if (!listeners || listeners.size === 0) {
+            return;
+        }
+
+        const snapshot = [...listeners];
 
         for (const listener of snapshot) {
-
             try {
-
                 listener(payload);
-
-                executedCount++;
-
             } catch (error) {
-
                 console.error(
                     `[EventBus] Listener execution failed for event "${eventName}".`,
                     error
                 );
             }
         }
-
-        return executedCount;
     }
 
     /**
-     * ======================================================
-     * Unsubscribe
-     * ======================================================
-     *
-     * @param {string} eventName
-     * @param {Function} callback
-     *
-     * @returns {boolean}
-     */
-    unsubscribe(eventName, callback) {
-
-        this.#validateEventName(eventName);
-        this.#validateCallback(callback);
-
-        const listeners = this.#listeners.get(eventName);
-
-        if (!listeners) {
-            return false;
-        }
-
-        const removed = listeners.delete(callback);
-
-        if (listeners.size === 0) {
-            this.#listeners.delete(eventName);
-        }
-
-        return removed;
-    }
-
-    /**
-     * ======================================================
-     * Remove All Listeners
-     * ======================================================
-     *
+     * Remove all listeners from one event
      * @param {string} eventName
      */
     clearEvent(eventName) {
-
-        this.#validateEventName(eventName);
-
-        this.#listeners.delete(eventName);
+        if (
+            typeof eventName === 'string' &&
+            this.#eventRegistry.has(eventName)
+        ) {
+            this.#eventRegistry.delete(eventName);
+        }
     }
 
     /**
-     * ======================================================
-     * Remove Entire Bus
-     * ======================================================
+     * Remove all listeners from all events
      */
     clearAll() {
-        this.#listeners.clear();
+        this.#eventRegistry.clear();
     }
 
     /**
-     * ======================================================
-     * Has Event
-     * ======================================================
-     *
+     * Check if event exists
      * @param {string} eventName
-     *
      * @returns {boolean}
      */
     hasEvent(eventName) {
-
-        this.#validateEventName(eventName);
-
-        return this.#listeners.has(eventName);
+        return this.#eventRegistry.has(eventName);
     }
 
     /**
-     * ======================================================
-     * Listener Count
-     * ======================================================
-     *
+     * Count listeners for event
      * @param {string} eventName
-     *
      * @returns {number}
      */
-    getListenerCount(eventName) {
-
-        this.#validateEventName(eventName);
-
-        const listeners = this.#listeners.get(eventName);
+    listenerCount(eventName) {
+        const listeners = this.#eventRegistry.get(eventName);
 
         return listeners ? listeners.size : 0;
     }
 
     /**
-     * ======================================================
-     * Registered Events
-     * ======================================================
-     *
-     * @returns {string[]}
+     * Debug information
+     * @returns {Object}
      */
-    getRegisteredEvents() {
-        return Array.from(this.#listeners.keys());
-    }
+    getDiagnostics() {
+        const diagnostics = {};
 
-    /**
-     * ======================================================
-     * Validation
-     * ======================================================
-     */
-
-    #validateEventName(eventName) {
-
-        if (
-            typeof eventName !== "string" ||
-            eventName.trim().length === 0
-        ) {
-            throw new TypeError(
-                "EventBus: eventName must be a non-empty string."
-            );
+        for (const [eventName, listeners] of this.#eventRegistry.entries()) {
+            diagnostics[eventName] = listeners.size;
         }
-    }
 
-    #validateCallback(callback) {
-
-        if (typeof callback !== "function") {
-            throw new TypeError(
-                "EventBus: callback must be a function."
-            );
-        }
+        return Object.freeze({
+            totalEvents: this.#eventRegistry.size,
+            events: diagnostics
+        });
     }
 }
 
 /**
- * ==========================================================
- * Global Singleton
- * ==========================================================
+ * Singleton instance
+ * Entire application must use this instance
  */
-
-export const eventBus = Object.freeze(
-    new EventBus()
-); 
+export const eventBus = new EventBus(); 

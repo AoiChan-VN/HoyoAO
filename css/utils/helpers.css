@@ -1,0 +1,74 @@
+/**
+ * ============================================================================
+ * File: css/utils/helpers.css
+ * Purpose: Utility Classes
+ * Domain: Shared
+ * ============================================================================
+ */
+
+.u-hidden {
+    display: none !important;
+}
+
+.u-block {
+    display: block !important;
+}
+
+.u-inline-block {
+    display: inline-block !important;
+}
+
+.u-flex {
+    display: flex !important;
+}
+
+.u-flex-center {
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.u-text-center {
+    text-align: center !important;
+}
+
+.u-w-100 {
+    width: 100% !important;
+}
+
+.u-h-100 {
+    height: 100% !important;
+}
+
+.u-relative {
+    position: relative !important;
+}
+
+.u-absolute {
+    position: absolute !important;
+}
+
+.u-overflow-hidden {
+    overflow: hidden !important;
+}
+
+.u-no-select {
+    user-select: none !important;
+}
+
+.u-pointer {
+    cursor: pointer !important;
+}
+
+@media (max-width: 768px) {
+    .u-hidden-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .u-hidden-desktop {
+        display: none !important;
+    }
+} 

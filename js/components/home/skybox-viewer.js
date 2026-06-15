@@ -230,6 +230,7 @@ export class SkyboxViewer {
 
         this.#cubeElement.style.transform =
             `
+            translate(-50%, -50%)
             rotateX(${this.#pitch}deg)
             rotateY(${this.#yaw}deg)
             `;

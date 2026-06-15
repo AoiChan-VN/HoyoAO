@@ -1,401 +1,178 @@
-/* ========================================================= */
-/* SKYBOX ROOT                                               */
-/* ========================================================= */
+/**
+ * ============================================================================
+ * File: css/pages/home/skybox-cube.css
+ * Purpose: Skybox 3D Cube Rendering
+ * Domain: Home
+ * ============================================================================
+ */
 
-.home-domain .skybox {
-    position: relative;
+/* -------------------------------------------------------------------------- */
+/* Skybox Cube                                                                */
+/* -------------------------------------------------------------------------- */
 
-    width: var(--skybox-size-desktop);
-    height: var(--skybox-size-desktop);
-
-    transform-style: preserve-3d;
-
-    will-change: transform;
-
-    user-select: none;
-
-    -webkit-user-select: none;
-
-    cursor: grab;
-}
-
-.home-domain .skybox:active {
-    cursor: grabbing;
-}
-
-/* ========================================================= */
-/* GPU ACCELERATION                                          */
-/* ========================================================= */
-
-.home-domain .skybox,
-.home-domain .skybox-face {
-    transform-style: preserve-3d;
-
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-
-    will-change: transform;
-}
-
-/* ========================================================= */
-/* SKYBOX FACE BASE                                          */
-/* ========================================================= */
-
-.home-domain .skybox-face {
-    position: absolute;
-
-    inset: 0;
-
-    overflow: hidden;
-
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-
-    image-rendering: auto;
-
-    border: 0;
-}
-
-/* ========================================================= */
-/* IMAGE ELEMENT                                             */
-/* ========================================================= */
-
-.home-domain .skybox-face img {
-    width: 100%;
-    height: 100%;
-
-    object-fit: cover;
-
-    pointer-events: none;
-
-    user-select: none;
-}
-
-/* ========================================================= */
-/* CUBE GEOMETRY                                             */
-/* ========================================================= */
-
-.home-domain .skybox-face--front {
-    transform:
-        rotateY(0deg)
-        translateZ(
-            calc(
-                var(--skybox-size-desktop) / 2
-            )
-        );
-}
-
-.home-domain .skybox-face--back {
-    transform:
-        rotateY(180deg)
-        translateZ(
-            calc(
-                var(--skybox-size-desktop) / 2
-            )
-        );
-}
-
-.home-domain .skybox-face--right {
-    transform:
-        rotateY(90deg)
-        translateZ(
-            calc(
-                var(--skybox-size-desktop) / 2
-            )
-        );
-}
-
-.home-domain .skybox-face--left {
-    transform:
-        rotateY(-90deg)
-        translateZ(
-            calc(
-                var(--skybox-size-desktop) / 2
-            )
-        );
-}
-
-.home-domain .skybox-face--top {
-    transform:
-        rotateX(90deg)
-        translateZ(
-            calc(
-                var(--skybox-size-desktop) / 2
-            )
-        );
-}
-
-.home-domain .skybox-face--bottom {
-    transform:
-        rotateX(-90deg)
-        translateZ(
-            calc(
-                var(--skybox-size-desktop) / 2
-            )
-        );
-}
-
-/* ========================================================= */
-/* LOADING STATE                                             */
-/* ========================================================= */
-
-.home-domain .skybox--loading {
-    opacity: 0.5;
-
-    pointer-events: none;
-}
-
-.home-domain .skybox--loading::after {
-    content: "";
-
+.home-domain .home-domain__skybox-cube {
     position: absolute;
 
     top: 50%;
     left: 50%;
 
-    width: 48px;
-    height: 48px;
+    width: var(--skybox-cube-size);
+    height: var(--skybox-cube-size);
 
-    margin-left: -24px;
-    margin-top: -24px;
+    transform-style: preserve-3d;
 
-    border-radius: 50%;
+    will-change: transform;
 
-    border:
-        3px solid
-        rgba(255, 255, 255, 0.15);
+    transform-origin: center center;
 
-    border-top-color:
-        rgba(255, 255, 255, 0.9);
-
-    animation:
-        skybox-loading-spin
-        1s linear infinite;
+    translate: -50% -50%;
 }
 
-/* ========================================================= */
-/* ERROR STATE                                               */
-/* ========================================================= */
+/* -------------------------------------------------------------------------- */
+/* Shared Face                                                                */
+/* -------------------------------------------------------------------------- */
 
-.home-domain .skybox--error {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: var(--radius-lg);
-
-    background:
-        rgba(220, 38, 38, 0.15);
-
-    color: var(--color-white);
-}
-
-.home-domain .skybox-error-message {
-    text-align: center;
-
-    padding: var(--space-6);
-
-    font-size: var(--font-size-md);
-}
-
-/* ========================================================= */
-/* DEBUG AXIS                                                */
-/* ========================================================= */
-
-.home-domain .skybox-debug-axis {
+.home-domain .home-domain__skybox-face {
     position: absolute;
 
+    width: var(--skybox-face-size);
+    height: var(--skybox-face-size);
+
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+
+    backface-visibility: hidden;
+
+    image-rendering: auto;
+
+    transform-style: preserve-3d;
+
+    will-change: transform;
+
+    overflow: hidden;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Cube Geometry                                                              */
+/* -------------------------------------------------------------------------- */
+
+.home-domain .home-domain__skybox-face--front {
+    transform:
+        rotateY(0deg)
+        translateZ(
+            calc(
+                var(--skybox-cube-size) / 2
+            )
+        );
+}
+
+.home-domain .home-domain__skybox-face--back {
+    transform:
+        rotateY(180deg)
+        translateZ(
+            calc(
+                var(--skybox-cube-size) / 2
+            )
+        );
+}
+
+.home-domain .home-domain__skybox-face--right {
+    transform:
+        rotateY(90deg)
+        translateZ(
+            calc(
+                var(--skybox-cube-size) / 2
+            )
+        );
+}
+
+.home-domain .home-domain__skybox-face--left {
+    transform:
+        rotateY(-90deg)
+        translateZ(
+            calc(
+                var(--skybox-cube-size) / 2
+            )
+        );
+}
+
+.home-domain .home-domain__skybox-face--top {
+    transform:
+        rotateX(90deg)
+        translateZ(
+            calc(
+                var(--skybox-cube-size) / 2
+            )
+        );
+}
+
+.home-domain .home-domain__skybox-face--bottom {
+    transform:
+        rotateX(-90deg)
+        translateZ(
+            calc(
+                var(--skybox-cube-size) / 2
+            )
+        );
+}
+
+/* -------------------------------------------------------------------------- */
+/* GPU Optimization                                                           */
+/* -------------------------------------------------------------------------- */
+
+.home-domain #home-skybox-root,
+.home-domain .home-domain__skybox-cube,
+.home-domain .home-domain__skybox-face {
+    transform-style: preserve-3d;
+
+    backface-visibility: hidden;
+
+    -webkit-backface-visibility: hidden;
+
+    perspective-origin: center center;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Visual Enhancement                                                         */
+/* -------------------------------------------------------------------------- */
+
+.home-domain .home-domain__skybox-face::after {
+    content: '';
+
+    position: absolute;
     inset: 0;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(255, 255, 255, 0.02),
+            rgba(0, 0, 0, 0.08)
+        );
 
     pointer-events: none;
 }
 
-.home-domain .skybox-debug-axis--hidden {
-    display: none;
-}
+/* -------------------------------------------------------------------------- */
+/* High Density Displays                                                      */
+/* -------------------------------------------------------------------------- */
 
-/* ========================================================= */
-/* TABLET                                                    */
-/* ========================================================= */
-
-@media (max-width: 1024px) {
-
-    .home-domain .skybox {
-        width: var(--skybox-size-tablet);
-        height: var(--skybox-size-tablet);
-    }
-
-    .home-domain .skybox-face--front,
-    .home-domain .skybox-face--back,
-    .home-domain .skybox-face--right,
-    .home-domain .skybox-face--left,
-    .home-domain .skybox-face--top,
-    .home-domain .skybox-face--bottom {
-        transform-origin: center center;
-    }
-
-    .home-domain .skybox-face--front {
-        transform:
-            rotateY(0deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-tablet) / 2
-                )
-            );
-    }
-
-    .home-domain .skybox-face--back {
-        transform:
-            rotateY(180deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-tablet) / 2
-                )
-            );
-    }
-
-    .home-domain .skybox-face--right {
-        transform:
-            rotateY(90deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-tablet) / 2
-                )
-            );
-    }
-
-    .home-domain .skybox-face--left {
-        transform:
-            rotateY(-90deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-tablet) / 2
-                )
-            );
-    }
-
-    .home-domain .skybox-face--top {
-        transform:
-            rotateX(90deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-tablet) / 2
-                )
-            );
-    }
-
-    .home-domain .skybox-face--bottom {
-        transform:
-            rotateX(-90deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-tablet) / 2
-                )
-            );
+@media (min-resolution: 2dppx) {
+    .home-domain .home-domain__skybox-face {
+        image-rendering: auto;
     }
 }
 
-/* ========================================================= */
-/* MOBILE                                                    */
-/* ========================================================= */
-
-@media (max-width: 768px) {
-
-    .home-domain .skybox {
-        width: var(--skybox-size-mobile);
-        height: var(--skybox-size-mobile);
-    }
-
-    .home-domain .skybox-face--front {
-        transform:
-            rotateY(0deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-mobile) / 2
-                )
-            );
-    }
-
-    .home-domain .skybox-face--back {
-        transform:
-            rotateY(180deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-mobile) / 2
-                )
-            );
-    }
-
-    .home-domain .skybox-face--right {
-        transform:
-            rotateY(90deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-mobile) / 2
-                )
-            );
-    }
-
-    .home-domain .skybox-face--left {
-        transform:
-            rotateY(-90deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-mobile) / 2
-                )
-            );
-    }
-
-    .home-domain .skybox-face--top {
-        transform:
-            rotateX(90deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-mobile) / 2
-                )
-            );
-    }
-
-    .home-domain .skybox-face--bottom {
-        transform:
-            rotateX(-90deg)
-            translateZ(
-                calc(
-                    var(--skybox-size-mobile) / 2
-                )
-            );
-    }
-}
-
-/* ========================================================= */
-/* LOADING ANIMATION                                         */
-/* ========================================================= */
-
-@keyframes skybox-loading-spin {
-
-    from {
-        transform:
-            rotate(0deg);
-    }
-
-    to {
-        transform:
-            rotate(360deg);
-    }
-}
-
-/* ========================================================= */
-/* REDUCED MOTION                                            */
-/* ========================================================= */
+/* -------------------------------------------------------------------------- */
+/* Reduced Motion                                                             */
+/* -------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
-
-    .home-domain .skybox {
-        transition: none;
+    .home-domain .home-domain__skybox-cube {
+        transition: none !important;
     }
 
-    .home-domain .skybox--loading::after {
-        animation: none;
+    .home-domain .home-domain__skybox-face {
+        transition: none !important;
     }
 } 

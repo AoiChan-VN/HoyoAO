@@ -1,0 +1,401 @@
+/* ========================================================= */
+/* SKYBOX ROOT                                               */
+/* ========================================================= */
+
+.home-domain .skybox {
+    position: relative;
+
+    width: var(--skybox-size-desktop);
+    height: var(--skybox-size-desktop);
+
+    transform-style: preserve-3d;
+
+    will-change: transform;
+
+    user-select: none;
+
+    -webkit-user-select: none;
+
+    cursor: grab;
+}
+
+.home-domain .skybox:active {
+    cursor: grabbing;
+}
+
+/* ========================================================= */
+/* GPU ACCELERATION                                          */
+/* ========================================================= */
+
+.home-domain .skybox,
+.home-domain .skybox-face {
+    transform-style: preserve-3d;
+
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+
+    will-change: transform;
+}
+
+/* ========================================================= */
+/* SKYBOX FACE BASE                                          */
+/* ========================================================= */
+
+.home-domain .skybox-face {
+    position: absolute;
+
+    inset: 0;
+
+    overflow: hidden;
+
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    image-rendering: auto;
+
+    border: 0;
+}
+
+/* ========================================================= */
+/* IMAGE ELEMENT                                             */
+/* ========================================================= */
+
+.home-domain .skybox-face img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    pointer-events: none;
+
+    user-select: none;
+}
+
+/* ========================================================= */
+/* CUBE GEOMETRY                                             */
+/* ========================================================= */
+
+.home-domain .skybox-face--front {
+    transform:
+        rotateY(0deg)
+        translateZ(
+            calc(
+                var(--skybox-size-desktop) / 2
+            )
+        );
+}
+
+.home-domain .skybox-face--back {
+    transform:
+        rotateY(180deg)
+        translateZ(
+            calc(
+                var(--skybox-size-desktop) / 2
+            )
+        );
+}
+
+.home-domain .skybox-face--right {
+    transform:
+        rotateY(90deg)
+        translateZ(
+            calc(
+                var(--skybox-size-desktop) / 2
+            )
+        );
+}
+
+.home-domain .skybox-face--left {
+    transform:
+        rotateY(-90deg)
+        translateZ(
+            calc(
+                var(--skybox-size-desktop) / 2
+            )
+        );
+}
+
+.home-domain .skybox-face--top {
+    transform:
+        rotateX(90deg)
+        translateZ(
+            calc(
+                var(--skybox-size-desktop) / 2
+            )
+        );
+}
+
+.home-domain .skybox-face--bottom {
+    transform:
+        rotateX(-90deg)
+        translateZ(
+            calc(
+                var(--skybox-size-desktop) / 2
+            )
+        );
+}
+
+/* ========================================================= */
+/* LOADING STATE                                             */
+/* ========================================================= */
+
+.home-domain .skybox--loading {
+    opacity: 0.5;
+
+    pointer-events: none;
+}
+
+.home-domain .skybox--loading::after {
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 48px;
+    height: 48px;
+
+    margin-left: -24px;
+    margin-top: -24px;
+
+    border-radius: 50%;
+
+    border:
+        3px solid
+        rgba(255, 255, 255, 0.15);
+
+    border-top-color:
+        rgba(255, 255, 255, 0.9);
+
+    animation:
+        skybox-loading-spin
+        1s linear infinite;
+}
+
+/* ========================================================= */
+/* ERROR STATE                                               */
+/* ========================================================= */
+
+.home-domain .skybox--error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--radius-lg);
+
+    background:
+        rgba(220, 38, 38, 0.15);
+
+    color: var(--color-white);
+}
+
+.home-domain .skybox-error-message {
+    text-align: center;
+
+    padding: var(--space-6);
+
+    font-size: var(--font-size-md);
+}
+
+/* ========================================================= */
+/* DEBUG AXIS                                                */
+/* ========================================================= */
+
+.home-domain .skybox-debug-axis {
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+}
+
+.home-domain .skybox-debug-axis--hidden {
+    display: none;
+}
+
+/* ========================================================= */
+/* TABLET                                                    */
+/* ========================================================= */
+
+@media (max-width: 1024px) {
+
+    .home-domain .skybox {
+        width: var(--skybox-size-tablet);
+        height: var(--skybox-size-tablet);
+    }
+
+    .home-domain .skybox-face--front,
+    .home-domain .skybox-face--back,
+    .home-domain .skybox-face--right,
+    .home-domain .skybox-face--left,
+    .home-domain .skybox-face--top,
+    .home-domain .skybox-face--bottom {
+        transform-origin: center center;
+    }
+
+    .home-domain .skybox-face--front {
+        transform:
+            rotateY(0deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-tablet) / 2
+                )
+            );
+    }
+
+    .home-domain .skybox-face--back {
+        transform:
+            rotateY(180deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-tablet) / 2
+                )
+            );
+    }
+
+    .home-domain .skybox-face--right {
+        transform:
+            rotateY(90deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-tablet) / 2
+                )
+            );
+    }
+
+    .home-domain .skybox-face--left {
+        transform:
+            rotateY(-90deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-tablet) / 2
+                )
+            );
+    }
+
+    .home-domain .skybox-face--top {
+        transform:
+            rotateX(90deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-tablet) / 2
+                )
+            );
+    }
+
+    .home-domain .skybox-face--bottom {
+        transform:
+            rotateX(-90deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-tablet) / 2
+                )
+            );
+    }
+}
+
+/* ========================================================= */
+/* MOBILE                                                    */
+/* ========================================================= */
+
+@media (max-width: 768px) {
+
+    .home-domain .skybox {
+        width: var(--skybox-size-mobile);
+        height: var(--skybox-size-mobile);
+    }
+
+    .home-domain .skybox-face--front {
+        transform:
+            rotateY(0deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-mobile) / 2
+                )
+            );
+    }
+
+    .home-domain .skybox-face--back {
+        transform:
+            rotateY(180deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-mobile) / 2
+                )
+            );
+    }
+
+    .home-domain .skybox-face--right {
+        transform:
+            rotateY(90deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-mobile) / 2
+                )
+            );
+    }
+
+    .home-domain .skybox-face--left {
+        transform:
+            rotateY(-90deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-mobile) / 2
+                )
+            );
+    }
+
+    .home-domain .skybox-face--top {
+        transform:
+            rotateX(90deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-mobile) / 2
+                )
+            );
+    }
+
+    .home-domain .skybox-face--bottom {
+        transform:
+            rotateX(-90deg)
+            translateZ(
+                calc(
+                    var(--skybox-size-mobile) / 2
+                )
+            );
+    }
+}
+
+/* ========================================================= */
+/* LOADING ANIMATION                                         */
+/* ========================================================= */
+
+@keyframes skybox-loading-spin {
+
+    from {
+        transform:
+            rotate(0deg);
+    }
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+/* ========================================================= */
+/* REDUCED MOTION                                            */
+/* ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .home-domain .skybox {
+        transition: none;
+    }
+
+    .home-domain .skybox--loading::after {
+        animation: none;
+    }
+} 

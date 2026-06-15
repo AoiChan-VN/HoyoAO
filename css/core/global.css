@@ -1,35 +1,43 @@
-/* ========================================================= */
-/* ROOT DOCUMENT                                             */
-/* ========================================================= */
+/**
+ * ============================================================================
+ * File: css/core/global.css
+ * Purpose: Global Base Styles
+ * Domain: Shared
+ * ============================================================================
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Root Document                                                              */
+/* -------------------------------------------------------------------------- */
 
 html {
-    min-height: 100%;
-
-    background-color: var(--color-black);
+    background-color: var(--background-app);
+    color: var(--text-primary);
 }
 
-/* ========================================================= */
-/* BODY                                                      */
-/* ========================================================= */
-
 body {
+    min-width: 320px;
     min-height: 100vh;
+
+    background-color: var(--background-app);
+
+    color: var(--text-primary);
 
     font-family: var(--font-family-base);
     font-size: var(--font-size-md);
     font-weight: var(--font-weight-regular);
     line-height: var(--line-height-normal);
 
-    color: var(--color-white);
-
-    background-color: var(--color-black);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 
     overflow-x: hidden;
 }
 
-/* ========================================================= */
-/* TYPOGRAPHY                                                */
-/* ========================================================= */
+/* -------------------------------------------------------------------------- */
+/* Headings                                                                   */
+/* -------------------------------------------------------------------------- */
 
 h1,
 h2,
@@ -38,48 +46,46 @@ h4,
 h5,
 h6 {
     font-family: var(--font-family-heading);
+
+    font-weight: var(--font-weight-bold);
+
     line-height: var(--line-height-tight);
 
-    color: inherit;
+    color: var(--text-primary);
 }
 
 h1 {
-    font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-3xl);
 }
 
 h2 {
-    font-size: var(--font-size-3xl);
-    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-2xl);
 }
 
 h3 {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xl);
 }
 
 h4 {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-}
-
-h5 {
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-medium);
 }
 
+h5,
 h6 {
     font-size: var(--font-size-md);
-    font-weight: var(--font-weight-medium);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Paragraphs                                                                 */
+/* -------------------------------------------------------------------------- */
 
 p {
-    color: inherit;
+    color: var(--text-secondary);
 }
 
-/* ========================================================= */
-/* LINKS                                                     */
-/* ========================================================= */
+/* -------------------------------------------------------------------------- */
+/* Links                                                                      */
+/* -------------------------------------------------------------------------- */
 
 a {
     transition:
@@ -91,84 +97,57 @@ a:hover {
     opacity: 0.85;
 }
 
-/* ========================================================= */
-/* BUTTONS                                                   */
-/* ========================================================= */
+/* -------------------------------------------------------------------------- */
+/* Buttons                                                                    */
+/* -------------------------------------------------------------------------- */
 
 button {
     user-select: none;
-
-    transition:
-        opacity var(--transition-fast),
-        transform var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
 }
 
-button:hover {
-    opacity: 0.95;
+/* -------------------------------------------------------------------------- */
+/* Forms                                                                      */
+/* -------------------------------------------------------------------------- */
+
+input,
+textarea,
+select {
+    background: transparent;
+    outline: none;
 }
 
-button:active {
-    transform: scale(0.98);
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-muted);
 }
 
-/* ========================================================= */
-/* MEDIA                                                     */
-/* ========================================================= */
+/* -------------------------------------------------------------------------- */
+/* Images                                                                     */
+/* -------------------------------------------------------------------------- */
 
 img {
     user-select: none;
     -webkit-user-drag: none;
 }
 
-video {
-    max-width: 100%;
-}
-
-/* ========================================================= */
-/* FORM ELEMENTS                                             */
-/* ========================================================= */
-
-input,
-textarea,
-select {
-    width: 100%;
-}
-
-textarea {
-    min-height: 120px;
-}
-
-/* ========================================================= */
-/* ACCESSIBILITY FOCUS                                       */
-/* ========================================================= */
+/* -------------------------------------------------------------------------- */
+/* Accessibility                                                              */
+/* -------------------------------------------------------------------------- */
 
 :focus-visible {
-    outline:
-        var(--focus-outline-width)
-        solid
-        var(--focus-outline-color);
-
-    outline-offset: 2px;
+    outline-color: var(--color-primary);
 }
 
-/* ========================================================= */
-/* TEXT SELECTION                                            */
-/* ========================================================= */
-
-::selection {
-    color: var(--color-white);
-    background-color: rgba(37, 99, 235, 0.35);
-}
-
-/* ========================================================= */
-/* SCROLLBAR                                                 */
-/* ========================================================= */
+/* -------------------------------------------------------------------------- */
+/* Scrollbar                                                                  */
+/* -------------------------------------------------------------------------- */
 
 * {
     scrollbar-width: thin;
     scrollbar-color:
-        var(--color-gray-600)
-        var(--color-gray-900);
+        var(--color-gray-500)
+        var(--color-gray-800);
 }
 
 *::-webkit-scrollbar {
@@ -177,96 +156,59 @@ textarea {
 }
 
 *::-webkit-scrollbar-track {
-    background-color: var(--color-gray-900);
+    background: var(--color-gray-800);
 }
 
 *::-webkit-scrollbar-thumb {
-    background-color: var(--color-gray-600);
-
-    border-radius: var(--radius-full);
+    background: var(--color-gray-500);
+    border-radius: var(--radius-pill);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-gray-500);
+    background: var(--color-gray-400);
 }
 
-/* ========================================================= */
-/* ROOT APPLICATION NODES                                    */
-/* ========================================================= */
+/* -------------------------------------------------------------------------- */
+/* Selection                                                                  */
+/* -------------------------------------------------------------------------- */
 
-#navigation-root,
-#footer-root {
-    width: 100%;
+::selection {
+    color: var(--color-white);
+    background: rgba(96, 165, 250, 0.35);
 }
 
-#home-app {
-    width: 100%;
+/* -------------------------------------------------------------------------- */
+/* Utility Foundation                                                         */
+/* -------------------------------------------------------------------------- */
+
+[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
-main {
-    display: block;
+[aria-hidden="true"] {
+    pointer-events: none;
 }
 
-/* ========================================================= */
-/* CONTAINER UTILITY                                         */
-/* ========================================================= */
+/* -------------------------------------------------------------------------- */
+/* Rendering Optimization                                                     */
+/* -------------------------------------------------------------------------- */
 
-.container {
-    width: 100%;
-
-    max-width: var(--container-width-xl);
-
-    margin-inline: auto;
-
-    padding-inline: var(--space-4);
+.home-domain {
+    contain: layout style;
 }
 
-/* ========================================================= */
-/* SCREEN READER ONLY                                        */
-/* ========================================================= */
-
-.visually-hidden {
-    position: absolute;
-
-    width: 1px;
-    height: 1px;
-
-    margin: -1px;
-    padding: 0;
-
-    overflow: hidden;
-
-    border: 0;
-
-    white-space: nowrap;
-
-    clip: rect(0, 0, 0, 0);
-    clip-path: inset(50%);
+.home-domain * {
+    backface-visibility: hidden;
 }
 
-/* ========================================================= */
-/* SAFE AREA SUPPORT                                         */
-/* ========================================================= */
+/* -------------------------------------------------------------------------- */
+/* Safe Area                                                                  */
+/* -------------------------------------------------------------------------- */
 
 body {
     padding-top: var(--safe-area-top);
     padding-right: var(--safe-area-right);
     padding-bottom: var(--safe-area-bottom);
     padding-left: var(--safe-area-left);
-}
-
-/* ========================================================= */
-/* REDUCED MOTION                                            */
-/* ========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-
-    html {
-        scroll-behavior: auto;
-    }
-
-    button,
-    a {
-        transition: none;
-    }
 } 

@@ -1,335 +1,120 @@
 /**
- * ==========================================================
- * Touch Input Controller
+ * ============================================================================
  * File: js/controllers/touch-input.js
- * ==========================================================
+ * Purpose: Mobile Touch Input Controller
+ * Domain: Home (3D Skybox Experience)
+ * ============================================================================
  */
 
-import { CONFIG } from "../core/config.js";
-import { eventBus } from "../core/event-bus.js";
+import { APP_CONFIG } from '../core/config.js';
+import { eventBus } from '../core/event-bus.js';
 
 export class TouchInputController {
-
     #targetElement;
 
-    #isDragging;
-
-    #activeTouchId;
-
-    #startX;
-
-    #startY;
+    #isTouching;
 
     #lastX;
-
     #lastY;
 
+    #activeTouchIdentifier;
+
     #boundTouchStart;
-
     #boundTouchMove;
-
     #boundTouchEnd;
-
     #boundTouchCancel;
 
     constructor(targetElement) {
-
         if (!(targetElement instanceof HTMLElement)) {
             throw new TypeError(
-                "TouchInputController: targetElement must be a valid HTMLElement."
+                '[TouchInputController] targetElement must be a valid HTMLElement.'
             );
         }
 
         this.#targetElement = targetElement;
 
-        this.#isDragging = false;
-
-        this.#activeTouchId = null;
-
-        this.#startX = 0;
-        this.#startY = 0;
+        this.#isTouching = false;
 
         this.#lastX = 0;
         this.#lastY = 0;
 
-        this.#boundTouchStart =
-            this.#handleTouchStart.bind(this);
+        this.#activeTouchIdentifier = null;
 
-        this.#boundTouchMove =
-            this.#handleTouchMove.bind(this);
-
-        this.#boundTouchEnd =
-            this.#handleTouchEnd.bind(this);
-
-        this.#boundTouchCancel =
-            this.#handleTouchCancel.bind(this);
+        this.#boundTouchStart = this.#handleTouchStart.bind(this);
+        this.#boundTouchMove = this.#handleTouchMove.bind(this);
+        this.#boundTouchEnd = this.#handleTouchEnd.bind(this);
+        this.#boundTouchCancel = this.#handleTouchCancel.bind(this);
     }
 
     /**
-     * ======================================================
-     * Initialize
-     * ======================================================
+     * ------------------------------------------------------------------------
+     * Lifecycle
+     * ------------------------------------------------------------------------
      */
+
     initialize() {
-
         this.#targetElement.addEventListener(
-            "touchstart",
+            'touchstart',
             this.#boundTouchStart,
-            {
-                passive:
-                    CONFIG.INPUT.PASSIVE_EVENTS
-            }
+            APP_CONFIG.INPUT.PASSIVE_EVENT_OPTIONS
         );
 
         this.#targetElement.addEventListener(
-            "touchmove",
+            'touchmove',
             this.#boundTouchMove,
-            {
-                passive:
-                    CONFIG.INPUT.PASSIVE_EVENTS
-            }
+            APP_CONFIG.INPUT.ACTIVE_EVENT_OPTIONS
         );
 
         this.#targetElement.addEventListener(
-            "touchend",
+            'touchend',
             this.#boundTouchEnd,
-            {
-                passive:
-                    CONFIG.INPUT.PASSIVE_EVENTS
-            }
+            APP_CONFIG.INPUT.PASSIVE_EVENT_OPTIONS
         );
 
         this.#targetElement.addEventListener(
-            "touchcancel",
+            'touchcancel',
             this.#boundTouchCancel,
-            {
-                passive:
-                    CONFIG.INPUT.PASSIVE_EVENTS
-            }
+            APP_CONFIG.INPUT.PASSIVE_EVENT_OPTIONS
         );
     }
 
-    /**
-     * ======================================================
-     * Destroy
-     * ======================================================
-     */
     destroy() {
-
         this.#targetElement.removeEventListener(
-            "touchstart",
+            'touchstart',
             this.#boundTouchStart
         );
 
         this.#targetElement.removeEventListener(
-            "touchmove",
+            'touchmove',
             this.#boundTouchMove
         );
 
         this.#targetElement.removeEventListener(
-            "touchend",
+            'touchend',
             this.#boundTouchEnd
         );
 
         this.#targetElement.removeEventListener(
-            "touchcancel",
+            'touchcancel',
             this.#boundTouchCancel
         );
-
-        this.#reset();
     }
 
     /**
-     * ======================================================
-     * Touch Start
-     * ======================================================
+     * ------------------------------------------------------------------------
+     * Helpers
+     * ------------------------------------------------------------------------
      */
-    #handleTouchStart(event) {
 
-        if (
-            event.touches.length >
-            CONFIG.INPUT.MAX_TOUCH_POINTS
-        ) {
-            return;
+    #findTrackedTouch(touchList) {
+        if (this.#activeTouchIdentifier === null) {
+            return null;
         }
-
-        const touch = event.changedTouches[0];
-
-        if (!touch) {
-            return;
-        }
-
-        this.#isDragging = true;
-
-        this.#activeTouchId =
-            touch.identifier;
-
-        this.#startX = touch.clientX;
-        this.#startY = touch.clientY;
-
-        this.#lastX = touch.clientX;
-        this.#lastY = touch.clientY;
-
-        eventBus.publish(
-            CONFIG.EVENTS.INPUT_DRAG_STARTED,
-            {
-                source: "touch",
-
-                startX: touch.clientX,
-                startY: touch.clientY,
-
-                timestamp: performance.now()
-            }
-        );
-    }
-
-    /**
-     * ======================================================
-     * Touch Move
-     * ======================================================
-     */
-    #handleTouchMove(event) {
-
-        if (!this.#isDragging) {
-            return;
-        }
-
-        const touch =
-            this.#findActiveTouch(
-                event.changedTouches
-            );
-
-        if (!touch) {
-            return;
-        }
-
-        const deltaX =
-            touch.clientX - this.#lastX;
-
-        const deltaY =
-            touch.clientY - this.#lastY;
-
-        const totalDeltaX =
-            touch.clientX - this.#startX;
-
-        const totalDeltaY =
-            touch.clientY - this.#startY;
-
-        if (
-            Math.abs(deltaX) <
-                CONFIG.INPUT.MIN_DRAG_DISTANCE &&
-            Math.abs(deltaY) <
-                CONFIG.INPUT.MIN_DRAG_DISTANCE
-        ) {
-            return;
-        }
-
-        this.#lastX = touch.clientX;
-        this.#lastY = touch.clientY;
-
-        eventBus.publish(
-            CONFIG.EVENTS.INPUT_DRAG_MOVED,
-            {
-                source: "touch",
-
-                currentX: touch.clientX,
-                currentY: touch.clientY,
-
-                deltaX,
-                deltaY,
-
-                totalDeltaX,
-                totalDeltaY,
-
-                timestamp: performance.now()
-            }
-        );
-    }
-
-    /**
-     * ======================================================
-     * Touch End
-     * ======================================================
-     */
-    #handleTouchEnd(event) {
-
-        if (!this.#isDragging) {
-            return;
-        }
-
-        const touch =
-            this.#findActiveTouch(
-                event.changedTouches
-            );
-
-        if (!touch) {
-            return;
-        }
-
-        eventBus.publish(
-            CONFIG.EVENTS.INPUT_DRAG_ENDED,
-            {
-                source: "touch",
-
-                endX: touch.clientX,
-                endY: touch.clientY,
-
-                timestamp: performance.now()
-            }
-        );
-
-        this.#reset();
-    }
-
-    /**
-     * ======================================================
-     * Touch Cancel
-     * ======================================================
-     */
-    #handleTouchCancel(event) {
-
-        const touch =
-            this.#findActiveTouch(
-                event.changedTouches
-            );
-
-        if (!touch) {
-            return;
-        }
-
-        eventBus.publish(
-            CONFIG.EVENTS.INPUT_DRAG_ENDED,
-            {
-                source: "touch",
-
-                endX: touch.clientX,
-                endY: touch.clientY,
-
-                cancelled: true,
-
-                timestamp: performance.now()
-            }
-        );
-
-        this.#reset();
-    }
-
-    /**
-     * ======================================================
-     * Find Active Touch
-     * ======================================================
-     *
-     * @param {TouchList} touchList
-     *
-     * @returns {Touch|null}
-     */
-    #findActiveTouch(touchList) {
 
         for (const touch of touchList) {
-
             if (
                 touch.identifier ===
-                this.#activeTouchId
+                this.#activeTouchIdentifier
             ) {
                 return touch;
             }
@@ -338,21 +123,118 @@ export class TouchInputController {
         return null;
     }
 
-    /**
-     * ======================================================
-     * Reset Internal State
-     * ======================================================
-     */
-    #reset() {
+    #publishRotation(deltaYaw, deltaPitch) {
+        eventBus.publish(
+            APP_CONFIG.EVENTS.SKYBOX_ROTATION_REQUESTED,
+            {
+                deltaYaw,
+                deltaPitch,
+                source: 'touch'
+            }
+        );
+    }
 
-        this.#isDragging = false;
-
-        this.#activeTouchId = null;
-
-        this.#startX = 0;
-        this.#startY = 0;
+    #resetTracking() {
+        this.#isTouching = false;
 
         this.#lastX = 0;
         this.#lastY = 0;
+
+        this.#activeTouchIdentifier = null;
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Event Handlers
+     * ------------------------------------------------------------------------
+     */
+
+    #handleTouchStart(event) {
+        if (
+            event.touches.length <
+            APP_CONFIG.INPUT.TOUCH_MIN_POINTS
+        ) {
+            return;
+        }
+
+        const touch = event.touches[0];
+
+        this.#isTouching = true;
+
+        this.#activeTouchIdentifier =
+            touch.identifier;
+
+        this.#lastX = touch.clientX;
+        this.#lastY = touch.clientY;
+    }
+
+    #handleTouchMove(event) {
+        if (!this.#isTouching) {
+            return;
+        }
+
+        const trackedTouch =
+            this.#findTrackedTouch(
+                event.touches
+            );
+
+        if (!trackedTouch) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const deltaX =
+            trackedTouch.clientX - this.#lastX;
+
+        const deltaY =
+            trackedTouch.clientY - this.#lastY;
+
+        this.#lastX = trackedTouch.clientX;
+        this.#lastY = trackedTouch.clientY;
+
+        const deltaYaw =
+            deltaX *
+            APP_CONFIG.SKYBOX.ROTATION_SENSITIVITY_TOUCH;
+
+        const deltaPitch =
+            -deltaY *
+            APP_CONFIG.SKYBOX.ROTATION_SENSITIVITY_TOUCH;
+
+        this.#publishRotation(
+            deltaYaw,
+            deltaPitch
+        );
+    }
+
+    #handleTouchEnd(event) {
+        const trackedTouch =
+            this.#findTrackedTouch(
+                event.touches
+            );
+
+        if (!trackedTouch) {
+            this.#resetTracking();
+        }
+    }
+
+    #handleTouchCancel() {
+        this.#resetTracking();
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Diagnostics
+     * ------------------------------------------------------------------------
+     */
+
+    getDiagnostics() {
+        return Object.freeze({
+            isTouching: this.#isTouching,
+            activeTouchIdentifier:
+                this.#activeTouchIdentifier,
+            lastX: this.#lastX,
+            lastY: this.#lastY
+        });
     }
 } 

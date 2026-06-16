@@ -1,0 +1,616 @@
+/**
+ * @file      global.css
+ * @layer     core
+ * @domain    system-wide
+ * @version   1.0.0
+ *
+ * ╔═══════════════════════════════════════════════════════════════╗
+ * ║           BASE STYLING — TOÀN BỘ THẺ HTML HỆ THỐNG          ║
+ * ║                                                               ║
+ * ║  Tiêu thụ: design-tokens.css                                 ║
+ * ║  Phụ thuộc: reset.css (phải load trước)                     ║
+ * ║                                                               ║
+ * ║  Quy tắc: File này KHÔNG chứa class selector nào ngoài      ║
+ * ║  các utility cốt lõi ở §9. Tất cả đều là element selectors  ║
+ * ║  hoặc pseudo-class trên element — không domain-specific.     ║
+ * ╚═══════════════════════════════════════════════════════════════╝
+ *
+ * LOAD ORDER: reset.css → design-tokens.css → global.css
+ *
+ * PHẦN:
+ *   §1  Root & Body       — Màu nền, màu chữ, font mặc định
+ *   §2  Headings          — Thang kích thước tiêu đề h1–h6
+ *   §3  Body Text         — p, lead, blockquote, cite
+ *   §4  Links             — a states (default, hover, focus, visited)
+ *   §5  Lists             — ul, ol, li có style và không có style
+ *   §6  Code & Pre        — Inline code, code block
+ *   §7  Media             — img, figure, figcaption
+ *   §8  Forms             — Input, button, select base styles
+ *   §9  Dividers          — hr, separator
+ *  §10  Scrollbar         — Custom scrollbar (Webkit + Firefox)
+ *  §11  Selection         — ::selection highlight
+ *  §12  Print             — Print media optimization
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §1. ROOT & BODY
+ * ═══════════════════════════════════════════════════════════════════ */
+html {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-base);         /* 16px — không đổi */
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+
+  /* Tối ưu text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+}
+
+body {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+
+  /* Đảm bảo body chiếm toàn bộ viewport height tối thiểu */
+  min-height: 100dvh;         /* dvh: dynamic viewport height, tốt cho mobile */
+  min-height: 100vh;          /* Fallback cho browser cũ */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §2. HEADINGS
+ *
+ * Xây dựng lại thang tiêu đề từ design tokens.
+ * reset.css đã xóa UA defaults — đây là nơi thiết lập lại.
+ *
+ * Triết lý: Heading styles là SEMANTIC defaults — component CSS
+ * trong từng domain sẽ override khi cần bố cục riêng.
+ * ═══════════════════════════════════════════════════════════════════ */
+h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text-primary);
+}
+
+h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text-primary);
+}
+
+h3 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-primary);
+}
+
+h4 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-primary);
+}
+
+h5 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+h6 {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-wider);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §3. BODY TEXT
+ * ═══════════════════════════════════════════════════════════════════ */
+p {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  max-width: var(--layout-max-prose);       /* Giới hạn line length tự nhiên */
+}
+
+/* Lead paragraph — intro text lớn hơn */
+p.lead {
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-light);
+}
+
+/* Blockquote */
+blockquote {
+  border-left: var(--border-width-heavy) solid var(--color-accent-primary);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+  font-style: italic;
+  line-height: var(--line-height-relaxed);
+  padding-left: var(--space-6);
+  position: relative;
+}
+
+blockquote::before {
+  color: var(--color-accent-primary);
+  content: '\201C';           /* Dấu ngoặc mở " */
+  font-size: var(--font-size-5xl);
+  font-style: normal;
+  font-weight: var(--font-weight-black);
+  left: var(--space-2);
+  line-height: var(--line-height-none);
+  opacity: var(--opacity-30);
+  position: absolute;
+  top: var(--space-2);
+}
+
+blockquote cite {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-style: normal;
+  color: var(--color-text-muted);
+  margin-top: var(--space-3);
+}
+
+blockquote cite::before {
+  content: '— ';
+}
+
+/* Chú thích nhỏ */
+small {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: var(--line-height-snug);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §4. LINKS
+ *
+ * Thiết lập base link style — không gắn màu cứng để
+ * component CSS từng domain có thể override hoàn toàn.
+ * ═══════════════════════════════════════════════════════════════════ */
+a {
+  color: var(--color-text-accent);
+  text-decoration: none;
+  transition:
+    color            var(--duration-quick) var(--ease-out),
+    opacity          var(--duration-quick) var(--ease-out),
+    text-shadow      var(--duration-quick) var(--ease-out);
+}
+
+a:hover {
+  color: var(--color-accent-primary-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+a:active {
+  color: var(--color-accent-primary-active);
+  opacity: var(--opacity-80);
+}
+
+a:visited {
+  color: var(--color-accent-primary);
+}
+
+/* Link nằm trong paragraph — underline mặc định */
+p a,
+li a {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-text-accent) 40%, transparent);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+p a:hover,
+li a:hover {
+  text-decoration-color: var(--color-text-accent);
+}
+
+/* External link indicator */
+a[target="_blank"]::after {
+  content: '\2197';           /* ↗ */
+  display: inline-block;
+  font-size: 0.7em;
+  margin-left: 0.2em;
+  opacity: var(--opacity-60);
+  vertical-align: super;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §5. LISTS
+ *
+ * reset.css đã xóa list-style. Đây là nơi thiết lập lại các
+ * list có semantic (ul/ol trong content area).
+ *
+ * Prefix class .styled-list để tránh ảnh hưởng đến nav lists,
+ * breadcrumbs, và các UI lists không cần bullet/number.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* Styled list — dùng trong article content */
+ul.styled-list {
+  list-style: none;
+  padding-left: var(--space-4);
+}
+
+ul.styled-list > li {
+  color: var(--color-text-primary);
+  line-height: var(--line-height-relaxed);
+  padding-left: var(--space-6);
+  position: relative;
+}
+
+/* Custom bullet bằng pseudo-element */
+ul.styled-list > li::before {
+  background-color: var(--color-accent-primary);
+  border-radius: var(--radius-full);
+  content: '';
+  height: 6px;
+  left: var(--space-1);
+  position: absolute;
+  top: 0.65em;                /* Căn giữa với dòng đầu tiên */
+  width: 6px;
+}
+
+/* Ordered list */
+ol.styled-list {
+  counter-reset: styled-counter;
+  list-style: none;
+  padding-left: var(--space-4);
+}
+
+ol.styled-list > li {
+  color: var(--color-text-primary);
+  counter-increment: styled-counter;
+  line-height: var(--line-height-relaxed);
+  padding-left: var(--space-8);
+  position: relative;
+}
+
+ol.styled-list > li::before {
+  color: var(--color-accent-primary);
+  content: counter(styled-counter) '.';
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  left: var(--space-1);
+  position: absolute;
+  top: 0.1em;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §6. CODE & PRE
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* Inline code */
+code {
+  background-color: var(--color-bg-elevated);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  border-radius: var(--radius-xs);
+  color: var(--color-accent-primary-glow);
+  font-family: var(--font-family-mono);
+  font-size: 0.875em;           /* em — relative đến parent, không override global */
+  padding: 0.1em 0.4em;
+  white-space: nowrap;
+}
+
+/* Code block */
+pre {
+  background-color: var(--color-bg-subtle);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  border-left: var(--border-width-heavy) solid var(--color-accent-primary);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  overflow-x: auto;
+  padding: var(--space-5) var(--space-6);
+  -webkit-overflow-scrolling: touch;    /* Smooth scroll trên iOS */
+}
+
+/* Code trong pre: reset inline code styles */
+pre code {
+  background: none;
+  border: none;
+  border-radius: 0;
+  color: var(--color-text-primary);
+  font-size: inherit;
+  padding: 0;
+  white-space: pre;
+}
+
+/* Keyboard shortcut */
+kbd {
+  background-color: var(--color-bg-elevated);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  color: var(--color-text-primary);
+  display: inline-block;
+  font-family: var(--font-family-mono);
+  font-size: 0.8em;
+  line-height: 1;
+  padding: 0.2em 0.5em;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §7. MEDIA
+ * ═══════════════════════════════════════════════════════════════════ */
+img {
+  border-radius: var(--radius-sm);
+  display: block;
+  height: auto;
+  max-width: 100%;
+  object-fit: cover;
+}
+
+figure {
+  display: block;
+}
+
+figcaption {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-style: italic;
+  line-height: var(--line-height-snug);
+  margin-top: var(--space-2);
+  text-align: center;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §8. FORMS (Base Styles)
+ *
+ * reset.css xóa tất cả — đây là nơi xây dựng lại base styles.
+ * Component-level styles (navigation search, article filter)
+ * sẽ override trong các file CSS tương ứng.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* Base input */
+input,
+textarea,
+select {
+  background-color: var(--color-bg-elevated);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  display: block;
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-snug);
+  padding: var(--space-3) var(--space-4);
+  transition:
+    border-color  var(--duration-quick) var(--ease-out),
+    box-shadow    var(--duration-quick) var(--ease-out);
+  width: 100%;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+  outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Base button */
+button {
+  align-items: center;
+  background-color: var(--color-accent-primary);
+  border: var(--border-width-thin) solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-text-on-accent);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  gap: var(--space-2);
+  justify-content: center;
+  letter-spacing: var(--letter-spacing-wide);
+  line-height: var(--line-height-none);
+  padding: var(--space-3) var(--space-6);
+  transition:
+    background-color  var(--duration-quick)  var(--ease-out),
+    box-shadow        var(--duration-quick)  var(--ease-out),
+    opacity           var(--duration-quick)  var(--ease-out),
+    transform         var(--duration-fast)   var(--ease-out);
+  white-space: nowrap;
+  will-change: transform;
+}
+
+button:hover {
+  background-color: var(--color-accent-primary-hover);
+  box-shadow: var(--glow-nebula-sm);
+}
+
+button:active {
+  background-color: var(--color-accent-primary-active);
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+button:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  outline: none;
+}
+
+button[disabled] {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: var(--opacity-50);
+  pointer-events: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §9. DIVIDERS
+ * ═══════════════════════════════════════════════════════════════════ */
+hr {
+  border: none;
+  border-top: var(--border-width-thin) solid var(--color-border-subtle);
+  height: 0;
+  margin: var(--space-8) auto;
+  max-width: var(--layout-max-content);
+}
+
+/* Decorative divider với accent */
+hr.accent {
+  border-top-color: var(--color-accent-primary);
+  opacity: var(--opacity-40);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §10. SCROLLBAR
+ *
+ * Custom scrollbar cho giao diện tối.
+ * Firefox: scrollbar-width + scrollbar-color
+ * Webkit: ::-webkit-scrollbar series
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent-primary) var(--color-bg-elevated);
+}
+
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent-primary);
+  border-radius: var(--radius-full);
+  transition: background var(--duration-quick) var(--ease-out);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-primary-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--color-bg-subtle);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §11. SELECTION
+ *
+ * Màu selection highlight phù hợp với brand identity.
+ * ═══════════════════════════════════════════════════════════════════ */
+::selection {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  color: var(--color-text-primary);
+}
+
+::-moz-selection {
+  background-color: color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
+  color: var(--color-text-primary);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §12. PRINT
+ *
+ * Loại bỏ các yếu tố không cần thiết khi in.
+ * ═══════════════════════════════════════════════════════════════════ */
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #000 !important;
+    text-shadow: none !important;
+  }
+
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+
+  a[href]::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.8em;
+    font-style: italic;
+  }
+
+  /* Ẩn các thành phần không cần in */
+  nav,
+  footer,
+  button,
+  video,
+  canvas,
+  [data-3d-scene],
+  [data-3d-cube],
+  [data-overlay],
+  .no-print {
+    display: none !important;
+  }
+
+  /* Tránh page break bên trong các block quan trọng */
+  h1, h2, h3, h4, h5, h6,
+  blockquote,
+  pre,
+  img,
+  figure {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Heading không bị tách khỏi nội dung theo sau */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Tối ưu font cho in */
+  body {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+} 

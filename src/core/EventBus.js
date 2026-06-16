@@ -1,70 +1,168 @@
-/**
- * Cơ chế Pub/Sub trung tâm quản lý giao tiếp phi liên kết (Decoupled Communication)
- * Đảm bảo kiểm tra kiểu dữ liệu nghiêm ngặt và ngăn chặn rò rỉ bộ nhớ.
- */
 export class EventBus {
     constructor() {
-        this._listeners = new Map();
+        this._events = new Map();
+        this._destroyed = false;
     }
 
-    /**
-     * Đăng ký một hàm lắng nghe sự kiện
-     * @param {string} eventType 
-     * @param {Function} callback 
-     */
-    on(eventType, callback) {
-        if (typeof eventType !== "string") {
-            throw new TypeError("Kiểu sự kiện phải là chuỗi ký tự.");
-        }
-        if (typeof callback !== "function") {
-            throw new TypeError("Hàm callback phải là một cấu trúc thực thi Function.");
-        }
-
-        if (!this._listeners.has(eventType)) {
-            this._listeners.set(eventType, new Set());
-        }
-        this._listeners.get(eventType).add(callback);
-    }
-
-    /**
-     * Hủy đăng ký một hàm lắng nghe sự kiện
-     * @param {string} eventType 
-     * @param {Function} callback 
-     */
-    off(eventType, callback) {
-        if (!this._listeners.has(eventType)) return;
-        const callbacks = this._listeners.get(eventType);
-        callbacks.delete(callback);
-        if (callbacks.size === 0) {
-            this._listeners.delete(eventType);
+    _assertActive() {
+        if (this._destroyed) {
+            throw new Error('EventBus has been destroyed.');
         }
     }
 
-    /**
-     * Phát tán sự kiện đi khắp hệ thống dữ liệu ứng dụng
-     * @param {string} eventType 
-     * @param {any} data 
-     */
-    emit(eventType, data = null) {
-        if (!this._listeners.has(eventType)) return;
-        const callbacks = this._listeners.get(eventType);
-        for (const callback of callbacks) {
+    _assertEventName(eventName) {
+        if (
+            typeof eventName !== 'string' ||
+            eventName.trim().length === 0
+        ) {
+            throw new TypeError(
+                'Event name must be a non-empty string.'
+            );
+        }
+    }
+
+    subscribe(eventName, callback) {
+        this._assertActive();
+        this._assertEventName(eventName);
+
+        if (typeof callback !== 'function') {
+            throw new TypeError(
+                'Callback must be a function.'
+            );
+        }
+
+        let listeners = this._events.get(eventName);
+
+        if (!listeners) {
+            listeners = new Set();
+            this._events.set(eventName, listeners);
+        }
+
+        listeners.add(callback);
+
+        return () => {
+            this.unsubscribe(
+                eventName,
+                callback
+            );
+        };
+    }
+
+    subscribeOnce(eventName, callback) {
+        this._assertActive();
+        this._assertEventName(eventName);
+
+        if (typeof callback !== 'function') {
+            throw new TypeError(
+                'Callback must be a function.'
+            );
+        }
+
+        const wrapper = (payload) => {
+            this.unsubscribe(
+                eventName,
+                wrapper
+            );
+
+            callback(payload);
+        };
+
+        return this.subscribe(
+            eventName,
+            wrapper
+        );
+    }
+
+    unsubscribe(eventName, callback) {
+        this._assertEventName(eventName);
+
+        const listeners =
+            this._events.get(eventName);
+
+        if (!listeners) {
+            return false;
+        }
+
+        const deleted =
+            listeners.delete(callback);
+
+        if (listeners.size === 0) {
+            this._events.delete(eventName);
+        }
+
+        return deleted;
+    }
+
+    publish(eventName, payload = null) {
+        this._assertActive();
+        this._assertEventName(eventName);
+
+        const listeners =
+            this._events.get(eventName);
+
+        if (!listeners) {
+            return;
+        }
+
+        const snapshot =
+            Array.from(listeners);
+
+        for (let i = 0; i < snapshot.length; i++) {
+            const listener =
+                snapshot[i];
+
             try {
-                callback(data);
+                listener(payload);
             } catch (error) {
-                console.error(`Lỗi thực thi trong hàm callback của sự kiện [${eventType}]:`, error);
+                console.error(
+                    `[EventBus] Listener error for "${eventName}"`,
+                    error
+                );
             }
         }
     }
 
-    /**
-     * Purge toàn bộ bộ nhớ đăng ký sự kiện khi Module bị hủy
-     */
+    hasListeners(eventName) {
+        this._assertEventName(eventName);
+
+        const listeners =
+            this._events.get(eventName);
+
+        return Boolean(
+            listeners &&
+            listeners.size > 0
+        );
+    }
+
+    listenerCount(eventName) {
+        this._assertEventName(eventName);
+
+        const listeners =
+            this._events.get(eventName);
+
+        return listeners
+            ? listeners.size
+            : 0;
+    }
+
+    clear(eventName) {
+        this._assertActive();
+        this._assertEventName(eventName);
+
+        this._events.delete(eventName);
+    }
+
+    clearAll() {
+        this._assertActive();
+        this._events.clear();
+    }
+
     destroy() {
-        if (this._listeners) {
-            this._listeners.clear();
-            this._listeners = null;
+        if (this._destroyed) {
+            return;
         }
+
+        this._events.clear();
+        this._destroyed = true;
     }
 }
- 

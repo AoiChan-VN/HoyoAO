@@ -1,57 +1,95 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Enterprise Native 3D Web Platform</title>
-    <link rel="stylesheet" href="css/main.css">
+    <meta charset="utf-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
+    >
+    <meta
+        http-equiv="Content-Security-Policy"
+        content="
+            default-src 'self';
+            img-src 'self' data: blob:;
+            script-src 'self';
+            style-src 'self';
+            connect-src 'self';
+            object-src 'none';
+            base-uri 'self';
+            form-action 'self';
+            frame-ancestors 'none';
+            upgrade-insecure-requests;
+        "
+    >
+    <meta name="theme-color" content="#000000">
+    <meta name="color-scheme" content="dark">
+    <title>Enterprise Native WebGL2 Skybox Platform</title>
+
+    <link
+        rel="preload"
+        href="./src/main.js"
+        as="script"
+        crossorigin="anonymous"
+    >
+
+    <link
+        rel="stylesheet"
+        href="./css/main.css"
+    >
 </head>
 <body>
-    <div id="app-container">
-        <!-- Canvas phần cứng tối ưu hóa cao cho đồ họa WebGL2 -->
-        <canvas id="gl-canvas" width="1920" height="1080"></canvas>
+    <main
+        id="application"
+        class="application"
+        aria-label="3D Environment Application"
+    >
+        <canvas
+            id="webgl-canvas"
+            class="webgl-canvas"
+            aria-label="3D Rendering Surface"
+            tabindex="0"
+        ></canvas>
 
-        <!-- Lớp giao diện quản trị điều khiển biệt lập -->
-        <div id="ui-overlay" aria-hidden="false">
-            <header class="ui-header">
-                <h1>ENTERPRISE 3D STREAMER</h1>
-                <div id="fps-counter" class="ui-badge">FPS: 00</div>
+        <section
+            id="ui-overlay"
+            class="ui-overlay"
+            aria-label="Application Overlay"
+        >
+            <header class="hud-panel">
+                <h1 class="hud-title">
+                    Enterprise Native 3D Platform
+                </h1>
+
+                <div class="hud-status-group">
+                    <span id="status-renderer" class="hud-status">
+                        Renderer: Initializing
+                    </span>
+
+                    <span id="status-fps" class="hud-status">
+                        FPS: --
+                    </span>
+
+                    <span id="status-input" class="hud-status">
+                        Input: Idle
+                    </span>
+                </div>
             </header>
 
-            <main class="ui-controls">
-                <section class="control-group">
-                    <h2>Điều Khiển Cảm Biến</h2>
-                    <button id="btn-gyro-auth" class="ui-btn ui-btn-primary">Kích Hoạt Gyroscope</button>
-                    <div id="gyro-status" class="ui-status-text">Trạng thái: Chưa kết nối</div>
-                </section>
+            <aside class="hud-controls">
+                <button
+                    id="gyro-enable-button"
+                    class="ui-button"
+                    type="button"
+                >
+                    Enable Gyroscope
+                </button>
+            </aside>
+        </section>
+    </main>
 
-                <section class="control-group">
-                    <h2>Quản Lý Lớp Texture</h2>
-                    <label class="ui-toggle">
-                        <input type="checkbox" id="chk-layer-base" checked>
-                        <span class="slider"></span>
-                        Bật Lớp Nền Base (WebP)
-                    </label>
-                    <label class="ui-toggle">
-                        <input type="checkbox" id="chk-layer-hdri" checked>
-                        <span class="slider"></span>
-                        Bật Lớp Chất Lượng Cao HDRI (PNG)
-                    </label>
-                    <div class="range-container">
-                        <label for="rng-blend">Tỷ lệ hòa trộn HDRI Layer</label>
-                        <input type="range" id="rng-blend" min="0" max="1" step="0.01" value="1.0">
-                    </div>
-                </section>
-            </main>
-
-            <footer class="ui-footer">
-                <p>Hệ thống Đồ họa Doanh nghiệp Thuần Native WebGL2 Engine v1.0.0</p>
-            </footer>
-        </div>
-    </div>
-
-    <!-- Khởi chạy toàn bộ hệ thống qua Entry Module -->
-    <script type="module" src="src/main.js"></script>
+    <script
+        type="module"
+        src="./src/main.js"
+    ></script>
 </body>
 </html>
- 

@@ -1,58 +1,123 @@
-/**
- * Cấu hình hệ thống cấu trúc dữ liệu đóng băng bất biến (Immutable)
- * Đảm bảo các tham số vận hành không bị sửa đổi ngoài ý muốn trong vòng đời Engine.
- */
-export const Config = Object.freeze({
-    RENDER_SETTINGS: Object.freeze({
-        CANVAS_ID: "gl-canvas",
-        CONTEXT_ATTRIBUTES: Object.freeze({
+const SKYBOX_VERSION = 'skybox-v1';
+
+const LAYER0_BASE_PATH =
+    `/assets/textures/${SKYBOX_VERSION}/layer0-base`;
+
+const LAYER1_HDRI_PATH =
+    `/assets/textures/${SKYBOX_VERSION}/layer1-hdri`;
+
+const CUBEMAP_FACES = Object.freeze([
+    'px',
+    'nx',
+    'py',
+    'ny',
+    'pz',
+    'nz'
+]);
+
+const CONFIG = Object.freeze({
+    APPLICATION: Object.freeze({
+        NAME: 'Enterprise Native 3D Platform',
+        VERSION: '1.0.0'
+    }),
+
+    FEATURE_FLAGS: Object.freeze({
+        ENABLE_GYROSCOPE: true,
+        ENABLE_TOUCH_INPUT: true,
+        ENABLE_MOUSE_INPUT: true,
+        ENABLE_MIPMAPS: true,
+        ENABLE_ANISOTROPIC_FILTERING: true
+    }),
+
+    CAMERA: Object.freeze({
+        DEFAULT_YAW: 0.0,
+        DEFAULT_PITCH: 0.0,
+        DEFAULT_FOV_DEGREES: 75.0,
+        NEAR_CLIP: 0.01,
+        FAR_CLIP: 1000.0,
+
+        ROTATION_SPEED_MOUSE: 0.0025,
+        ROTATION_SPEED_TOUCH: 0.0035,
+        ROTATION_SPEED_GYRO: 0.0015
+    }),
+
+    RENDERING: Object.freeze({
+        TARGET_FPS: 60,
+
+        CLEAR_COLOR: Object.freeze([
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ]),
+
+        DEPTH_TEST: false,
+        CULL_FACE: false,
+
+        CANVAS_ATTRIBUTES: Object.freeze({
             alpha: false,
+            antialias: true,
             depth: true,
             stencil: false,
-            antialias: true,
-            premultipliedAlpha: false,
             preserveDrawingBuffer: false,
-            failIfMajorPerformanceCaveat: true,
+            premultipliedAlpha: false,
+            powerPreference: 'high-performance',
             desynchronized: true
-        }),
-        DEFAULT_FOV: 60.0,
-        NEAR_PLANE: 0.1,
-        FAR_PLANE: 100.0,
+        })
     }),
-    
-    CAMERA_LIMITS: Object.freeze({
-        MIN_PITCH: -Math.PI / 2.0 + 0.01, // Giới hạn nhìn xuống tránh hiện tượng Gimbal Lock
-        MAX_PITCH: Math.PI / 2.0 - 0.01,  // Giới hạn nhìn lên
-        MOUSE_SENSITIVITY: 0.002,
-        TOUCH_SENSITIVITY: 0.004,
-        GYRO_SENSITIVITY: 1.0,
-        INERTIA_DECAY: 0.92
-    }),
-    
-    ASSETS: Object.freeze({
-        BASE_PATH: "assets/textures/skybox-v1/",
-        LAYERS: Object.freeze({
-            BASE: {
-                id: "layer0-base",
-                format: "webp",
-                enabled: true
-            },
-            HDRI: {
-                id: "layer1-hdri",
-                format: "png",
-                enabled: true
-            }
+
+    SKYBOX: Object.freeze({
+        SIZE: 1.0,
+
+        BLEND_FACTOR: 0.65,
+
+        BASE_LAYER: Object.freeze({
+            PATH: LAYER0_BASE_PATH,
+            EXTENSION: 'webp'
         }),
-        FACES: Object.freeze(["px", "nx", "py", "ny", "pz", "nz"])
+
+        HDRI_LAYER: Object.freeze({
+            PATH: LAYER1_HDRI_PATH,
+            EXTENSION: 'png'
+        }),
+
+        FACES: CUBEMAP_FACES
     }),
 
     EVENTS: Object.freeze({
-        INPUT_ROTATION: "input:rotation",
-        RESIZE: "engine:resize",
-        LAYER_TOGGLE: "ui:layer_toggle",
-        BLEND_CHANGE: "ui:blend_change",
-        CONTEXT_LOST: "engine:context_lost",
-        CONTEXT_RESTORED: "engine:context_restored"
+        INPUT_ROTATE: 'input.rotate',
+        INPUT_ZOOM: 'input.zoom',
+
+        CAMERA_UPDATED: 'camera.updated',
+
+        ENGINE_READY: 'engine.ready',
+        ENGINE_DESTROYED: 'engine.destroyed',
+
+        GYRO_PERMISSION_GRANTED:
+            'gyro.permission.granted',
+
+        GYRO_PERMISSION_DENIED:
+            'gyro.permission.denied'
+    }),
+
+    TEXTURES: Object.freeze({
+        MIN_FILTER: 'LINEAR_MIPMAP_LINEAR',
+        MAG_FILTER: 'LINEAR',
+        WRAP_S: 'CLAMP_TO_EDGE',
+        WRAP_T: 'CLAMP_TO_EDGE',
+        WRAP_R: 'CLAMP_TO_EDGE'
+    }),
+
+    INPUT: Object.freeze({
+        MOUSE_WHEEL_ZOOM_FACTOR: 0.05,
+
+        TOUCH_PINCH_FACTOR: 0.008,
+
+        MAX_DELTA_YAW: 2.0,
+        MAX_DELTA_PITCH: 2.0
     })
 });
- 
+
+export {
+    CONFIG
+};

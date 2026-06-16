@@ -1,0 +1,205 @@
+/* Thiết lập cấu hình Reset Viewport chống rò rỉ layout */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #050505;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #ffffff;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: none;
+}
+
+/* Thùng chứa tầng ứng dụng tối ưu hóa phần cứng hiển thị */
+#app-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    contain: strict;
+}
+
+/* Canvas cấu hình đặc tả hiệu năng kết xuất */
+#gl-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: block;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* Giao diện UI nằm cô lập ở tầng z-index cao hơn, loại bỏ can thiệp chuột */
+#ui-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none; /* Cho phép tương tác xuyên thấu xuống tầng Canvas bên dưới */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px;
+}
+
+/* Các thành phần giao diện cụ thể cần tương tác chuột */
+.ui-header, .ui-controls, .ui-footer {
+    pointer-events: auto; /* Kích hoạt lại chuột cho các phần tử UI tương tác */
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 16px;
+    will-change: transform;
+}
+
+.ui-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 400px;
+}
+
+.ui-header h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #38bdf8;
+}
+
+.ui-badge {
+    background: #0284c7;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.ui-controls {
+    align-self: flex-start;
+    width: 320px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.control-group h2 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+    margin-bottom: 10px;
+}
+
+.ui-btn {
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ui-btn-primary {
+    background: #2563eb;
+    color: white;
+}
+
+.ui-btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.ui-status-text {
+    font-size: 11px;
+    color: #cbd5e1;
+    margin-top: 6px;
+}
+
+.ui-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.ui-toggle input {
+    display: none;
+}
+
+.slider {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    background-color: #475569;
+    border-radius: 20px;
+    transition: 0.2s;
+}
+
+.slider::before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+
+input:checked + .slider {
+    background-color: #10b981;
+}
+
+input:checked + .slider::before {
+    transform: translateX(16px);
+}
+
+.range-container {
+    margin-top: 12px;
+}
+
+.range-container label {
+    display: block;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 6px;
+}
+
+.range-container input[type="range"] {
+    width: 100%;
+    accent-color: #38bdf8;
+    background: #334155;
+    border-radius: 4px;
+    height: 6px;
+    appearance: none;
+    outline: none;
+}
+
+.ui-footer {
+    max-width: 400px;
+    font-size: 10px;
+    color: #64748b;
+    text-align: center;
+    align-self: center;
+}
+ 

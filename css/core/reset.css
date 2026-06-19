@@ -1,0 +1,583 @@
+/**
+ * @file      reset.css
+ * @layer     core
+ * @domain    system-wide
+ * @version   1.0.0
+ *
+ * ╔═══════════════════════════════════════════════════════════════╗
+ * ║              BROWSER NORMALIZATION LAYER                      ║
+ * ║                                                               ║
+ * ║  Mục tiêu: Xóa bỏ mọi giả định mặc định của trình duyệt,   ║
+ * ║  thiết lập nền tảng hiển thị đồng nhất trên mọi UA/OS.      ║
+ * ║                                                               ║
+ * ║  LOAD ORDER: File này phải được load TRƯỚC mọi CSS khác.    ║
+ * ║  Không chứa giá trị design (màu, font-size cụ thể) —        ║
+ * ║  tất cả giá trị đều được kế thừa từ design-tokens.css.      ║
+ * ╚═══════════════════════════════════════════════════════════════╝
+ *
+ * TRIẾT LÝ:
+ *   Đây không phải "Normalize.css" (giữ lại hành vi hữu ích) mà là
+ *   một Hard Reset có chọn lọc — phá bỏ hoàn toàn những mặc định
+ *   gây ra side-effects không dự đoán được, nhưng GIỮ LẠI các hành
+ *   vi accessibility và semantic quan trọng (focus outline, list
+ *   semantics cho screen readers, v.v).
+ *
+ * PHẦN:
+ *   §1  Box Model        — border-box toàn cục, loại trừ SVG
+ *   §2  Root & Body      — chiều cao đầy đủ viewport, scroll behavior
+ *   §3  Typography       — xóa margin/padding, thiết lập kế thừa font
+ *   §4  List             — reset list styles nhưng giữ semantics
+ *   §5  Media Elements   — ảnh/video responsive mặc định
+ *   §6  Form & Input     — chuẩn hóa form controls cross-browser
+ *   §7  Table            — reset table layout
+ *   §8  Interactive      — cursor, user-select, tap highlight
+ *   §9  Accessibility    — bảo vệ focus visible, screen reader
+ *  §10  3D & Performance — GPU layer hints cho 3D domain
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §1. BOX MODEL
+ *
+ * Áp dụng border-box cho toàn bộ DOM.
+ * Loại trừ SVG (*, *::before, *::after) để tránh ghi đè
+ * các thuộc tính SVG quan trọng như fill, stroke.
+ * ═══════════════════════════════════════════════════════════════════ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §2. ROOT & BODY
+ * ═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* Đảm bảo 1rem = 16px (không override font-size trên :root
+     để tránh phá vỡ các custom properties dùng rem) */
+  -webkit-text-size-adjust: 100%;   /* Ngăn iOS auto-scale text khi xoay màn hình */
+  -moz-text-size-adjust:    100%;
+  text-size-adjust:         100%;
+
+  /* Smooth scrolling cho toàn trang (nếu JS không override) */
+  scroll-behavior: smooth;
+
+  /* Tab size chuẩn cho <code> và <pre> */
+  tab-size: 4;
+  -moz-tab-size: 4;
+
+  /* Tối ưu hóa font rendering */
+  -webkit-font-smoothing:  antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: always;
+
+  /* Hành vi overflow mặc định */
+  overflow-x: hidden;
+}
+
+html {
+  /* Chiều cao 100% cho phép body và children dùng height: 100% */
+  block-size: 100%;
+  height: 100%;
+}
+
+body {
+  /* Kế thừa chiều cao đầy đủ viewport */
+  min-block-size: 100%;
+  min-height: 100%;
+
+  /* Line height mặc định từ design tokens — kế thừa xuống toàn bộ */
+  line-height: 1.6;
+
+  /* Ngăn text overflow vô ý */
+  overflow-wrap: break-word;
+  word-break: break-word;
+
+  /* Đảm bảo body là stacking context root */
+  position: relative;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §3. TYPOGRAPHY
+ *
+ * Reset tất cả margin/padding mặc định của browser trên text elements.
+ * Thiết lập font-size và font-weight kế thừa từ parent thay vì
+ * dùng UA stylesheet defaults (h1: 2em bold, h2: 1.5em bold...).
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* Headings: xóa bold mặc định, size mặc định — global.css sẽ thiết lập lại */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: var(--line-height-tight, 1.2);
+}
+
+/* Paragraphs */
+p {
+  overflow-wrap: break-word;
+}
+
+/* Links: xóa underline mặc định, color mặc định — global.css định nghĩa */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Inline elements: kế thừa font thay vì dùng UA monospace */
+code,
+kbd,
+samp,
+pre {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Pre: xóa overflow scroll mặc định */
+pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* Blockquote, dl, dd: xóa indent mặc định */
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+/* Strong, b: đảm bảo bold rõ ràng */
+b,
+strong {
+  font-weight: bolder;
+}
+
+/* Small: đảm bảo size nhỏ hơn relative */
+small {
+  font-size: 80%;
+}
+
+/* Sub và sup: ngăn ảnh hưởng đến line-height */
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub { bottom: -0.25em; }
+sup { top: -0.5em; }
+
+/* Abbr: đảm bảo cursor tooltip */
+abbr[title] {
+  cursor: help;
+  text-decoration: underline dotted;
+}
+
+/* Mark: xóa màu vàng mặc định — global.css định nghĩa màu */
+mark {
+  background-color: transparent;
+  color: inherit;
+}
+
+/* HR: reset border mặc định */
+hr {
+  border: none;
+  border-top: 1px solid currentColor;
+  color: inherit;
+  height: 0;
+  overflow: visible;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §4. LIST
+ *
+ * Reset list-style nhưng GIỮ LẠI list role cho screen readers.
+ * QUAN TRỌNG: Khi dùng list-style: none, VoiceOver (Safari) xóa
+ * list semantics. Thêm role="list" trong HTML nếu cần giữ semantics.
+ * ═══════════════════════════════════════════════════════════════════ */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Reset nested list indent */
+ul ul,
+ul ol,
+ol ul,
+ol ol {
+  margin: 0;
+}
+
+/* Definition list */
+dl {
+  display: block;
+}
+
+dt {
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §5. MEDIA ELEMENTS
+ *
+ * Ảnh và media mặc định là block (không phải inline) để tránh
+ * mysterious bottom gap. Giới hạn max-width: 100% cho responsive.
+ * ═══════════════════════════════════════════════════════════════════ */
+img,
+picture,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block;
+  max-width: 100%;
+}
+
+/* Đảm bảo ảnh không bị stretch trong flex/grid containers */
+img,
+video {
+  height: auto;
+  max-width: 100%;
+}
+
+/* SVG: xóa default overflow hidden trong IE */
+svg {
+  overflow: hidden; /* Xóa clip ngoài viewport trong Chrome */
+  vertical-align: middle;
+}
+
+/* SVG sử dụng currentColor cho fill/stroke mặc định */
+svg:not([fill]) {
+  fill: currentColor;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §6. FORM & INPUT
+ *
+ * Form controls kế thừa typography từ parent thay vì dùng
+ * UA system-ui riêng. Chuẩn hóa appearance cross-browser.
+ * ═══════════════════════════════════════════════════════════════════ */
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+/* Xóa appearance để tùy chỉnh hoàn toàn */
+button,
+input,
+select,
+textarea {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+/* Button: đảm bảo cursor pointer */
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+  cursor: pointer;
+  -webkit-appearance: button;
+}
+
+/* Ngăn button double-tap zoom trên iOS */
+button {
+  touch-action: manipulation;
+}
+
+/* Xóa inner border/padding trong Firefox */
+button::-moz-focus-inner,
+[type="button"]::-moz-focus-inner,
+[type="reset"]::-moz-focus-inner,
+[type="submit"]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+/* Textarea: xóa resize mặc định */
+textarea {
+  resize: vertical;
+  overflow: auto;
+}
+
+/* Select: xóa arrow mặc định */
+select {
+  background-image: none;
+}
+
+/* Fieldset */
+fieldset {
+  border: none;
+  min-width: 0;
+  padding: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+/* Input[type="search"] */
+[type="search"] {
+  -webkit-appearance: textfield;
+  outline-offset: -2px;
+}
+
+[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+/* Input number: xóa spinner */
+[type="number"]::-webkit-inner-spin-button,
+[type="number"]::-webkit-outer-spin-button {
+  height: auto;
+}
+
+/* Placeholder: chuẩn hóa màu cross-browser */
+::placeholder {
+  opacity: 1; /* Firefox giảm opacity mặc định */
+  color: inherit;
+}
+
+/* Progress: chuẩn hóa */
+progress {
+  vertical-align: baseline;
+}
+
+/* Label: đảm bảo click area */
+label {
+  cursor: pointer;
+  display: inline-block;
+}
+
+/* Disabled states */
+[disabled],
+[aria-disabled="true"] {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §7. TABLE
+ * ═══════════════════════════════════════════════════════════════════ */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  caption-side: bottom;
+  table-layout: fixed;
+  width: 100%;
+}
+
+th {
+  font-weight: var(--font-weight-semibold, 600);
+  text-align: inherit;
+  text-align: -webkit-match-parent; /* Safari */
+}
+
+thead,
+tbody,
+tfoot,
+tr,
+td,
+th {
+  border: none;
+  padding: 0;
+}
+
+caption {
+  color: inherit;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §8. INTERACTIVE
+ *
+ * Chuẩn hóa cursor, user-select và tap highlight trên mobile.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* Xóa tap highlight trên Android/iOS (màu xanh/xám khi tap) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Default cursor */
+html {
+  cursor: default;
+}
+
+/* Pointer cursor cho interactive elements */
+a,
+button,
+label,
+summary,
+[role="button"],
+[role="link"],
+[role="tab"],
+[role="menuitem"],
+[role="option"],
+[role="checkbox"],
+[role="radio"],
+[tabindex]:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+
+/* Không cho phép select text trên UI elements */
+button,
+[role="button"],
+nav,
+[aria-label] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Details/Summary */
+details > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Dialog: reset mặc định */
+dialog {
+  background: transparent;
+  border: none;
+  color: inherit;
+  margin: auto;
+  max-height: 100%;
+  max-width: 100%;
+  padding: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §9. ACCESSIBILITY
+ *
+ * BẢO VỆ focus visibility — không bao giờ dùng outline: none
+ * mà không có replacement rõ ràng. Tuân thủ WCAG 2.1 AA.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* Xóa outline mặc định — global.css sẽ định nghĩa focus ring đẹp */
+:focus {
+  outline: none;
+}
+
+/* GIỮ LẠI focus khi navigate bằng bàn phím (không phải mouse click) */
+:focus-visible {
+  outline: 2px solid var(--color-accent-primary, #6E4FDB);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm, 0.25rem);
+}
+
+/* Screen-reader only utility — dùng class .sr-only */
+.sr-only {
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+/* Skip link cho keyboard navigation */
+.skip-link {
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%) translateY(-120%);
+  transition: transform 200ms ease-out;
+  z-index: 999;
+}
+
+.skip-link:focus {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ARIA hidden: đảm bảo không nhận focus */
+[aria-hidden="true"] {
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Đảm bảo animations tắt khi prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-delay: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+ * §10. 3D & PERFORMANCE
+ *
+ * Thiết lập GPU compositing hints cho Skybox domain.
+ * Áp dụng cho tất cả phần tử có data-attribute là 3D layer.
+ *
+ * QUAN TRỌNG: will-change chỉ nên áp dụng trên những phần tử
+ * THỰC SỰ animate để tránh memory overhead không cần thiết.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* 3D Scene root — thiết lập rendering context */
+[data-3d-scene] {
+  isolation: isolate;
+  transform-style: preserve-3d;
+}
+
+/* 3D animated elements — hint GPU compositing */
+[data-3d-face],
+[data-3d-cube],
+[data-3d-layer] {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);           /* Buộc GPU layer ngay lập tức */
+  will-change: transform;
+}
+
+/* Overlay elements trên 3D scene */
+[data-overlay] {
+  isolation: isolate;
+  will-change: opacity, transform;
+}
+
+/* Đảm bảo 3D transitions sử dụng GPU path */
+[data-3d-face]:where([style*="transition"]) {
+  transform-origin: center center;
+}

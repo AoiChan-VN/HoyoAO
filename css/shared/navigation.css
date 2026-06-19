@@ -5,11 +5,11 @@
  * @version   1.0.0
  *
  * ╔═══════════════════════════════════════════════════════════════╗
- * ║         HỆ THỐNG THANH ĐIỀU HƯỚNG — DÙNG CHUNG 2 DOMAIN     ║
- * ║                                                               ║
+ * ║         HỆ THỐNG THANH ĐIỀU HƯỚNG — DÙNG CHUNG 2 DOMAIN      ║
+ * ║                                                              ║
  * ║  Tiêu thụ: design-tokens.css, reset.css, global.css          ║
  * ║  JS handler: js/shared/navigation-handler.js                 ║
- * ║                                                               ║
+ * ║                                                              ║
  * ║  Encapsulation: Toàn bộ selector có prefix .nav-             ║
  * ║  Không một rule nào leak ra ngoài component boundary.        ║
  * ╚═══════════════════════════════════════════════════════════════╝

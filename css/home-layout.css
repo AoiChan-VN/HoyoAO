@@ -1,0 +1,193 @@
+/**
+ * @file   css/pages/home/layout.css
+ * @layer  pages/home
+ * @scope  .home-domain  (never bleeds into articles domain)
+ */
+
+/* ── Page root ──────────────────────────────────────────────────── */
+.home-domain {
+  background-color: var(--color-bg-base);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+/* ── 3D Scene viewport ──────────────────────────────────────────── */
+.home-domain__scene {
+  flex: 1;
+  height: 100%;
+  left: 0;
+  overflow: hidden;
+  perspective: var(--perspective-mid);
+  perspective-origin: 50% 50%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: var(--z-index-skybox-scene);
+}
+
+/* ── Overlay layer (text + UI on top of 3D) ─────────────────────── */
+.home-domain__overlay {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: var(--z-index-overlay-ui);
+}
+
+.home-domain__overlay > * {
+  pointer-events: auto;
+}
+
+/* ── Hero content block ─────────────────────────────────────────── */
+.home-domain__hero {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .home-domain__hero {
+    padding: var(--space-16) var(--space-8);
+  }
+}
+
+/* ── Vignette edges ─────────────────────────────────────────────── */
+.home-domain__vignette {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgb(7 8 13 / 0.70) 100%
+  );
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: var(--z-index-overlay-bg);
+}
+
+/* ── Bottom gradient (fade to nav/footer) ───────────────────────── */
+.home-domain__fade-bottom {
+  background: linear-gradient(
+    to top,
+    var(--color-bg-base) 0%,
+    transparent 100%
+  );
+  bottom: 0;
+  height: var(--space-32);
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  z-index: var(--z-index-overlay-bg);
+}
+
+/* ── Top gradient (fade behind nav) ────────────────────────────── */
+.home-domain__fade-top {
+  background: linear-gradient(
+    to bottom,
+    rgb(7 8 13 / 0.60) 0%,
+    transparent 100%
+  );
+  height: calc(var(--nav-height-mobile) * 2.5);
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: var(--z-index-overlay-bg);
+}
+
+@media (min-width: 768px) {
+  .home-domain__fade-top {
+    height: calc(var(--nav-height-desktop) * 2.5);
+  }
+}
+
+/* ── Loading screen ─────────────────────────────────────────────── */
+.home-domain__loader {
+  align-items: center;
+  background-color: var(--color-bg-base);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  inset: 0;
+  justify-content: center;
+  opacity: 1;
+  position: fixed;
+  transition: opacity var(--duration-slow) var(--ease-out);
+  z-index: var(--z-index-critical);
+}
+
+.home-domain__loader[data-loaded] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.home-domain__loader-spinner {
+  animation: home-spin 1s linear infinite;
+  border: 2px solid var(--color-border-subtle);
+  border-radius: var(--radius-full);
+  border-top-color: var(--color-accent-primary);
+  height: 2.5rem;
+  width: 2.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-domain__loader-spinner {
+    animation: none;
+    border-color: var(--color-accent-primary);
+  }
+}
+
+.home-domain__loader-text {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  letter-spacing: var(--letter-spacing-wider);
+  text-transform: uppercase;
+}
+
+@keyframes home-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Error fallback ─────────────────────────────────────────────── */
+.home-domain__error {
+  align-items: center;
+  display: none;
+  flex-direction: column;
+  gap: var(--space-4);
+  inset: 0;
+  justify-content: center;
+  padding: var(--space-8);
+  position: absolute;
+  text-align: center;
+  z-index: var(--z-index-overlay-ui);
+}
+
+.home-domain__error[data-visible] {
+  display: flex;
+}
+
+.home-domain__error-title {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.home-domain__error-message {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  max-width: 40ch;
+}

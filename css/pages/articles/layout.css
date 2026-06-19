@@ -7,6 +7,15 @@
 /* ── Page root ──────────────────────────────────────────────────── */
 .article-domain {
   background-color: var(--color-bg-base);
+/**
+ * @file   css/pages/articles/layout.css
+ * @layer  pages/articles
+ * @scope  .article-domain  (never bleeds into home domain)
+ */
+
+/* ── Page root ──────────────────────────────────────────────────── */
+.article-domain {
+  background-color: var(--color-bg-base);
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
@@ -255,4 +264,50 @@
 .article-domain__category-btn--active:hover {
   background-color: var(--color-accent-primary-subtle);
   border-color: var(--color-accent-primary);
-} 
+}
+
+/* ── View routing (list ↔ reader, toggled by app.js) ────────────── */
+[data-view-list] {
+  display: block;
+}
+
+[data-view-reader] {
+  display: none;
+}
+
+body[data-view="reader"] [data-view-list] {
+  display: none;
+}
+
+body[data-view="reader"] [data-view-reader] {
+  display: block;
+}
+
+/* ── Search box ─────────────────────────────────────────────────── */
+.article-domain__search {
+  max-width: 28rem;
+  position: relative;
+  width: 100%;
+}
+
+.article-domain__search input {
+  padding-right: var(--space-10);
+}
+
+.article-domain__search-clear {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  display: none;
+  height: 1.5rem;
+  padding: 0;
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+}
+
+.article-domain__search-clear:hover {
+  color: var(--color-text-primary);
+}

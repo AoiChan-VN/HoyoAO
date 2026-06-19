@@ -68,21 +68,23 @@ const App = (() => {
    * Khởi tạo toàn bộ module thuộc Articles domain (Content Platform).
    */
   function _bootstrapArticlesDomain() {
-    const grid    = document.querySelector('[data-articles-grid]');
-    const reader  = document.querySelector('[data-article-reader]');
+    const grid   = document.querySelector('[data-articles-grid]');
+    const reader = document.querySelector('[data-article-reader]');
 
     if (!grid && !reader) {
       throw new Error('[App] Articles domain thiếu [data-articles-grid] hoặc [data-article-reader].');
     }
 
-    if (grid) {
+    const hasArticleId = new URLSearchParams(window.location.search).has('id');
+
+    if (hasArticleId && reader) {
+      document.body.setAttribute('data-view', 'reader');
+      _bootstrapArticleReader(reader);
+    } else if (grid) {
+      document.body.setAttribute('data-view', 'list');
       ArticleRenderer.init();
       SearchFilter.init();
       _activeModules.push(ArticleRenderer, SearchFilter);
-    }
-
-    if (reader) {
-      _bootstrapArticleReader(reader);
     }
   }
 

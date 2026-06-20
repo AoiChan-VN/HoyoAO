@@ -26,6 +26,7 @@ const SkyboxViewer = (() => {
   let _onDragStart        = null;
   let _onDragEnd          = null;
   let _onSkyboxReset      = null;
+  let _onSkyboxInit       = null;
   let _onVisibilityChange = null;
 
   // ── Init ─────────────────────────────────────────────────────────
@@ -46,8 +47,6 @@ const SkyboxViewer = (() => {
 
     const imageSet = SkyboxRepository.getDefault();
     _loadImageSet(imageSet);
-
-    EventBus.emit(EVENTS.SKYBOX_INIT, { imageSetId: imageSet.id });
   }
 
   // ── Face refs ────────────────────────────────────────────────────
@@ -265,6 +264,23 @@ const SkyboxViewer = (() => {
       setTimeout(() => { _cube.style.transition = ''; }, Config.SKYBOX.TRANSITION_MS);
     };
 
+    // Chuyển sang bộ ảnh khác — đây là handler THỰC SỰ thực thi yêu cầu
+    // chuyển ảnh (trước đây sự kiện này được emit nhưng không ai lắng nghe,
+    // khiến nút chọn Image Set đổi trạng thái active nhưng ảnh không đổi).
+    _onSkyboxInit = ({ imageSetId }) => {
+      if (!imageSetId) return;
+      if (StateManager.get('skybox.currentImageSet') === imageSetId) return;
+
+      const imageSet = SkyboxRepository.getById(imageSetId);
+      if (!imageSet) {
+        console.warn(`[SkyboxViewer] Image set "${imageSetId}" không tồn tại.`);
+        return;
+      }
+
+      SkyboxRepository.savePreference(imageSetId);
+      _loadImageSet(imageSet);
+    };
+
     // Tab ẩn — tạm dừng RAF nếu đang chạy
     _onVisibilityChange = () => {
       if (document.hidden) _stopLoop();
@@ -274,6 +290,7 @@ const SkyboxViewer = (() => {
     EventBus.on(EVENTS.INPUT_DRAG_START, _onDragStart);
     EventBus.on(EVENTS.INPUT_DRAG_END,   _onDragEnd);
     EventBus.on(EVENTS.SKYBOX_RESET,     _onSkyboxReset);
+    EventBus.on(EVENTS.SKYBOX_INIT,      _onSkyboxInit);
     document.addEventListener('visibilitychange', _onVisibilityChange);
   }
 
@@ -285,6 +302,7 @@ const SkyboxViewer = (() => {
     EventBus.off(EVENTS.INPUT_DRAG_START, _onDragStart);
     EventBus.off(EVENTS.INPUT_DRAG_END,   _onDragEnd);
     EventBus.off(EVENTS.SKYBOX_RESET,     _onSkyboxReset);
+    EventBus.off(EVENTS.SKYBOX_INIT,      _onSkyboxInit);
     document.removeEventListener('visibilitychange', _onVisibilityChange);
   }
 

@@ -236,4 +236,4 @@ const StateManager = (() => {
 
 })();
 
-export default StateManager; 
+export default StateManager;

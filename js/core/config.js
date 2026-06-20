@@ -60,6 +60,11 @@ const Config = Object.freeze({
     THUMBNAIL_ASPECT:    '16/9',
   }),
 
+  // ── Content sources (file tĩnh, fetch lúc runtime) ───────────────
+  CONTENT: Object.freeze({
+    ARTICLES_JSON: 'content/articles.json',
+  }),
+
   // ── Storage keys (LocalStorage) ──────────────────────────────────
   STORAGE: Object.freeze({
     ARTICLES_STORE:     'skybox_articles_store',
@@ -81,14 +86,6 @@ const Config = Object.freeze({
     LG:  1024,
     XL:  1280,
     XXL: 1536,
-  }),
-
-  // ── Mock API endpoint (giả lập — thay bằng URL thực khi deploy) ──
-  API: Object.freeze({
-    BASE_URL:     '/api',
-    ARTICLES:     '/api/articles',
-    ARTICLE_BY_ID: (id) => `/api/articles/${id}`,
-    SKYBOX_SETS:  '/api/skybox-sets',
   }),
 
 });

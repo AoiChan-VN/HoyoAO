@@ -254,6 +254,7 @@ export const EVENTS = Object.freeze({
   ARTICLES_INIT:      'articles:init',
   ARTICLES_LOADED:    'articles:loaded',
   ARTICLES_ERROR:     'articles:error',
+  ARTICLES_LOAD_FAILED: 'articles:load-failed',
   ARTICLE_OPEN:       'article:open',
   ARTICLE_CLOSE:      'article:close',
   ARTICLE_PROGRESS:   'article:progress',
@@ -267,4 +268,4 @@ export const EVENTS = Object.freeze({
   // State
   STATE_CHANGE:       'state:change',
 
-}); 
+});

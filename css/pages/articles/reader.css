@@ -84,7 +84,7 @@
 }
 
 .article-reader__category {
-  color: var(--color-accent-primary);
+  color: var(--color-text-accent);
   display: inline-block;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
@@ -143,7 +143,7 @@
 
 .article-reader__avatar {
   align-items: center;
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--primitive-nebula-400));
+  background: linear-gradient(135deg, var(--color-accent-gradient-start), var(--color-accent-gradient-end));
   border-radius: var(--radius-full);
   color: var(--primitive-white);
   display: flex;
@@ -309,7 +309,7 @@
 
 .article-reader__prose ul li::marker,
 .article-reader__prose ol li::marker {
-  color: var(--color-accent-primary);
+  color: var(--color-text-accent);
 }
 
 .article-reader__prose code {
@@ -455,4 +455,4 @@
   background-color: var(--color-accent-primary-subtle);
   border-color: var(--color-accent-primary-border);
   color: var(--color-accent-primary-glow);
-}
+} 

@@ -19,6 +19,11 @@ const SearchFilter = (() => {
   // ── Internal ─────────────────────────────────────────────────────
   let _debounceTimer  = null;
 
+  // ── Named handler refs (để destroy() unsubscribe đúng) ───────────
+  let _onFilterCategory     = null;
+  let _onFilterReset        = null;
+  let _onSearchQueryAppend  = null;
+
   // ── Init ─────────────────────────────────────────────────────────
 
   function init() {
@@ -161,9 +166,7 @@ const SearchFilter = (() => {
   function _bindEvents() {
     if (_searchInput) {
       _searchInput.addEventListener('input', _onSearchInput);
-      _searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') _onSearchClear();
-      });
+      _searchInput.addEventListener('keydown', _onSearchKeydown);
     }
 
     if (_clearBtn) {
@@ -175,40 +178,62 @@ const SearchFilter = (() => {
     });
 
     // EventBus: cho phép module khác trigger filter
-    EventBus.on(EVENTS.FILTER_CATEGORY, ({ category }) => {
+    _onFilterCategory = ({ category }) => {
       _setActiveCategory(category);
       _runQuery(StateManager.get('articles.searchQuery'), category, 1);
-    });
+    };
 
-    EventBus.on(EVENTS.FILTER_RESET, () => {
+    _onFilterReset = () => {
       if (_searchInput) _searchInput.value = '';
       _toggleClearBtn(false);
       _setActiveCategory(null);
       _runQuery('', null, 1);
-    });
+    };
 
     // Load more — nhận từ article-renderer
-    EventBus.on(EVENTS.SEARCH_QUERY, ({ query, category, page, append }) => {
+    _onSearchQueryAppend = ({ query, category, page, append }) => {
       if (append) _runQuery(query, category, page, true);
-    });
+    };
+
+    EventBus.on(EVENTS.FILTER_CATEGORY, _onFilterCategory);
+    EventBus.on(EVENTS.FILTER_RESET,    _onFilterReset);
+    EventBus.on(EVENTS.SEARCH_QUERY,    _onSearchQueryAppend);
 
     // Popstate — back/forward browser
-    window.addEventListener('popstate', (e) => {
-      const state = e.state || {};
-      if (_searchInput) _searchInput.value = state.query || '';
-      _toggleClearBtn((state.query || '').length > 0);
-      _setActiveCategory(state.category || null);
-      _runQuery(state.query || '', state.category || null, 1);
-    });
+    window.addEventListener('popstate', _onPopstate);
+  }
+
+  function _onSearchKeydown(e) {
+    if (e.key === 'Escape') _onSearchClear();
+  }
+
+  function _onPopstate(e) {
+    const state = e.state || {};
+    if (_searchInput) _searchInput.value = state.query || '';
+    _toggleClearBtn((state.query || '').length > 0);
+    _setActiveCategory(state.category || null);
+    _runQuery(state.query || '', state.category || null, 1);
   }
 
   // ── Teardown ─────────────────────────────────────────────────────
 
   function destroy() {
     clearTimeout(_debounceTimer);
-    EventBus.off(EVENTS.FILTER_CATEGORY, () => {});
-    EventBus.off(EVENTS.FILTER_RESET,    () => {});
-    EventBus.off(EVENTS.SEARCH_QUERY,    () => {});
+    EventBus.off(EVENTS.FILTER_CATEGORY, _onFilterCategory);
+    EventBus.off(EVENTS.FILTER_RESET,    _onFilterReset);
+    EventBus.off(EVENTS.SEARCH_QUERY,    _onSearchQueryAppend);
+    window.removeEventListener('popstate', _onPopstate);
+
+    if (_searchInput) {
+      _searchInput.removeEventListener('input', _onSearchInput);
+      _searchInput.removeEventListener('keydown', _onSearchKeydown);
+    }
+    if (_clearBtn) {
+      _clearBtn.removeEventListener('click', _onSearchClear);
+    }
+    _categoryBtns.forEach(btn => {
+      btn.removeEventListener('click', _onCategoryClick);
+    });
   }
 
   // ── Expose ───────────────────────────────────────────────────────

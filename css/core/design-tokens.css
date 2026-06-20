@@ -131,6 +131,8 @@
   /* — Brand Accent (Primary: Nebula Violet) — */
   --color-accent-primary:         var(--primitive-nebula-600);  /* Default state              */
   --color-accent-primary-hover:   var(--primitive-nebula-500);  /* Hover/focus state          */
+  --color-accent-gradient-start:  var(--primitive-nebula-700);  /* CTA gradient — white text ≈8.1:1 */
+  --color-accent-gradient-end:    var(--primitive-nebula-600);  /* CTA gradient — white text ≈5.5:1 */
   --color-accent-primary-active:  var(--primitive-nebula-700);  /* Pressed/active state       */
   --color-accent-primary-subtle:  var(--primitive-nebula-950);  /* Background tint            */
   --color-accent-primary-glow:    var(--primitive-nebula-300);  /* Luminosity/glow            */
@@ -442,8 +444,8 @@
    *   critical    →  Emergency overlays only
    * ═══════════════════════════════════════════════════════════════ */
 
-  --z-index-skybox-bg:     -10;
-  --z-index-skybox-scene:   -1;
+  --z-index-skybox-bg:      0;
+  --z-index-skybox-scene:   0;
   --z-index-base:            0;
   --z-index-raise:           1;
   --z-index-overlay-bg:     10;
@@ -616,4 +618,4 @@
     --glow-ember-md:  none;
     --glow-skybox-edge: none;
   }
-}
+  } 

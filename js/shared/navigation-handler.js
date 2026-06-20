@@ -229,4 +229,4 @@ const NavigationHandler = (() => {
 
 })();
 
-export default NavigationHandler; 
+export default NavigationHandler;

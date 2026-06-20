@@ -169,8 +169,8 @@
   align-items: center;
   background: linear-gradient(
     135deg,
-    var(--color-accent-primary),
-    var(--primitive-nebula-400)
+    var(--color-accent-gradient-start),
+    var(--color-accent-gradient-end)
   );
   border-radius: var(--radius-md);
   box-shadow: var(--glow-nebula-xs);
@@ -332,8 +332,8 @@
 .nav-cta {
   background: linear-gradient(
     135deg,
-    var(--color-accent-primary),
-    var(--primitive-nebula-500)
+    var(--color-accent-gradient-start),
+    var(--color-accent-gradient-end)
   );
   border: none;
   border-radius: var(--radius-md);
@@ -543,8 +543,8 @@
 .nav-mobile-cta {
   background: linear-gradient(
     135deg,
-    var(--color-accent-primary),
-    var(--primitive-nebula-500)
+    var(--color-accent-gradient-start),
+    var(--color-accent-gradient-end)
   );
   border: none;
   border-radius: var(--radius-lg);
@@ -638,4 +638,4 @@
   .nav-list {
     gap: var(--space-2);
   }
-}
+} 

@@ -157,38 +157,21 @@ const NavigationHandler = (() => {
 
     // Đóng menu khi click link trong mobile menu
     if (_mobileMenu) {
-      _mobileMenu.addEventListener('click', (e) => {
-        if (e.target.closest('[data-nav-link]')) _closeMenu();
-      });
+      _mobileMenu.addEventListener('click', _onMobileMenuClick);
     }
 
     // Đóng menu khi click ngoài
-    document.addEventListener('click', (e) => {
-      if (!StateManager.get('nav.menuOpen')) return;
-      if (_header.contains(e.target) || _mobileMenu?.contains(e.target)) return;
-      _closeMenu();
-    });
+    document.addEventListener('click', _onDocumentClick);
 
     // Đóng menu khi nhấn Escape
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && StateManager.get('nav.menuOpen')) {
-        _closeMenu();
-        _toggle?.focus();
-      }
-    });
+    document.addEventListener('keydown', _onDocumentKeydown);
 
     // Đóng menu khi resize về desktop
-    window.addEventListener('resize', () => {
-      if (window.innerWidth >= Config.BREAKPOINTS.MD && StateManager.get('nav.menuOpen')) {
-        _closeMenu();
-      }
-    }, { passive: true });
+    window.addEventListener('resize', _onResize, { passive: true });
 
     // Back-to-top
     if (_backTop) {
-      _backTop.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
+      _backTop.addEventListener('click', _onBackTopClick);
     }
 
     // EventBus: cho phép module khác đóng/mở menu
@@ -196,12 +179,48 @@ const NavigationHandler = (() => {
     EventBus.on(EVENTS.NAV_MENU_CLOSE, _closeMenu);
   }
 
+  function _onMobileMenuClick(e) {
+    if (e.target.closest('[data-nav-link]')) _closeMenu();
+  }
+
+  function _onDocumentClick(e) {
+    if (!StateManager.get('nav.menuOpen')) return;
+    if (_header.contains(e.target) || _mobileMenu?.contains(e.target)) return;
+    _closeMenu();
+  }
+
+  function _onDocumentKeydown(e) {
+    if (e.key === 'Escape' && StateManager.get('nav.menuOpen')) {
+      _closeMenu();
+      _toggle?.focus();
+    }
+  }
+
+  function _onResize() {
+    if (window.innerWidth >= Config.BREAKPOINTS.MD && StateManager.get('nav.menuOpen')) {
+      _closeMenu();
+    }
+  }
+
+  function _onBackTopClick() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   // ── Teardown ─────────────────────────────────────────────────────
 
   function destroy() {
     window.removeEventListener('scroll', _onScroll);
+    window.removeEventListener('resize', _onResize);
+    document.removeEventListener('click',   _onDocumentClick);
+    document.removeEventListener('keydown', _onDocumentKeydown);
+
+    if (_toggle)   _toggle.removeEventListener('click', _toggleMenu);
+    if (_mobileMenu) _mobileMenu.removeEventListener('click', _onMobileMenuClick);
+    if (_backTop)  _backTop.removeEventListener('click', _onBackTopClick);
+
     EventBus.off(EVENTS.NAV_MENU_OPEN,  _openMenu);
     EventBus.off(EVENTS.NAV_MENU_CLOSE, _closeMenu);
+
     _closeMenu();
   }
 

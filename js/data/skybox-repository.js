@@ -36,12 +36,12 @@ const _imageSets = [
     name: 'Nebula Cosmos',
     description: 'Không gian sâu thẳm với tinh vân màu tím',
     faces: [
-      { face: 'front',  url: 'assets/skybox/nebula/front.webp',  alt: 'Tinh vân phía trước' },
-      { face: 'back',   url: 'assets/skybox/nebula/back.webp',   alt: 'Tinh vân phía sau'   },
-      { face: 'left',   url: 'assets/skybox/nebula/left.webp',   alt: 'Tinh vân bên trái'   },
-      { face: 'right',  url: 'assets/skybox/nebula/right.webp',  alt: 'Tinh vân bên phải'   },
-      { face: 'top',    url: 'assets/skybox/nebula/top.webp',    alt: 'Tinh vân phía trên'  },
-      { face: 'bottom', url: 'assets/skybox/nebula/bottom.webp', alt: 'Tinh vân phía dưới'  },
+      { face: 'front',  url: 'assets/skybox/nebula/front.jpg',  alt: 'Tinh vân phía trước' },
+      { face: 'back',   url: 'assets/skybox/nebula/back.jpg',   alt: 'Tinh vân phía sau'   },
+      { face: 'left',   url: 'assets/skybox/nebula/left.jpg',   alt: 'Tinh vân bên trái'   },
+      { face: 'right',  url: 'assets/skybox/nebula/right.jpg',  alt: 'Tinh vân bên phải'   },
+      { face: 'top',    url: 'assets/skybox/nebula/top.jpg',    alt: 'Tinh vân phía trên'  },
+      { face: 'bottom', url: 'assets/skybox/nebula/bottom.jpg', alt: 'Tinh vân phía dưới'  },
     ],
   },
   {
@@ -170,4 +170,4 @@ const SkyboxRepository = (() => {
 
 })();
 
-export default SkyboxRepository; 
+export default SkyboxRepository;

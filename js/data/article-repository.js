@@ -4,10 +4,14 @@
  * @domain articles
  * @depends config.js
  *
- * LocalStorage là nguồn dữ liệu thật (persistent store).
- * _SEED_ARTICLES chỉ dùng để khởi tạo lần đầu tiên — sau đó
- * mọi thao tác đọc/ghi đều qua addArticle/updateArticle/deleteArticle,
- * KHÔNG cần sửa file JS này để thêm bài viết mới.
+ * NGUỒN DỮ LIỆU: content/articles.json (qua fetch), KHÔNG hardcode
+ * trong file JS này. Sau lần tải đầu tiên, LocalStorage trở thành
+ * live store hỗ trợ CRUD đầy đủ — thêm/sửa/xóa bài viết không bao
+ * giờ cần sửa code.
+ *
+ * BẮT BUỘC: gọi `await ArticleRepository.init()` một lần duy nhất
+ * trước khi dùng bất kỳ phương thức đọc/ghi nào khác (app.js đã lo
+ * việc này ở bước bootstrap, components không cần tự gọi).
  */
 
 import Config from '../core/config.js';
@@ -28,174 +32,90 @@ import Config from '../core/config.js';
  * @property {boolean}  featured
  */
 
-// ── Seed Data (chỉ dùng lần đầu khi LocalStorage trống) ───────────
-
-/** @type {Article[]} */
-const _SEED_ARTICLES = [
-  {
-    id: 'css-3d-skybox-architecture',
-    title: 'Xây dựng Skybox 3D thuần CSS: Kiến trúc và Kỹ thuật',
-    excerpt: 'Khám phá cách tạo hiệu ứng không gian 3D immersive chỉ với CSS transforms và custom properties, không cần WebGL hay thư viện bên thứ ba.',
-    content: '<p>Nội dung đầy đủ của bài viết...</p>',
-    category: 'CSS',
-    tags: ['css3d', 'transform', 'performance', 'vanilla'],
-    author: 'Nguyễn Kiến Trúc',
-    authorAvatar: 'assets/avatars/nguyen-kien-truc.jpg',
-    date: '2025-06-15T08:00:00Z',
-    readTimeMin: 12,
-    thumbnail: 'assets/thumbnails/css-3d-skybox.jpg',
-    featured: true,
-  },
-  {
-    id: 'event-driven-vanilla-js',
-    title: 'Event-Driven Architecture với Vanilla JS thuần túy',
-    excerpt: 'Hướng dẫn xây dựng hệ thống Pub/Sub mạnh mẽ, loosely-coupled hoàn toàn không phụ thuộc framework nào.',
-    content: '<p>Nội dung đầy đủ của bài viết...</p>',
-    category: 'JavaScript',
-    tags: ['event-driven', 'pubsub', 'architecture', 'vanilla'],
-    author: 'Trần Hệ Thống',
-    authorAvatar: 'assets/avatars/tran-he-thong.jpg',
-    date: '2025-06-10T09:00:00Z',
-    readTimeMin: 8,
-    thumbnail: 'assets/thumbnails/event-driven.jpg',
-    featured: false,
-  },
-  {
-    id: 'design-tokens-css-variables',
-    title: 'Design Tokens với CSS Custom Properties: Single Source of Truth',
-    excerpt: 'Tại sao mọi dự án lớn đều cần một hệ thống Design Token và cách triển khai nó chỉ với CSS thuần.',
-    content: '<p>Nội dung đầy đủ của bài viết...</p>',
-    category: 'CSS',
-    tags: ['design-system', 'tokens', 'css-variables', 'scalability'],
-    author: 'Lê Thiết Kế',
-    authorAvatar: 'assets/avatars/le-thiet-ke.jpg',
-    date: '2025-06-05T10:00:00Z',
-    readTimeMin: 10,
-    thumbnail: 'assets/thumbnails/design-tokens.jpg',
-    featured: false,
-  },
-  {
-    id: 'solid-principles-frontend',
-    title: 'SOLID Principles trong Frontend: Ứng dụng thực tế',
-    excerpt: 'Năm nguyên lý SOLID không chỉ dành cho backend. Xem cách áp dụng chúng để viết Frontend code có khả năng maintain lâu dài.',
-    content: '<p>Nội dung đầy đủ của bài viết...</p>',
-    category: 'Architecture',
-    tags: ['solid', 'clean-code', 'maintainability', 'principles'],
-    author: 'Phạm Nguyên Lý',
-    authorAvatar: 'assets/avatars/pham-nguyen-ly.jpg',
-    date: '2025-05-28T08:30:00Z',
-    readTimeMin: 15,
-    thumbnail: 'assets/thumbnails/solid-frontend.jpg',
-    featured: false,
-  },
-  {
-    id: 'css-performance-gpu',
-    title: 'CSS Performance: GPU Compositing và will-change',
-    excerpt: 'Hiểu rõ cơ chế compositing của browser để viết animation 60fps mượt mà trên mọi thiết bị, kể cả mobile tầm trung.',
-    content: '<p>Nội dung đầy đủ của bài viết...</p>',
-    category: 'Performance',
-    tags: ['gpu', 'compositing', 'animation', 'will-change'],
-    author: 'Nguyễn Kiến Trúc',
-    authorAvatar: 'assets/avatars/nguyen-kien-truc.jpg',
-    date: '2025-05-20T11:00:00Z',
-    readTimeMin: 9,
-    thumbnail: 'assets/thumbnails/css-performance.jpg',
-    featured: false,
-  },
-  {
-    id: 'component-driven-css',
-    title: 'Component-Driven CSS: Scoping và BEM không cần framework',
-    excerpt: 'Xây dựng hệ thống CSS component có tính cô lập cao bằng naming convention và cascade layers mà không cần CSS Modules hay Styled Components.',
-    content: '<p>Nội dung đầy đủ của bài viết...</p>',
-    category: 'CSS',
-    tags: ['component', 'bem', 'scoping', 'cascade'],
-    author: 'Lê Thiết Kế',
-    authorAvatar: 'assets/avatars/le-thiet-ke.jpg',
-    date: '2025-05-12T09:00:00Z',
-    readTimeMin: 11,
-    thumbnail: 'assets/thumbnails/component-css.jpg',
-    featured: false,
-  },
-  {
-    id: 'state-management-vanilla',
-    title: 'State Management không cần Redux: Flux-lite với Vanilla JS',
-    excerpt: 'Triển khai pattern quản lý trạng thái ứng dụng mạnh mẽ với chưa đầy 200 dòng JS thuần — đủ dùng cho 90% dự án thực tế.',
-    content: '<p>Nội dung đầy đủ của bài viết...</p>',
-    category: 'JavaScript',
-    tags: ['state', 'flux', 'vanilla', 'pattern'],
-    author: 'Trần Hệ Thống',
-    authorAvatar: 'assets/avatars/tran-he-thong.jpg',
-    date: '2025-05-05T10:30:00Z',
-    readTimeMin: 13,
-    thumbnail: 'assets/thumbnails/state-management.jpg',
-    featured: false,
-  },
-  {
-    id: 'touch-events-mobile',
-    title: 'Tối ưu Touch Events cho Mobile: Passive Listeners và Inertia',
-    excerpt: 'Kỹ thuật xử lý touch events hiệu suất cao: passive event listeners, pointer events API, và mô phỏng inertia scroll tự nhiên.',
-    content: '<p>Nội dung đầy đủ của bài viết...</p>',
-    category: 'Performance',
-    tags: ['touch', 'mobile', 'passive', 'inertia'],
-    author: 'Phạm Nguyên Lý',
-    authorAvatar: 'assets/avatars/pham-nguyen-ly.jpg',
-    date: '2025-04-25T08:00:00Z',
-    readTimeMin: 7,
-    thumbnail: 'assets/thumbnails/touch-events.jpg',
-    featured: false,
-  },
-  {
-    id: 'accessibility-aria-keyboard',
-    title: 'Accessibility thực chiến: ARIA, Keyboard Navigation và Focus Management',
-    excerpt: 'Hướng dẫn toàn diện để xây dựng giao diện accessible theo chuẩn WCAG 2.1 AA mà không làm phức tạp codebase.',
-    content: '<p>Nội dung đầy đủ của bài viết...</p>',
-    category: 'Accessibility',
-    tags: ['aria', 'wcag', 'keyboard', 'focus'],
-    author: 'Lê Thiết Kế',
-    authorAvatar: 'assets/avatars/le-thiet-ke.jpg',
-    date: '2025-04-15T09:30:00Z',
-    readTimeMin: 14,
-    thumbnail: 'assets/thumbnails/accessibility.jpg',
-    featured: false,
-  },
-];
-
-// ── Repository ───────────────────────────────────────────────────
-
 const ArticleRepository = (() => {
 
-  /** In-memory cache của store — tránh JSON.parse lại mỗi lần đọc. */
+  /** @type {Article[]|null} In-memory store — null cho đến khi init() hoàn tất. */
   let _memoryCache = null;
+
+  /** @type {boolean} */
+  let _initialized = false;
+
+  /** @type {Promise<void>|null} Tránh fetch trùng nếu init() bị gọi nhiều lần đồng thời. */
+  let _initPromise = null;
+
+  /** @type {string|null} Lỗi tải dữ liệu gần nhất, nếu có. */
+  let _initError = null;
+
+  // ── Khởi tạo ─────────────────────────────────────────────────────
+
+  /**
+   * Tải dữ liệu bài viết. Ưu tiên LocalStorage (đã có từ trước,
+   * có thể đã bị người dùng chỉnh sửa qua CRUD); nếu trống, fetch
+   * từ content/articles.json và seed LocalStorage lần đầu.
+   *
+   * An toàn khi gọi nhiều lần — chỉ thực thi thật sự một lần.
+   * @returns {Promise<void>}
+   */
+  function init() {
+    if (_initPromise) return _initPromise;
+
+    _initPromise = (async () => {
+      // Bước 1: thử đọc từ LocalStorage trước (dữ liệu đã từng tồn tại / đã chỉnh sửa)
+      try {
+        const raw = localStorage.getItem(Config.STORAGE.ARTICLES_STORE);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            _memoryCache = parsed;
+            _initialized = true;
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('[ArticleRepository] LocalStorage hỏng, sẽ tải lại từ content/articles.json:', err);
+      }
+
+      // Bước 2: LocalStorage trống — tải từ JSON, đây là nguồn dữ liệu thật
+      try {
+        const response = await fetch(Config.CONTENT.ARTICLES_JSON);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} khi tải ${Config.CONTENT.ARTICLES_JSON}`);
+        }
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error('content/articles.json phải chứa một mảng bài viết.');
+        }
+        _memoryCache = data;
+        _persistStore(data);
+      } catch (err) {
+        _initError = err.message || String(err);
+        console.error('[ArticleRepository] Không thể tải dữ liệu bài viết:', err);
+        _memoryCache = []; // Không hardcode fallback — UI sẽ hiện trạng thái rỗng/lỗi rõ ràng
+      } finally {
+        _initialized = true;
+      }
+    })();
+
+    return _initPromise;
+  }
+
+  /**
+   * @returns {boolean} true nếu init() đã hoàn tất (thành công hoặc thất bại).
+   */
+  function isReady() {
+    return _initialized;
+  }
+
+  /**
+   * @returns {string|null} Thông báo lỗi của lần tải gần nhất, null nếu không có lỗi.
+   */
+  function getInitError() {
+    return _initError;
+  }
 
   // ── Persistent Store (LocalStorage) ───────────────────────────────
 
   /**
-   * Đọc store từ LocalStorage. Nếu trống/hỏng, seed lần đầu từ mock data.
-   * @returns {Article[]} Tham chiếu nội bộ — KHÔNG trả trực tiếp ra ngoài.
-   */
-  function _loadStore() {
-    if (_memoryCache) return _memoryCache;
-
-    try {
-      const raw = localStorage.getItem(Config.STORAGE.ARTICLES_STORE);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          _memoryCache = parsed;
-          return _memoryCache;
-        }
-      }
-    } catch (err) {
-      console.warn('[ArticleRepository] LocalStorage lỗi/hỏng, sẽ seed lại từ mock data:', err);
-    }
-
-    const seeded = _SEED_ARTICLES.map(_cloneArticle);
-    _persistStore(seeded);
-    return seeded;
-  }
-
-  /**
-   * Ghi store xuống LocalStorage và cập nhật memory cache.
    * @param {Article[]} articles
    */
   function _persistStore(articles) {
@@ -207,54 +127,56 @@ const ArticleRepository = (() => {
     }
   }
 
-  // ── Read ─────────────────────────────────────────────────────────
-
   /**
-   * Lấy tất cả bài viết.
+   * Đảm bảo store đã sẵn sàng trước khi đọc/ghi. Cảnh báo rõ ràng
+   * nếu một component gọi repository trước khi app.js await init().
    * @returns {Article[]}
    */
+  function _requireStore() {
+    if (!_initialized) {
+      console.warn(
+        '[ArticleRepository] Gọi trước khi init() hoàn tất — trả về dữ liệu rỗng. ' +
+        'Đảm bảo app.js đã `await ArticleRepository.init()` trước khi dùng repository.'
+      );
+      return [];
+    }
+    return _memoryCache || [];
+  }
+
+  // ── Read ─────────────────────────────────────────────────────────
+
+  /** @returns {Article[]} */
   function getAll() {
-    return _loadStore().map(_cloneArticle);
+    return _requireStore().map(_cloneArticle);
   }
 
   /**
-   * Lấy bài viết theo id.
    * @param {string} id
    * @returns {Article|null}
    */
   function getById(id) {
-    const article = _loadStore().find(a => a.id === id);
+    const article = _requireStore().find(a => a.id === id);
     return article ? _cloneArticle(article) : null;
   }
 
-  /**
-   * Lấy danh sách bài featured.
-   * @returns {Article[]}
-   */
+  /** @returns {Article[]} */
   function getFeatured() {
     return getAll().filter(a => a.featured);
   }
 
-  /**
-   * Lấy danh sách tất cả categories (không trùng).
-   * @returns {string[]}
-   */
+  /** @returns {string[]} */
   function getCategories() {
-    return [...new Set(_loadStore().map(a => a.category))].sort();
+    return [...new Set(_requireStore().map(a => a.category))].sort();
   }
 
-  /**
-   * Lấy danh sách tất cả tags (không trùng).
-   * @returns {string[]}
-   */
+  /** @returns {string[]} */
   function getTags() {
-    return [...new Set(_loadStore().flatMap(a => a.tags))].sort();
+    return [...new Set(_requireStore().flatMap(a => a.tags))].sort();
   }
 
   // ── Filter & Search ──────────────────────────────────────────────
 
   /**
-   * Lọc và tìm kiếm bài viết.
    * @param {{ query?: string, category?: string, tags?: string[], page?: number }} options
    * @returns {{ results: Article[], total: number, page: number, totalPages: number }}
    */
@@ -295,7 +217,6 @@ const ArticleRepository = (() => {
   }
 
   /**
-   * Lấy bài viết liên quan (cùng category, loại trừ bài hiện tại).
    * @param {string} id
    * @param {number} [limit=3]
    * @returns {Article[]}
@@ -310,14 +231,12 @@ const ArticleRepository = (() => {
   }
 
   // ── Write (CRUD) ─────────────────────────────────────────────────
-  // Thêm/sửa/xóa bài viết KHÔNG cần đụng vào file JS này.
-  // Mọi thay đổi được ghi thẳng vào LocalStorage và tồn tại lâu dài.
+  // Thêm/sửa/xóa bài viết hoàn toàn qua các hàm này — không bao giờ
+  // cần sửa content/articles.json hay file JS này để cập nhật nội dung.
 
   /**
-   * Thêm bài viết mới. Tự sinh id từ title (slug), tự tính readTimeMin
-   * nếu không cung cấp, tự gán ngày hiện tại nếu thiếu.
    * @param {Partial<Article>} data
-   * @returns {Article} Bài viết đã được tạo (đầy đủ field).
+   * @returns {Article}
    */
   function addArticle(data) {
     if (!data || typeof data !== 'object') {
@@ -327,7 +246,7 @@ const ArticleRepository = (() => {
       throw new Error('[ArticleRepository] Bài viết phải có tiêu đề (title).');
     }
 
-    const store = _loadStore();
+    const store = _requireStore();
 
     let id = data.id ? String(data.id).trim() : _slugify(data.title);
     if (store.some(a => a.id === id)) {
@@ -349,20 +268,17 @@ const ArticleRepository = (() => {
       featured:     Boolean(data.featured),
     };
 
-    const next = [article, ...store];
-    _persistStore(next);
-
+    _persistStore([article, ...store]);
     return _cloneArticle(article);
   }
 
   /**
-   * Cập nhật bài viết theo id. id không thể bị ghi đè qua updates.
    * @param {string} id
    * @param {Partial<Article>} updates
-   * @returns {Article|null} Bài viết sau cập nhật, null nếu không tìm thấy.
+   * @returns {Article|null}
    */
   function updateArticle(id, updates) {
-    const store = _loadStore();
+    const store = _requireStore();
     const index = store.findIndex(a => a.id === id);
 
     if (index === -1) {
@@ -379,12 +295,11 @@ const ArticleRepository = (() => {
   }
 
   /**
-   * Xóa bài viết theo id.
    * @param {string} id
-   * @returns {boolean} true nếu xóa thành công.
+   * @returns {boolean}
    */
   function deleteArticle(id) {
-    const store = _loadStore();
+    const store = _requireStore();
     const next  = store.filter(a => a.id !== id);
 
     if (next.length === store.length) {
@@ -397,27 +312,26 @@ const ArticleRepository = (() => {
   }
 
   /**
-   * Khôi phục store về dữ liệu mẫu ban đầu (factory reset).
-   * @returns {Article[]}
+   * Tải lại từ content/articles.json, GHI ĐÈ mọi thay đổi CRUD đã có trong LocalStorage.
+   * @returns {Promise<Article[]>}
    */
-  function resetToSeed() {
-    const seeded = _SEED_ARTICLES.map(_cloneArticle);
-    _persistStore(seeded);
-    return seeded.map(_cloneArticle);
+  async function resetToSource() {
+    const response = await fetch(Config.CONTENT.ARTICLES_JSON);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (!Array.isArray(data)) throw new Error('content/articles.json phải chứa một mảng bài viết.');
+    _persistStore(data);
+    return data.map(_cloneArticle);
   }
 
-  /**
-   * Xuất toàn bộ store dưới dạng JSON string — dùng để backup/di chuyển dữ liệu.
-   * @returns {string}
-   */
+  /** @returns {string} */
   function exportAll() {
-    return JSON.stringify(_loadStore(), null, 2);
+    return JSON.stringify(_requireStore(), null, 2);
   }
 
   /**
-   * Nhập toàn bộ store từ JSON string — thay thế hoàn toàn dữ liệu hiện tại.
    * @param {string} jsonString
-   * @returns {number} Số bài viết đã nhập.
+   * @returns {number}
    */
   function importAll(jsonString) {
     let parsed;
@@ -437,11 +351,10 @@ const ArticleRepository = (() => {
 
   /** @param {Article} article @returns {Article} */
   function _cloneArticle(article) {
-    return { ...article, tags: [...article.tags] };
+    return { ...article, tags: [...(article.tags || [])] };
   }
 
   /**
-   * Chuyển tiêu đề thành slug id — hỗ trợ bỏ dấu tiếng Việt.
    * @param {string} title
    * @returns {string}
    */
@@ -459,7 +372,6 @@ const ArticleRepository = (() => {
   }
 
   /**
-   * Ước tính thời gian đọc dựa trên số từ (~200 từ/phút), loại bỏ HTML tags.
    * @param {string} [content]
    * @returns {number}
    */
@@ -472,6 +384,9 @@ const ArticleRepository = (() => {
 
   // ── Expose ───────────────────────────────────────────────────────
   return Object.freeze({
+    init,
+    isReady,
+    getInitError,
     getAll,
     getById,
     getFeatured,
@@ -482,11 +397,11 @@ const ArticleRepository = (() => {
     addArticle,
     updateArticle,
     deleteArticle,
-    resetToSeed,
+    resetToSource,
     exportAll,
     importAll,
   });
 
 })();
 
-export default ArticleRepository; 
+export default ArticleRepository;

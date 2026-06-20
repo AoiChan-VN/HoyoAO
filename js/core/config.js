@@ -62,10 +62,8 @@ const Config = Object.freeze({
 
   // ── Storage keys (LocalStorage) ──────────────────────────────────
   STORAGE: Object.freeze({
-    ARTICLES_CACHE:     'skybox_articles_cache',
-    ARTICLES_CACHE_TTL: 'skybox_articles_cache_ttl',
+    ARTICLES_STORE:     'skybox_articles_store',
     SKYBOX_IMAGE_SET:   'skybox_image_set',
-    CACHE_TTL_MS:       5 * 60 * 1000,   // 5 phút
   }),
 
   // ── Performance ──────────────────────────────────────────────────
@@ -95,4 +93,4 @@ const Config = Object.freeze({
 
 });
 
-export default Config; 
+export default Config;

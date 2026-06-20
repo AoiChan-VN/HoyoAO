@@ -114,12 +114,13 @@ const ArticleRenderer = (() => {
          href="articles.html?id=${_escape(article.id)}"
          aria-label="${_escape(article.title)}">
 
-        <div class="article-card__thumbnail" ${!article.thumbnail ? '' : ''}>
+        <div class="article-card__thumbnail">
           ${article.thumbnail
             ? `<img src="${_escape(article.thumbnail)}"
                     alt="${_escape(article.title)}"
                     loading="lazy"
-                    decoding="async">`
+                    decoding="async"
+                    onerror="this.remove()">`
             : ''}
           <span class="article-card__badge">${_escape(article.category)}</span>
         </div>
@@ -138,7 +139,7 @@ const ArticleRenderer = (() => {
             <div class="article-card__author">
               <div class="article-card__avatar" aria-hidden="true">
                 ${article.authorAvatar
-                  ? `<img src="${_escape(article.authorAvatar)}" alt="${_escape(article.author)}">`
+                  ? `<img src="${_escape(article.authorAvatar)}" alt="${_escape(article.author)}" onerror="this.outerHTML='${initials}'">`
                   : initials}
               </div>
               <span class="article-card__author-name">${_escape(article.author)}</span>
@@ -182,7 +183,7 @@ const ArticleRenderer = (() => {
           <div class="article-reader__author">
             <div class="article-reader__avatar">
               ${article.authorAvatar
-                ? `<img src="${_escape(article.authorAvatar)}" alt="${_escape(article.author)}">`
+                ? `<img src="${_escape(article.authorAvatar)}" alt="${_escape(article.author)}" onerror="this.outerHTML='${initials}'">`
                 : initials}
             </div>
             <div class="article-reader__author-info">
@@ -201,7 +202,7 @@ const ArticleRenderer = (() => {
       ${article.thumbnail
         ? `<figure class="article-reader__hero">
              <img src="${_escape(article.thumbnail)}" alt="${_escape(article.title)}"
-                  loading="eager" decoding="async">
+                  loading="eager" decoding="async" onerror="this.closest('figure').remove()">
            </figure>`
         : ''}
 
@@ -301,8 +302,24 @@ const ArticleRenderer = (() => {
     if (_grid) _grid.style.display = 'grid';
   }
 
-  function _showEmpty() {
-    if (_emptyEl) _emptyEl.setAttribute('data-visible', '');
+  /**
+   * @param {{ title?: string, text?: string, showRetry?: boolean }} [options]
+   */
+  function _showEmpty(options = {}) {
+    if (!_emptyEl) return;
+
+    const titleEl = _emptyEl.querySelector('[data-empty-title]');
+    const textEl  = _emptyEl.querySelector('[data-empty-text]');
+    const retryBtn = _emptyEl.querySelector('[data-empty-retry]');
+
+    if (titleEl) titleEl.textContent = options.title || 'Không tìm thấy bài viết';
+    if (textEl)  textEl.textContent  = options.text  || 'Thử thay đổi từ khóa tìm kiếm hoặc bỏ chọn bộ lọc danh mục.';
+    if (retryBtn) {
+      if (options.showRetry) retryBtn.setAttribute('data-visible', '');
+      else retryBtn.removeAttribute('data-visible');
+    }
+
+    _emptyEl.setAttribute('data-visible', '');
     if (_grid) _grid.style.display = 'none';
   }
 
@@ -365,6 +382,21 @@ const ArticleRenderer = (() => {
       console.error('[ArticleRenderer]', message);
     });
 
+    EventBus.on(EVENTS.ARTICLES_LOAD_FAILED, ({ message }) => {
+      _hideLoading();
+      _showEmpty({
+        title: 'Không thể tải dữ liệu bài viết',
+        text: 'Đã xảy ra lỗi khi tải content/articles.json. Vui lòng kiểm tra kết nối mạng và thử lại.',
+        showRetry: true,
+      });
+      console.error('[ArticleRenderer] Tải dữ liệu thất bại:', message);
+    });
+
+    const retryBtn = _emptyEl?.querySelector('[data-empty-retry]');
+    if (retryBtn) {
+      retryBtn.addEventListener('click', () => window.location.reload());
+    }
+
     if (_loadMoreBtn) {
       _loadMoreBtn.addEventListener('click', () => {
         const page = Number(_loadMoreBtn.dataset.page) || 2;
@@ -383,4 +415,4 @@ const ArticleRenderer = (() => {
 
 })();
 
-export default ArticleRenderer; 
+export default ArticleRenderer;

@@ -4,8 +4,10 @@
  * @domain articles
  * @depends config.js
  *
- * Quản lý toàn bộ dữ liệu bài viết.
- * Không chứa logic render hay DOM — chỉ quản lý và cung cấp dữ liệu.
+ * LocalStorage là nguồn dữ liệu thật (persistent store).
+ * _SEED_ARTICLES chỉ dùng để khởi tạo lần đầu tiên — sau đó
+ * mọi thao tác đọc/ghi đều qua addArticle/updateArticle/deleteArticle,
+ * KHÔNG cần sửa file JS này để thêm bài viết mới.
  */
 
 import Config from '../core/config.js';
@@ -26,10 +28,10 @@ import Config from '../core/config.js';
  * @property {boolean}  featured
  */
 
-// ── Mock Data ────────────────────────────────────────────────────
+// ── Seed Data (chỉ dùng lần đầu khi LocalStorage trống) ───────────
 
 /** @type {Article[]} */
-const _mockArticles = [
+const _SEED_ARTICLES = [
   {
     id: 'css-3d-skybox-architecture',
     title: 'Xây dựng Skybox 3D thuần CSS: Kiến trúc và Kỹ thuật',
@@ -37,8 +39,8 @@ const _mockArticles = [
     content: '<p>Nội dung đầy đủ của bài viết...</p>',
     category: 'CSS',
     tags: ['css3d', 'transform', 'performance', 'vanilla'],
-    author: 'Aoi-VN',
-    authorAvatar: 'assets/avatars/kien-truc.jpg',
+    author: 'Nguyễn Kiến Trúc',
+    authorAvatar: 'assets/avatars/nguyen-kien-truc.jpg',
     date: '2025-06-15T08:00:00Z',
     readTimeMin: 12,
     thumbnail: 'assets/thumbnails/css-3d-skybox.jpg',
@@ -51,8 +53,8 @@ const _mockArticles = [
     content: '<p>Nội dung đầy đủ của bài viết...</p>',
     category: 'JavaScript',
     tags: ['event-driven', 'pubsub', 'architecture', 'vanilla'],
-    author: 'Aoi-VN',
-    authorAvatar: 'assets/avatars/he-thong.jpg',
+    author: 'Trần Hệ Thống',
+    authorAvatar: 'assets/avatars/tran-he-thong.jpg',
     date: '2025-06-10T09:00:00Z',
     readTimeMin: 8,
     thumbnail: 'assets/thumbnails/event-driven.jpg',
@@ -65,8 +67,8 @@ const _mockArticles = [
     content: '<p>Nội dung đầy đủ của bài viết...</p>',
     category: 'CSS',
     tags: ['design-system', 'tokens', 'css-variables', 'scalability'],
-    author: 'Aoi-VN',
-    authorAvatar: 'assets/avatars/thiet-ke.jpg',
+    author: 'Lê Thiết Kế',
+    authorAvatar: 'assets/avatars/le-thiet-ke.jpg',
     date: '2025-06-05T10:00:00Z',
     readTimeMin: 10,
     thumbnail: 'assets/thumbnails/design-tokens.jpg',
@@ -79,8 +81,8 @@ const _mockArticles = [
     content: '<p>Nội dung đầy đủ của bài viết...</p>',
     category: 'Architecture',
     tags: ['solid', 'clean-code', 'maintainability', 'principles'],
-    author: 'Aoi-VN',
-    authorAvatar: 'assets/avatars/nguyen-ly.jpg',
+    author: 'Phạm Nguyên Lý',
+    authorAvatar: 'assets/avatars/pham-nguyen-ly.jpg',
     date: '2025-05-28T08:30:00Z',
     readTimeMin: 15,
     thumbnail: 'assets/thumbnails/solid-frontend.jpg',
@@ -93,8 +95,8 @@ const _mockArticles = [
     content: '<p>Nội dung đầy đủ của bài viết...</p>',
     category: 'Performance',
     tags: ['gpu', 'compositing', 'animation', 'will-change'],
-    author: 'Aoi-VN',
-    authorAvatar: 'assets/avatars/kien-truc.jpg',
+    author: 'Nguyễn Kiến Trúc',
+    authorAvatar: 'assets/avatars/nguyen-kien-truc.jpg',
     date: '2025-05-20T11:00:00Z',
     readTimeMin: 9,
     thumbnail: 'assets/thumbnails/css-performance.jpg',
@@ -107,8 +109,8 @@ const _mockArticles = [
     content: '<p>Nội dung đầy đủ của bài viết...</p>',
     category: 'CSS',
     tags: ['component', 'bem', 'scoping', 'cascade'],
-    author: 'Aoi-VN',
-    authorAvatar: 'assets/avatars/thiet-ke.jpg',
+    author: 'Lê Thiết Kế',
+    authorAvatar: 'assets/avatars/le-thiet-ke.jpg',
     date: '2025-05-12T09:00:00Z',
     readTimeMin: 11,
     thumbnail: 'assets/thumbnails/component-css.jpg',
@@ -121,8 +123,8 @@ const _mockArticles = [
     content: '<p>Nội dung đầy đủ của bài viết...</p>',
     category: 'JavaScript',
     tags: ['state', 'flux', 'vanilla', 'pattern'],
-    author: 'Aoi-VN',
-    authorAvatar: 'assets/avatars/he-thong.jpg',
+    author: 'Trần Hệ Thống',
+    authorAvatar: 'assets/avatars/tran-he-thong.jpg',
     date: '2025-05-05T10:30:00Z',
     readTimeMin: 13,
     thumbnail: 'assets/thumbnails/state-management.jpg',
@@ -135,8 +137,8 @@ const _mockArticles = [
     content: '<p>Nội dung đầy đủ của bài viết...</p>',
     category: 'Performance',
     tags: ['touch', 'mobile', 'passive', 'inertia'],
-    author: 'Aoi-VN',
-    authorAvatar: 'assets/avatars/nguyen-ly.jpg',
+    author: 'Phạm Nguyên Lý',
+    authorAvatar: 'assets/avatars/pham-nguyen-ly.jpg',
     date: '2025-04-25T08:00:00Z',
     readTimeMin: 7,
     thumbnail: 'assets/thumbnails/touch-events.jpg',
@@ -149,8 +151,8 @@ const _mockArticles = [
     content: '<p>Nội dung đầy đủ của bài viết...</p>',
     category: 'Accessibility',
     tags: ['aria', 'wcag', 'keyboard', 'focus'],
-    author: 'Aoi-VN',
-    authorAvatar: 'assets/avatars/thiet-ke.jpg',
+    author: 'Lê Thiết Kế',
+    authorAvatar: 'assets/avatars/le-thiet-ke.jpg',
     date: '2025-04-15T09:30:00Z',
     readTimeMin: 14,
     thumbnail: 'assets/thumbnails/accessibility.jpg',
@@ -162,16 +164,57 @@ const _mockArticles = [
 
 const ArticleRepository = (() => {
 
+  /** In-memory cache của store — tránh JSON.parse lại mỗi lần đọc. */
+  let _memoryCache = null;
+
+  // ── Persistent Store (LocalStorage) ───────────────────────────────
+
+  /**
+   * Đọc store từ LocalStorage. Nếu trống/hỏng, seed lần đầu từ mock data.
+   * @returns {Article[]} Tham chiếu nội bộ — KHÔNG trả trực tiếp ra ngoài.
+   */
+  function _loadStore() {
+    if (_memoryCache) return _memoryCache;
+
+    try {
+      const raw = localStorage.getItem(Config.STORAGE.ARTICLES_STORE);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          _memoryCache = parsed;
+          return _memoryCache;
+        }
+      }
+    } catch (err) {
+      console.warn('[ArticleRepository] LocalStorage lỗi/hỏng, sẽ seed lại từ mock data:', err);
+    }
+
+    const seeded = _SEED_ARTICLES.map(_cloneArticle);
+    _persistStore(seeded);
+    return seeded;
+  }
+
+  /**
+   * Ghi store xuống LocalStorage và cập nhật memory cache.
+   * @param {Article[]} articles
+   */
+  function _persistStore(articles) {
+    _memoryCache = articles;
+    try {
+      localStorage.setItem(Config.STORAGE.ARTICLES_STORE, JSON.stringify(articles));
+    } catch (err) {
+      console.warn('[ArticleRepository] Không thể ghi LocalStorage (có thể đã đầy dung lượng):', err);
+    }
+  }
+
   // ── Read ─────────────────────────────────────────────────────────
 
   /**
-   * Lấy tất cả bài viết (có cache LocalStorage).
+   * Lấy tất cả bài viết.
    * @returns {Article[]}
    */
   function getAll() {
-    const cached = _readCache();
-    if (cached) return cached;
-    return _mockArticles.map(_cloneArticle);
+    return _loadStore().map(_cloneArticle);
   }
 
   /**
@@ -180,8 +223,7 @@ const ArticleRepository = (() => {
    * @returns {Article|null}
    */
   function getById(id) {
-    const all = getAll();
-    const article = all.find(a => a.id === id);
+    const article = _loadStore().find(a => a.id === id);
     return article ? _cloneArticle(article) : null;
   }
 
@@ -198,8 +240,7 @@ const ArticleRepository = (() => {
    * @returns {string[]}
    */
   function getCategories() {
-    const all = getAll();
-    return [...new Set(all.map(a => a.category))].sort();
+    return [...new Set(_loadStore().map(a => a.category))].sort();
   }
 
   /**
@@ -207,8 +248,7 @@ const ArticleRepository = (() => {
    * @returns {string[]}
    */
   function getTags() {
-    const all = getAll();
-    return [...new Set(all.flatMap(a => a.tags))].sort();
+    return [...new Set(_loadStore().flatMap(a => a.tags))].sort();
   }
 
   // ── Filter & Search ──────────────────────────────────────────────
@@ -221,17 +261,14 @@ const ArticleRepository = (() => {
   function query({ query = '', category = null, tags = [], page = 1 } = {}) {
     let results = getAll();
 
-    // Filter by category
     if (category) {
       results = results.filter(a => a.category === category);
     }
 
-    // Filter by tags (bài viết phải có TẤT CẢ tags được chỉ định)
     if (tags.length > 0) {
       results = results.filter(a => tags.every(t => a.tags.includes(t)));
     }
 
-    // Search query — tìm trong title, excerpt, tags, author
     if (query.trim()) {
       const q = query.trim().toLowerCase();
       results = results.filter(a =>
@@ -242,7 +279,6 @@ const ArticleRepository = (() => {
       );
     }
 
-    // Sort: featured trước, sau đó mới nhất
     results.sort((a, b) => {
       if (a.featured !== b.featured) return a.featured ? -1 : 1;
       return new Date(b.date) - new Date(a.date);
@@ -255,12 +291,7 @@ const ArticleRepository = (() => {
     const start      = (safePage - 1) * pageSize;
     const paginated  = results.slice(start, start + pageSize);
 
-    return {
-      results:    paginated,
-      total,
-      page:       safePage,
-      totalPages,
-    };
+    return { results: paginated, total, page: safePage, totalPages };
   }
 
   /**
@@ -278,50 +309,165 @@ const ArticleRepository = (() => {
       .slice(0, limit);
   }
 
-  // ── Cache ────────────────────────────────────────────────────────
+  // ── Write (CRUD) ─────────────────────────────────────────────────
+  // Thêm/sửa/xóa bài viết KHÔNG cần đụng vào file JS này.
+  // Mọi thay đổi được ghi thẳng vào LocalStorage và tồn tại lâu dài.
 
-  function _readCache() {
-    try {
-      const ttl  = localStorage.getItem(Config.STORAGE.ARTICLES_CACHE_TTL);
-      const data = localStorage.getItem(Config.STORAGE.ARTICLES_CACHE);
-      if (!ttl || !data) return null;
-      if (Date.now() > Number(ttl)) {
-        localStorage.removeItem(Config.STORAGE.ARTICLES_CACHE);
-        localStorage.removeItem(Config.STORAGE.ARTICLES_CACHE_TTL);
-        return null;
-      }
-      return JSON.parse(data);
-    } catch {
-      return null;
+  /**
+   * Thêm bài viết mới. Tự sinh id từ title (slug), tự tính readTimeMin
+   * nếu không cung cấp, tự gán ngày hiện tại nếu thiếu.
+   * @param {Partial<Article>} data
+   * @returns {Article} Bài viết đã được tạo (đầy đủ field).
+   */
+  function addArticle(data) {
+    if (!data || typeof data !== 'object') {
+      throw new TypeError('[ArticleRepository] addArticle yêu cầu một object dữ liệu.');
     }
-  }
+    if (!data.title || !data.title.trim()) {
+      throw new Error('[ArticleRepository] Bài viết phải có tiêu đề (title).');
+    }
 
-  function _writeCache(articles) {
-    try {
-      localStorage.setItem(Config.STORAGE.ARTICLES_CACHE, JSON.stringify(articles));
-      localStorage.setItem(Config.STORAGE.ARTICLES_CACHE_TTL, String(Date.now() + Config.STORAGE.CACHE_TTL_MS));
-    } catch {
-      // Storage đầy hoặc không khả dụng — tiếp tục bình thường
+    const store = _loadStore();
+
+    let id = data.id ? String(data.id).trim() : _slugify(data.title);
+    if (store.some(a => a.id === id)) {
+      id = `${id}-${Date.now().toString(36)}`;
     }
+
+    const article = {
+      id,
+      title:        data.title.trim(),
+      excerpt:      data.excerpt || '',
+      content:      data.content || '',
+      category:     data.category || 'Khác',
+      tags:         Array.isArray(data.tags) ? [...data.tags] : [],
+      author:       data.author || 'Ẩn danh',
+      authorAvatar: data.authorAvatar || '',
+      date:         data.date || new Date().toISOString(),
+      readTimeMin:  data.readTimeMin || _estimateReadTime(data.content),
+      thumbnail:    data.thumbnail || '',
+      featured:     Boolean(data.featured),
+    };
+
+    const next = [article, ...store];
+    _persistStore(next);
+
+    return _cloneArticle(article);
   }
 
   /**
-   * Xóa cache bài viết.
+   * Cập nhật bài viết theo id. id không thể bị ghi đè qua updates.
+   * @param {string} id
+   * @param {Partial<Article>} updates
+   * @returns {Article|null} Bài viết sau cập nhật, null nếu không tìm thấy.
    */
-  function clearCache() {
-    try {
-      localStorage.removeItem(Config.STORAGE.ARTICLES_CACHE);
-      localStorage.removeItem(Config.STORAGE.ARTICLES_CACHE_TTL);
-    } catch {
-      // ignore
+  function updateArticle(id, updates) {
+    const store = _loadStore();
+    const index = store.findIndex(a => a.id === id);
+
+    if (index === -1) {
+      console.warn(`[ArticleRepository] updateArticle: không tìm thấy id "${id}".`);
+      return null;
     }
+
+    const merged = { ..._cloneArticle(store[index]), ...updates, id: store[index].id };
+    const next   = [...store];
+    next[index]  = merged;
+    _persistStore(next);
+
+    return _cloneArticle(merged);
   }
 
-  // ── Private ──────────────────────────────────────────────────────
+  /**
+   * Xóa bài viết theo id.
+   * @param {string} id
+   * @returns {boolean} true nếu xóa thành công.
+   */
+  function deleteArticle(id) {
+    const store = _loadStore();
+    const next  = store.filter(a => a.id !== id);
+
+    if (next.length === store.length) {
+      console.warn(`[ArticleRepository] deleteArticle: không tìm thấy id "${id}".`);
+      return false;
+    }
+
+    _persistStore(next);
+    return true;
+  }
+
+  /**
+   * Khôi phục store về dữ liệu mẫu ban đầu (factory reset).
+   * @returns {Article[]}
+   */
+  function resetToSeed() {
+    const seeded = _SEED_ARTICLES.map(_cloneArticle);
+    _persistStore(seeded);
+    return seeded.map(_cloneArticle);
+  }
+
+  /**
+   * Xuất toàn bộ store dưới dạng JSON string — dùng để backup/di chuyển dữ liệu.
+   * @returns {string}
+   */
+  function exportAll() {
+    return JSON.stringify(_loadStore(), null, 2);
+  }
+
+  /**
+   * Nhập toàn bộ store từ JSON string — thay thế hoàn toàn dữ liệu hiện tại.
+   * @param {string} jsonString
+   * @returns {number} Số bài viết đã nhập.
+   */
+  function importAll(jsonString) {
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonString);
+    } catch {
+      throw new Error('[ArticleRepository] importAll: chuỗi JSON không hợp lệ.');
+    }
+    if (!Array.isArray(parsed)) {
+      throw new Error('[ArticleRepository] importAll: dữ liệu phải là một mảng bài viết.');
+    }
+    _persistStore(parsed);
+    return parsed.length;
+  }
+
+  // ── Private helpers ──────────────────────────────────────────────
 
   /** @param {Article} article @returns {Article} */
   function _cloneArticle(article) {
     return { ...article, tags: [...article.tags] };
+  }
+
+  /**
+   * Chuyển tiêu đề thành slug id — hỗ trợ bỏ dấu tiếng Việt.
+   * @param {string} title
+   * @returns {string}
+   */
+  function _slugify(title) {
+    const slug = title
+      .toLowerCase()
+      .replace(/đ/g, 'd').replace(/Đ/g, 'd')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .slice(0, 60);
+
+    return slug || `bai-viet-${Date.now().toString(36)}`;
+  }
+
+  /**
+   * Ước tính thời gian đọc dựa trên số từ (~200 từ/phút), loại bỏ HTML tags.
+   * @param {string} [content]
+   * @returns {number}
+   */
+  function _estimateReadTime(content) {
+    if (!content) return 1;
+    const text  = content.replace(/<[^>]*>/g, ' ').trim();
+    const words = text.split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.round(words / 200));
   }
 
   // ── Expose ───────────────────────────────────────────────────────
@@ -333,7 +479,12 @@ const ArticleRepository = (() => {
     getTags,
     query,
     getRelated,
-    clearCache,
+    addArticle,
+    updateArticle,
+    deleteArticle,
+    resetToSeed,
+    exportAll,
+    importAll,
   });
 
 })();

@@ -228,8 +228,8 @@
   align-items: center;
   background: linear-gradient(
     135deg,
-    var(--color-accent-primary),
-    var(--primitive-nebula-400)
+    var(--color-accent-gradient-start),
+    var(--color-accent-gradient-end)
   );
   border-radius: var(--radius-full);
   color: var(--primitive-white);
@@ -279,8 +279,8 @@
 .article-card::before {
   background: linear-gradient(
     90deg,
-    var(--color-accent-primary),
-    var(--primitive-nebula-400)
+    var(--color-accent-gradient-start),
+    var(--color-accent-gradient-end)
   );
   bottom: 0;
   content: '';
@@ -295,4 +295,4 @@
 
 .article-card:hover::before {
   transform: scaleX(1);
-}
+} 

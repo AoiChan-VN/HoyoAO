@@ -23,6 +23,12 @@ const OverlayUI = (() => {
   let _dragHintTimer  = null;
   let _hasInteracted  = false;
 
+  // ── Cleanup refs ─────────────────────────────────────────────────
+  let _onResetClick      = null;
+  let _onKeydownReset    = null;
+  const _imageSetHandlers = new Map(); // btn -> handler
+  const _unsubscribers    = [];        // StateManager.watch() unsub fns
+
   // ── Init ─────────────────────────────────────────────────────────
 
   function init() {
@@ -103,20 +109,23 @@ const OverlayUI = (() => {
   function _bindEvents() {
     // Reset button
     if (_resetBtn) {
-      _resetBtn.addEventListener('click', () => {
+      _onResetClick = () => {
         EventBus.emit(EVENTS.SKYBOX_RESET);
         _hideHint();
-      });
+      };
+      _resetBtn.addEventListener('click', _onResetClick);
     }
 
     // Image set switcher buttons
     _imageSetBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
+      const handler = () => {
         const id = btn.getAttribute('data-image-set');
         if (!id) return;
         _activateImageSetBtn(id);
         EventBus.emit(EVENTS.SKYBOX_INIT, { imageSetId: id });
-      });
+      };
+      _imageSetHandlers.set(btn, handler);
+      btn.addEventListener('click', handler);
     });
 
     // Drag start/end — ẩn hint
@@ -124,41 +133,66 @@ const OverlayUI = (() => {
     EventBus.on(EVENTS.INPUT_DRAG_END,   _onDragEnd);
 
     // Phản ánh image set đang active từ state
-    StateManager.watch('skybox.currentImageSet', ({ next }) => {
-      if (next) _activateImageSetBtn(next);
-    });
+    _unsubscribers.push(
+      StateManager.watch('skybox.currentImageSet', ({ next }) => {
+        if (next) _activateImageSetBtn(next);
+      })
+    );
 
     // Loading state — disable buttons khi đang load ảnh mới
-    StateManager.watch('skybox.ready', ({ next }) => {
-      _imageSetBtns.forEach(btn => {
-        btn.disabled = !next;
-        btn.setAttribute('aria-disabled', String(!next));
-      });
-      if (_resetBtn) {
-        _resetBtn.disabled = !next;
-      }
-    });
+    _unsubscribers.push(
+      StateManager.watch('skybox.ready', ({ next }) => {
+        _imageSetBtns.forEach(btn => {
+          btn.disabled = !next;
+          btn.setAttribute('aria-disabled', String(!next));
+        });
+        if (_resetBtn) {
+          _resetBtn.disabled = !next;
+        }
+      })
+    );
 
     // Error state — thông báo lên overlay
-    EventBus.on(EVENTS.SKYBOX_IMAGE_ERROR, ({ face }) => {
-      console.warn(`[OverlayUI] Face "${face}" lỗi tải ảnh.`);
-    });
+    EventBus.on(EVENTS.SKYBOX_IMAGE_ERROR, _onImageError);
 
     // Keyboard: Space hoặc Enter để reset
-    document.addEventListener('keydown', (e) => {
+    _onKeydownReset = (e) => {
       if ((e.code === 'Space' || e.code === 'Enter') && e.target === document.body) {
         e.preventDefault();
         EventBus.emit(EVENTS.SKYBOX_RESET);
       }
-    });
+    };
+    document.addEventListener('keydown', _onKeydownReset);
+  }
+
+  function _onImageError({ face }) {
+    console.warn(`[OverlayUI] Face "${face}" lỗi tải ảnh.`);
   }
 
   // ── Teardown ─────────────────────────────────────────────────────
 
   function destroy() {
     clearTimeout(_dragHintTimer);
-    EventBus.off(EVENTS.INPUT_DRAG_START, _onDragStart);
-    EventBus.off(EVENTS.INPUT_DRAG_END,   _onDragEnd);
+
+    EventBus.off(EVENTS.INPUT_DRAG_START,  _onDragStart);
+    EventBus.off(EVENTS.INPUT_DRAG_END,    _onDragEnd);
+    EventBus.off(EVENTS.SKYBOX_IMAGE_ERROR, _onImageError);
+
+    if (_resetBtn && _onResetClick) {
+      _resetBtn.removeEventListener('click', _onResetClick);
+    }
+
+    _imageSetHandlers.forEach((handler, btn) => {
+      btn.removeEventListener('click', handler);
+    });
+    _imageSetHandlers.clear();
+
+    if (_onKeydownReset) {
+      document.removeEventListener('keydown', _onKeydownReset);
+    }
+
+    _unsubscribers.forEach(unsub => unsub());
+    _unsubscribers.length = 0;
   }
 
   // ── Expose ───────────────────────────────────────────────────────

@@ -22,7 +22,12 @@
   height: 100%;
   left: 0;
   overflow: hidden;
-  perspective: var(--perspective-mid);
+  /* QUAN TRỌNG: perspective PHẢI luôn lớn hơn --skybox-half-size,
+     nếu không mặt cube đối diện camera sẽ bị đẩy ra ngoài tầm nhìn
+     (translateZ vượt quá khoảng cách camera) và biến mất hoàn toàn.
+     Dùng calc() để tỉ lệ thuận với kích thước cube thực tế thay vì
+     một giá trị cố định — luôn đúng ở MỌI kích thước màn hình. */
+  perspective: calc(var(--skybox-half-size) * 1.8);
   perspective-origin: 50% 50%;
   position: absolute;
   top: 0;
@@ -43,7 +48,15 @@
   z-index: var(--z-index-overlay-ui);
 }
 
-.home-domain__overlay > * {
+/* Chỉ phần tử tương tác thực sự (nút/link) mới chặn pointer-events —
+   không phải toàn bộ khối hero (kể cả khoảng trắng quanh chữ), để
+   việc kéo-xoay Skybox hoạt động được kể cả khi bắt đầu kéo từ vùng
+   chứa tiêu đề/mô tả. Đây là sửa lỗi: trước đây `> *` áp dụng cho cả
+   khối .home-domain__hero, khiến nó nuốt mọi thao tác kéo bắt đầu từ
+   giữa màn hình (nơi người dùng tự nhiên nhất sẽ bắt đầu kéo).
+*/
+.home-domain__overlay button,
+.home-domain__overlay a {
   pointer-events: auto;
 }
 
@@ -190,4 +203,4 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   max-width: 40ch;
-} 
+}

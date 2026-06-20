@@ -167,9 +167,12 @@
 }
 
 /* ── Cube size: responsive scaling ─────────────────────────────── */
+/* Định nghĩa trên .home-domain (tổ tiên chung của scene + cube) để
+   CSS variable kế thừa xuống ĐÚNG cho cả hai — không chỉ riêng cube.
+   Đây là điều kiện bắt buộc để perspective ở layout.css tính đúng. */
 @media (min-width: 768px) {
-  .home-domain__cube {
+  .home-domain {
     --skybox-cube-size: max(100vw, 100vh);
     --skybox-half-size: calc(var(--skybox-cube-size) / 2);
   }
-} 
+}

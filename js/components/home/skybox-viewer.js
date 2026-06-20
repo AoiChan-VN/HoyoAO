@@ -17,9 +17,16 @@ const SkyboxViewer = (() => {
   let _loader  = null;
   let _error   = null;
 
-  // ── RAF ──────────────────────────────────────────────────────────
+  // ── RAF — chỉ chạy khi thật sự có chuyển động (inertia decay) ────
   let _rafId   = null;
   let _running = false;
+
+  // ── Named handler refs (để destroy() unsubscribe đúng) ───────────
+  let _onDragDelta        = null;
+  let _onDragStart        = null;
+  let _onDragEnd          = null;
+  let _onSkyboxReset      = null;
+  let _onVisibilityChange = null;
 
   // ── Init ─────────────────────────────────────────────────────────
 
@@ -65,15 +72,15 @@ const SkyboxViewer = (() => {
       return;
     }
 
-    const faces   = SkyboxRepository.getFaces(imageSet.id);
-    const total   = faces.length;
-    let   loaded  = 0;
-    let   failed  = 0;
+    const faces  = SkyboxRepository.getFaces(imageSet.id);
+    const total  = faces.length;
+    let   loaded = 0;
+    let   failed = 0;
 
     StateManager.setBatch({
-      'skybox.imagesTotal':   total,
-      'skybox.imagesLoaded':  0,
-      'skybox.ready':         false,
+      'skybox.imagesTotal':     total,
+      'skybox.imagesLoaded':    0,
+      'skybox.ready':           false,
       'skybox.currentImageSet': imageSet.id,
     });
 
@@ -84,8 +91,8 @@ const SkyboxViewer = (() => {
       faceEl.setAttribute('data-loading', '');
       faceEl.removeAttribute('data-error');
 
-      const img    = faceEl.querySelector('img') || _createFaceImg(faceEl);
-      img.alt      = alt;
+      const img = faceEl.querySelector('img') || _createFaceImg(faceEl);
+      img.alt   = alt;
       img.removeAttribute('data-loaded');
 
       const onLoad = () => {
@@ -123,13 +130,12 @@ const SkyboxViewer = (() => {
 
   function _onAllLoaded(loaded, total) {
     if (loaded === 0) {
-      _showError('Không thể tải ảnh Skybox. Kiểm tra đường dẫn assets.');
+      _showError('Không thể tải ảnh Skybox. Kiểm tra đường dẫn assets (assets/skybox/...).');
       return;
     }
 
     StateManager.set('skybox.ready', true);
     _hideLoader();
-    _startLoop();
     EventBus.emit(EVENTS.SKYBOX_READY, { loaded, total });
   }
 
@@ -137,7 +143,6 @@ const SkyboxViewer = (() => {
 
   /**
    * Áp dụng rotationX / rotationY từ state lên CSS transform của cube.
-   * Gọi từ RAF loop — không dùng transition khi dragging.
    */
   function _applyTransform() {
     const rotX = StateManager.get('skybox.rotationX');
@@ -146,35 +151,37 @@ const SkyboxViewer = (() => {
   }
 
   // ── Inertia RAF loop ─────────────────────────────────────────────
+  // CHỈ chạy trong lúc cube còn trớn sau khi thả tay — không chạy
+  // vô tận khi cube đứng yên. Tiết kiệm pin/CPU trên mobile.
 
   function _loop() {
     const { SKYBOX } = Config;
-    const isDragging = StateManager.get('skybox.isDragging');
 
-    if (!isDragging) {
-      let inertiaX = StateManager.get('skybox.inertiaX');
-      let inertiaY = StateManager.get('skybox.inertiaY');
+    let inertiaX = StateManager.get('skybox.inertiaX');
+    let inertiaY = StateManager.get('skybox.inertiaY');
 
-      const hasInertia = Math.abs(inertiaX) > SKYBOX.INERTIA_THRESHOLD ||
-                         Math.abs(inertiaY) > SKYBOX.INERTIA_THRESHOLD;
+    const hasInertia = Math.abs(inertiaX) > SKYBOX.INERTIA_THRESHOLD ||
+                       Math.abs(inertiaY) > SKYBOX.INERTIA_THRESHOLD;
 
-      if (hasInertia) {
-        inertiaX *= SKYBOX.INERTIA_DAMPING;
-        inertiaY *= SKYBOX.INERTIA_DAMPING;
-
-        const newRotX = _clampPitch(StateManager.get('skybox.rotationX') + inertiaX);
-        const newRotY = StateManager.get('skybox.rotationY') + inertiaY;
-
-        StateManager.setBatch({
-          'skybox.rotationX': newRotX,
-          'skybox.rotationY': newRotY,
-          'skybox.inertiaX':  inertiaX,
-          'skybox.inertiaY':  inertiaY,
-        });
-
-        _applyTransform();
-      }
+    if (!hasInertia) {
+      _stopLoop();
+      return;
     }
+
+    inertiaX *= SKYBOX.INERTIA_DAMPING;
+    inertiaY *= SKYBOX.INERTIA_DAMPING;
+
+    const newRotX = _clampPitch(StateManager.get('skybox.rotationX') + inertiaX);
+    const newRotY = StateManager.get('skybox.rotationY') + inertiaY;
+
+    StateManager.setBatch({
+      'skybox.rotationX': newRotX,
+      'skybox.rotationY': newRotY,
+      'skybox.inertiaX':  inertiaX,
+      'skybox.inertiaY':  inertiaY,
+    });
+
+    _applyTransform();
 
     _rafId = requestAnimationFrame(_loop);
   }
@@ -216,8 +223,8 @@ const SkyboxViewer = (() => {
   // ── Event bindings ───────────────────────────────────────────────
 
   function _bindEvents() {
-    // Input controller → rotate cube
-    EventBus.on(EVENTS.INPUT_DRAG_DELTA, ({ deltaX, deltaY }) => {
+    // Drag delta áp dụng transform NGAY (đồng bộ) — không cần RAF khi đang kéo
+    _onDragDelta = ({ deltaX, deltaY }) => {
       const { SKYBOX } = Config;
       const newRotX = _clampPitch(StateManager.get('skybox.rotationX') - deltaY * SKYBOX.ROTATION_SPEED);
       const newRotY = StateManager.get('skybox.rotationY') + deltaX * SKYBOX.ROTATION_SPEED;
@@ -230,20 +237,22 @@ const SkyboxViewer = (() => {
       });
 
       _applyTransform();
-    });
+    };
 
-    EventBus.on(EVENTS.INPUT_DRAG_START, () => {
+    _onDragStart = () => {
+      _stopLoop(); // Hủy inertia cũ nếu user tóm cube giữa chừng
       StateManager.set('skybox.isDragging', true);
       _cube.setAttribute('data-dragging', '');
-    });
+    };
 
-    EventBus.on(EVENTS.INPUT_DRAG_END, () => {
+    _onDragEnd = () => {
       StateManager.set('skybox.isDragging', false);
       _cube.removeAttribute('data-dragging');
-    });
+      _startLoop(); // Bắt đầu giảm tốc tự nhiên — tự dừng khi hết trớn
+    };
 
-    // Reset
-    EventBus.on(EVENTS.SKYBOX_RESET, () => {
+    _onSkyboxReset = () => {
+      _stopLoop();
       StateManager.setBatch({
         'skybox.rotationX': 0,
         'skybox.rotationY': 0,
@@ -254,26 +263,29 @@ const SkyboxViewer = (() => {
       _cube.style.transition = `transform ${Config.SKYBOX.TRANSITION_MS}ms`;
       _applyTransform();
       setTimeout(() => { _cube.style.transition = ''; }, Config.SKYBOX.TRANSITION_MS);
-    });
+    };
 
-    // Page visibility — tạm dừng RAF khi tab ẩn
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        _stopLoop();
-      } else if (StateManager.get('skybox.ready')) {
-        _startLoop();
-      }
-    });
+    // Tab ẩn — tạm dừng RAF nếu đang chạy
+    _onVisibilityChange = () => {
+      if (document.hidden) _stopLoop();
+    };
+
+    EventBus.on(EVENTS.INPUT_DRAG_DELTA, _onDragDelta);
+    EventBus.on(EVENTS.INPUT_DRAG_START, _onDragStart);
+    EventBus.on(EVENTS.INPUT_DRAG_END,   _onDragEnd);
+    EventBus.on(EVENTS.SKYBOX_RESET,     _onSkyboxReset);
+    document.addEventListener('visibilitychange', _onVisibilityChange);
   }
 
   // ── Teardown ─────────────────────────────────────────────────────
 
   function destroy() {
     _stopLoop();
-    EventBus.off(EVENTS.INPUT_DRAG_DELTA, () => {});
-    EventBus.off(EVENTS.INPUT_DRAG_START, () => {});
-    EventBus.off(EVENTS.INPUT_DRAG_END,   () => {});
-    EventBus.off(EVENTS.SKYBOX_RESET,     () => {});
+    EventBus.off(EVENTS.INPUT_DRAG_DELTA, _onDragDelta);
+    EventBus.off(EVENTS.INPUT_DRAG_START, _onDragStart);
+    EventBus.off(EVENTS.INPUT_DRAG_END,   _onDragEnd);
+    EventBus.off(EVENTS.SKYBOX_RESET,     _onSkyboxReset);
+    document.removeEventListener('visibilitychange', _onVisibilityChange);
   }
 
   // ── Expose ───────────────────────────────────────────────────────
@@ -281,4 +293,4 @@ const SkyboxViewer = (() => {
 
 })();
 
-export default SkyboxViewer; 
+export default SkyboxViewer;

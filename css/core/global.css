@@ -211,7 +211,7 @@ a:active {
 }
 
 a:visited {
-  color: var(--color-accent-primary);
+  color: var(--color-text-accent);
 }
 
 /* Link nằm trong paragraph — underline mặc định */
@@ -290,7 +290,7 @@ ol.styled-list > li {
 }
 
 ol.styled-list > li::before {
-  color: var(--color-accent-primary);
+  color: var(--color-text-accent);
   content: counter(styled-counter) '.';
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
@@ -613,4 +613,4 @@ hr.accent {
     orphans: 3;
     widows: 3;
   }
-}
+} 

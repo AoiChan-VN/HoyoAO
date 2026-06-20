@@ -108,4 +108,4 @@ const TouchInput = (() => {
 
 })();
 
-export default TouchInput; 
+export default TouchInput;

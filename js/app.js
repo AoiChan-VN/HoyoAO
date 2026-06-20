@@ -15,6 +15,7 @@ import OverlayUI               from './components/home/overlay-ui.js';
 
 import ArticleRenderer         from './components/articles/article-renderer.js';
 import SearchFilter            from './components/articles/search-filter.js';
+import ArticleRepository       from './data/article-repository.js';
 
 import TouchInput              from './controllers/touch-input.js';
 import MouseInput              from './controllers/mouse-input.js';
@@ -66,8 +67,11 @@ const App = (() => {
 
   /**
    * Khởi tạo toàn bộ module thuộc Articles domain (Content Platform).
+   * Luôn await ArticleRepository.init() trước — đây là nơi DUY NHẤT
+   * dữ liệu được tải (từ LocalStorage hoặc content/articles.json),
+   * đảm bảo mọi component phía sau đọc dữ liệu đã sẵn sàng.
    */
-  function _bootstrapArticlesDomain() {
+  async function _bootstrapArticlesDomain() {
     const grid   = document.querySelector('[data-articles-grid]');
     const reader = document.querySelector('[data-article-reader]');
 
@@ -75,11 +79,18 @@ const App = (() => {
       throw new Error('[App] Articles domain thiếu [data-articles-grid] hoặc [data-article-reader].');
     }
 
+    await ArticleRepository.init();
+
+    const loadError = ArticleRepository.getInitError();
+    if (loadError) {
+      EventBus.emit(EVENTS.ARTICLES_LOAD_FAILED, { message: loadError });
+    }
+
     const hasArticleId = new URLSearchParams(window.location.search).has('id');
 
     if (hasArticleId && reader) {
       document.body.setAttribute('data-view', 'reader');
-      _bootstrapArticleReader(reader);
+      await _bootstrapArticleReader(reader);
     } else if (grid) {
       document.body.setAttribute('data-view', 'list');
       ArticleRenderer.init();
@@ -102,7 +113,6 @@ const App = (() => {
     }
 
     try {
-      const { default: ArticleRepository } = await import('./data/article-repository.js');
       const article = ArticleRepository.getById(id);
 
       if (!article) {
@@ -148,7 +158,7 @@ const App = (() => {
 
   // ── Init ─────────────────────────────────────────────────────────
 
-  function init() {
+  async function init() {
     EventBus.emit(EVENTS.APP_INIT);
     _bindGlobalErrorHandling();
 
@@ -168,7 +178,7 @@ const App = (() => {
       if (_currentDomain === 'home') {
         _bootstrapHomeDomain();
       } else if (_currentDomain === 'articles') {
-        _bootstrapArticlesDomain();
+        await _bootstrapArticlesDomain();
       }
 
       StateManager.set('app.initialized', true);
@@ -211,4 +221,4 @@ if (document.readyState === 'loading') {
   App.init();
 }
 
-export default App; 
+export default App;

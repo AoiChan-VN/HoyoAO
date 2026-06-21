@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Không tìm thấy trang | Skybox</title>
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0A0B0F">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <link rel="stylesheet" href="css/core/reset.css">
+  <link rel="stylesheet" href="css/core/design-tokens.css">
+  <link rel="stylesheet" href="css/core/global.css">
+  <link rel="stylesheet" href="css/utils/helpers.css">
+
+  <style>
+    /* Trang lỗi độc lập, không thuộc domain home/articles nào —
+       không vi phạm quy tắc cô lập CSS vì đây là layout dùng MỘT LẦN
+       DUY NHẤT cho chính file này, không tái sử dụng ở nơi khác. */
+    .error-404 {
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      justify-content: center;
+      min-height: 100dvh;
+      padding: var(--space-8);
+      text-align: center;
+    }
+    .error-404__code {
+      background: linear-gradient(135deg, var(--color-accent-gradient-start), var(--color-accent-gradient-end));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: var(--font-size-6xl);
+      font-weight: var(--font-weight-black);
+      line-height: var(--line-height-none);
+    }
+    .error-404__title {
+      color: var(--color-text-primary);
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-semibold);
+    }
+    .error-404__text {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      max-width: 40ch;
+    }
+    .error-404__home {
+      background-color: var(--color-accent-primary);
+      border-radius: var(--radius-md);
+      color: var(--color-text-on-accent);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+      margin-top: var(--space-2);
+      padding: var(--space-3) var(--space-6);
+      text-decoration: none;
+      transition: background-color var(--duration-quick) var(--ease-out);
+    }
+    .error-404__home:hover {
+      background-color: var(--color-accent-primary-hover);
+    }
+  </style>
+</head>
+<body>
+
+  <main class="error-404">
+    <p class="error-404__code">404</p>
+    <h1 class="error-404__title">Không tìm thấy trang</h1>
+    <p class="error-404__text">
+      Trang bạn tìm không tồn tại hoặc đã được di chuyển. Quay lại trang chủ để tiếp tục khám phá.
+    </p>
+    <a href="/" class="error-404__home">Về trang chủ</a>
+  </main>
+
+</body>
+</html>

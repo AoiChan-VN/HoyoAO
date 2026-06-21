@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bài viết — Skybox</title>
+  <meta name="description" content="Khám phá các bài viết kỹ thuật về CSS 3D, Vanilla JavaScript, kiến trúc Frontend và hiệu năng web hiện đại.">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0A0B0F">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="canonical" href="articles.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Bài viết — Skybox">
+  <meta property="og:description" content="Khám phá các bài viết kỹ thuật về CSS 3D, Vanilla JavaScript, kiến trúc Frontend và hiệu năng web hiện đại.">
+  <meta property="og:locale" content="vi_VN">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Bài viết — Skybox">
+  <meta name="twitter:description" content="Bài viết kỹ thuật về CSS 3D, Vanilla JavaScript và kiến trúc Frontend.">
+
+  <link rel="stylesheet" href="css/core/reset.css">
+  <link rel="stylesheet" href="css/core/design-tokens.css">
+  <link rel="stylesheet" href="css/core/global.css">
+  <link rel="stylesheet" href="css/shared/navigation.css">
+  <link rel="stylesheet" href="css/shared/footer.css">
+  <link rel="stylesheet" href="css/pages/articles/layout.css">
+  <link rel="stylesheet" href="css/pages/articles/article-card.css">
+  <link rel="stylesheet" href="css/pages/articles/reader.css">
+  <link rel="stylesheet" href="css/utils/helpers.css">
+</head>
+<body data-domain="articles">
+
+  <a href="#main-content" class="skip-link">Bỏ qua đến nội dung chính</a>
+
+  <!-- ════════════════════════════ NAVIGATION ════════════════════════════ -->
+  <header class="nav-header" data-nav-header>
+    <nav class="nav-bar" aria-label="Điều hướng chính">
+
+      <a href="index.html" class="nav-logo">
+        <span class="nav-logo__mark" aria-hidden="true">SK</span>
+        <span class="nav-logo__text">Sky<strong>box</strong></span>
+      </a>
+
+      <div class="nav-menu" data-nav-menu>
+        <ul class="nav-list" role="list">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link" data-nav-link>Trang chủ</a>
+          </li>
+          <li class="nav-item">
+            <a href="articles.html" class="nav-link" data-nav-link>Bài viết</a>
+          </li>
+        </ul>
+        <div class="nav-actions">
+          <a href="index.html" class="nav-cta">Trải nghiệm 3D</a>
+        </div>
+      </div>
+
+      <button
+        class="nav-toggle"
+        data-nav-toggle
+        aria-label="Mở menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        type="button">
+        <span class="nav-toggle__line"></span>
+        <span class="nav-toggle__line"></span>
+        <span class="nav-toggle__line"></span>
+      </button>
+
+    </nav>
+  </header>
+
+  <nav
+    class="nav-mobile-menu"
+    data-nav-mobile-menu
+    id="mobile-menu"
+    aria-label="Điều hướng di động">
+    <ul class="nav-mobile-list">
+      <li><a href="index.html" class="nav-mobile-link" data-nav-link>Trang chủ</a></li>
+      <li><a href="articles.html" class="nav-mobile-link" data-nav-link>Bài viết</a></li>
+    </ul>
+    <a href="index.html" class="nav-mobile-cta">Trải nghiệm 3D</a>
+  </nav>
+
+  <div class="nav-spacer" aria-hidden="true"></div>
+
+  <!-- ════════════════════════════ ARTICLES DOMAIN ════════════════════════════ -->
+  <main id="main-content" class="article-domain">
+
+    <!-- ─────────────── LIST VIEW ─────────────── -->
+    <div class="article-domain__main" data-view-list>
+
+      <div class="article-domain__header">
+        <h1 class="article-domain__title">Bài viết kỹ thuật</h1>
+        <p class="article-domain__subtitle">
+          Kiến trúc Frontend, CSS 3D, hiệu năng và JavaScript thuần —
+          không framework, không phụ thuộc.
+        </p>
+      </div>
+
+      <div class="article-domain__toolbar">
+        <div class="article-domain__search">
+          <input
+            type="search"
+            data-search-input
+            placeholder="Tìm kiếm bài viết..."
+            aria-label="Tìm kiếm bài viết">
+          <button
+            type="button"
+            class="article-domain__search-clear"
+            data-search-clear
+            aria-label="Xóa tìm kiếm">
+            ✕
+          </button>
+        </div>
+
+        <p class="article-domain__meta" data-articles-meta>
+          <strong data-count>0</strong> bài viết
+        </p>
+      </div>
+
+      <div class="article-domain__categories" role="group" aria-label="Lọc theo danh mục">
+        <button type="button" class="article-domain__category-btn" data-category-btn="CSS" aria-pressed="false">CSS</button>
+        <button type="button" class="article-domain__category-btn" data-category-btn="JavaScript" aria-pressed="false">JavaScript</button>
+        <button type="button" class="article-domain__category-btn" data-category-btn="Architecture" aria-pressed="false">Architecture</button>
+        <button type="button" class="article-domain__category-btn" data-category-btn="Performance" aria-pressed="false">Performance</button>
+        <button type="button" class="article-domain__category-btn" data-category-btn="Accessibility" aria-pressed="false">Accessibility</button>
+      </div>
+
+      <div class="article-domain__skeleton-grid" data-articles-skeleton style="display:none;">
+        <div class="article-domain__skeleton-item"></div>
+        <div class="article-domain__skeleton-item"></div>
+        <div class="article-domain__skeleton-item"></div>
+        <div class="article-domain__skeleton-item"></div>
+        <div class="article-domain__skeleton-item"></div>
+        <div class="article-domain__skeleton-item"></div>
+      </div>
+
+      <div class="article-domain__grid" data-articles-grid></div>
+
+      <div class="article-domain__empty" data-articles-empty>
+        <span class="article-domain__empty-icon" aria-hidden="true">⌕</span>
+        <h2 class="article-domain__empty-title" data-empty-title>Không tìm thấy bài viết</h2>
+        <p class="article-domain__empty-text" data-empty-text>
+          Thử thay đổi từ khóa tìm kiếm hoặc bỏ chọn bộ lọc danh mục.
+        </p>
+        <button type="button" class="article-domain__empty-retry" data-empty-retry>
+          Thử lại
+        </button>
+      </div>
+
+      <div class="article-domain__load-more">
+        <button type="button" data-load-more data-page="2" style="display:none;">
+          Tải thêm bài viết
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ─────────────── READER VIEW ─────────────── -->
+    <div class="article-reader" data-view-reader>
+
+      <div class="article-reader__content" data-article-reader>
+        <!-- Nội dung bài viết được render động bởi article-renderer.js -->
+      </div>
+
+      <aside class="article-reader__sidebar">
+        <div class="article-reader__sidebar-sticky">
+          <nav class="article-reader__toc" aria-label="Mục lục bài viết">
+            <h3 class="article-reader__toc-title">Mục lục</h3>
+            <ul class="article-reader__toc-list" data-toc-list role="list"></ul>
+          </nav>
+        </div>
+      </aside>
+
+    </div>
+
+  </main>
+
+  <!-- ════════════════════════════ FOOTER ════════════════════════════ -->
+  <footer class="footer">
+    <div class="footer__inner">
+
+      <div class="footer__row">
+
+        <div class="footer__brand">
+          <a href="index.html" class="footer__logo">
+            <span class="footer__logo-mark" aria-hidden="true">SK</span>
+            <span class="footer__logo-text">Sky<strong>box</strong></span>
+          </a>
+          <p class="footer__tagline">
+            Nền tảng web 3D dựng hoàn toàn bằng Vanilla HTML, CSS và JavaScript thuần.
+          </p>
+        </div>
+
+        <p class="footer__copy">
+          © 2026 Skybox. Mọi quyền được bảo lưu.
+        </p>
+
+      </div>
+
+    </div>
+  </footer>
+
+  <button
+    class="footer__back-top"
+    data-back-top
+    type="button"
+    aria-label="Lên đầu trang">
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M8 13V3M3 8l5-5 5 5" stroke="currentColor" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Lên đầu
+  </button>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

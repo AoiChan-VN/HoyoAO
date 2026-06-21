@@ -10,7 +10,11 @@
   left: 50%;
   position: absolute;
   top: 50%;
-  transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg);
+  /* Góc khởi đầu LỆCH TÂM có chủ đích — nhìn thẳng vào 1 mặt duy nhất
+     trông giống ảnh nền phẳng. Lệch nhẹ để thấy ngay đường giao giữa
+     2 mặt ngay khung hình đầu tiên, trước khi người dùng kéo. Giá trị
+     này phải khớp với rotationX/rotationY mặc định trong state-manager.js. */
+  transform: translate(-50%, -50%) rotateX(-10deg) rotateY(25deg);
   transform-style: preserve-3d;
   transition: transform var(--skybox-transition-duration) var(--skybox-transition-easing);
   width: var(--skybox-cube-size);

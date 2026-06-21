@@ -25,9 +25,11 @@
   /* QUAN TRỌNG: perspective PHẢI luôn lớn hơn --skybox-half-size,
      nếu không mặt cube đối diện camera sẽ bị đẩy ra ngoài tầm nhìn
      (translateZ vượt quá khoảng cách camera) và biến mất hoàn toàn.
-     Dùng calc() để tỉ lệ thuận với kích thước cube thực tế thay vì
-     một giá trị cố định — luôn đúng ở MỌI kích thước màn hình. */
-  perspective: calc(var(--skybox-half-size) * 1.8);
+     Hệ số 2.2 được chọn qua thực nghiệm: đủ lớn để texture còn rõ
+     nét (không bị phóng to quá mức), đủ nhỏ để vẫn giữ được độ sâu
+     phối cảnh rõ ràng khi xoay — cảm giác "đang đứng trong khối lập
+     phương" thay vì "nhìn một mặt phẳng màu". */
+  perspective: calc(var(--skybox-half-size) * 2.2);
   perspective-origin: 50% 50%;
   position: absolute;
   top: 0;
@@ -178,6 +180,9 @@
 /* ── Error fallback ─────────────────────────────────────────────── */
 .home-domain__error {
   align-items: center;
+  background-color: color-mix(in srgb, var(--color-bg-base) 75%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: none;
   flex-direction: column;
   gap: var(--space-4);
@@ -203,4 +208,20 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   max-width: 40ch;
+}
+
+.home-domain__error-action {
+  background-color: var(--color-accent-primary);
+  border-radius: var(--radius-md);
+  color: var(--color-text-on-accent);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  text-decoration: none;
+  transition: background-color var(--duration-quick) var(--ease-out);
+}
+
+.home-domain__error-action:hover {
+  background-color: var(--color-accent-primary-hover);
 }

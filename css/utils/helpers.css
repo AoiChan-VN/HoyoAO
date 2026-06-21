@@ -1,1 +1,256 @@
+/**
+ * @file   css/utils/helpers.css
+ * @layer  utils
+ * @domain system-wide
+ */
 
+/* ── Visibility ─────────────────────────────────────────────────── */
+.hidden          { display: none !important; }
+.invisible       { visibility: hidden !important; }
+.visible         { visibility: visible !important; }
+
+.sr-only {
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.not-sr-only {
+  clip: auto;
+  clip-path: none;
+  height: auto;
+  overflow: visible;
+  position: static;
+  white-space: normal;
+  width: auto;
+}
+
+/* ── Responsive show/hide ───────────────────────────────────────── */
+.hide-mobile   { display: none !important; }
+.hide-tablet   { display: block; }
+.hide-desktop  { display: block; }
+
+@media (min-width: 768px) {
+  .hide-mobile  { display: block !important; }
+  .hide-tablet  { display: none !important; }
+}
+
+@media (min-width: 1024px) {
+  .hide-desktop { display: none !important; }
+}
+
+/* ── Display ────────────────────────────────────────────────────── */
+.block        { display: block !important; }
+.inline       { display: inline !important; }
+.inline-block { display: inline-block !important; }
+.flex         { display: flex !important; }
+.inline-flex  { display: inline-flex !important; }
+.grid         { display: grid !important; }
+.contents     { display: contents !important; }
+
+/* ── Flex helpers ───────────────────────────────────────────────── */
+.flex-col      { flex-direction: column !important; }
+.flex-row      { flex-direction: row !important; }
+.flex-wrap     { flex-wrap: wrap !important; }
+.flex-nowrap   { flex-wrap: nowrap !important; }
+.flex-1        { flex: 1 1 0% !important; }
+.flex-auto     { flex: 1 1 auto !important; }
+.flex-none     { flex: none !important; }
+.flex-shrink-0 { flex-shrink: 0 !important; }
+.flex-grow-1   { flex-grow: 1 !important; }
+
+.items-start   { align-items: flex-start !important; }
+.items-center  { align-items: center !important; }
+.items-end     { align-items: flex-end !important; }
+.items-stretch { align-items: stretch !important; }
+
+.justify-start    { justify-content: flex-start !important; }
+.justify-center   { justify-content: center !important; }
+.justify-end      { justify-content: flex-end !important; }
+.justify-between  { justify-content: space-between !important; }
+.justify-around   { justify-content: space-around !important; }
+
+/* ── Gap ────────────────────────────────────────────────────────── */
+.gap-1  { gap: var(--space-1) !important; }
+.gap-2  { gap: var(--space-2) !important; }
+.gap-3  { gap: var(--space-3) !important; }
+.gap-4  { gap: var(--space-4) !important; }
+.gap-5  { gap: var(--space-5) !important; }
+.gap-6  { gap: var(--space-6) !important; }
+.gap-8  { gap: var(--space-8) !important; }
+.gap-10 { gap: var(--space-10) !important; }
+.gap-12 { gap: var(--space-12) !important; }
+
+/* ── Text alignment ─────────────────────────────────────────────── */
+.text-left    { text-align: left !important; }
+.text-center  { text-align: center !important; }
+.text-right   { text-align: right !important; }
+
+/* ── Text overflow ──────────────────────────────────────────────── */
+.truncate {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.break-word  { word-break: break-word !important; }
+.break-all   { word-break: break-all !important; }
+.whitespace-nowrap { white-space: nowrap !important; }
+
+/* ── Text color ─────────────────────────────────────────────────── */
+.text-primary   { color: var(--color-text-primary) !important; }
+.text-secondary { color: var(--color-text-secondary) !important; }
+.text-muted     { color: var(--color-text-muted) !important; }
+.text-accent    { color: var(--color-text-accent) !important; }
+.text-success   { color: var(--color-success) !important; }
+.text-warning   { color: var(--color-warning) !important; }
+.text-error     { color: var(--color-error) !important; }
+
+/* ── Font size ──────────────────────────────────────────────────── */
+.text-xs   { font-size: var(--font-size-xs) !important; }
+.text-sm   { font-size: var(--font-size-sm) !important; }
+.text-base { font-size: var(--font-size-base) !important; }
+.text-md   { font-size: var(--font-size-md) !important; }
+.text-lg   { font-size: var(--font-size-lg) !important; }
+.text-xl   { font-size: var(--font-size-xl) !important; }
+.text-2xl  { font-size: var(--font-size-2xl) !important; }
+
+/* ── Font weight ────────────────────────────────────────────────── */
+.font-light    { font-weight: var(--font-weight-light) !important; }
+.font-regular  { font-weight: var(--font-weight-regular) !important; }
+.font-medium   { font-weight: var(--font-weight-medium) !important; }
+.font-semibold { font-weight: var(--font-weight-semibold) !important; }
+.font-bold     { font-weight: var(--font-weight-bold) !important; }
+
+/* ── Margin ─────────────────────────────────────────────────────── */
+.m-0    { margin: 0 !important; }
+.m-auto { margin: auto !important; }
+.mx-auto { margin-left: auto !important; margin-right: auto !important; }
+.my-auto { margin-top: auto !important; margin-bottom: auto !important; }
+
+.mt-0  { margin-top: 0 !important; }
+.mt-4  { margin-top: var(--space-4) !important; }
+.mt-6  { margin-top: var(--space-6) !important; }
+.mt-8  { margin-top: var(--space-8) !important; }
+.mt-10 { margin-top: var(--space-10) !important; }
+.mt-12 { margin-top: var(--space-12) !important; }
+
+.mb-0  { margin-bottom: 0 !important; }
+.mb-4  { margin-bottom: var(--space-4) !important; }
+.mb-6  { margin-bottom: var(--space-6) !important; }
+.mb-8  { margin-bottom: var(--space-8) !important; }
+.mb-10 { margin-bottom: var(--space-10) !important; }
+.mb-12 { margin-bottom: var(--space-12) !important; }
+
+/* ── Padding ────────────────────────────────────────────────────── */
+.p-0  { padding: 0 !important; }
+.p-4  { padding: var(--space-4) !important; }
+.p-6  { padding: var(--space-6) !important; }
+.p-8  { padding: var(--space-8) !important; }
+
+.px-4 { padding-left: var(--space-4) !important; padding-right: var(--space-4) !important; }
+.px-6 { padding-left: var(--space-6) !important; padding-right: var(--space-6) !important; }
+.px-8 { padding-left: var(--space-8) !important; padding-right: var(--space-8) !important; }
+
+.py-4 { padding-top: var(--space-4) !important; padding-bottom: var(--space-4) !important; }
+.py-6 { padding-top: var(--space-6) !important; padding-bottom: var(--space-6) !important; }
+.py-8 { padding-top: var(--space-8) !important; padding-bottom: var(--space-8) !important; }
+
+/* ── Width & Height ─────────────────────────────────────────────── */
+.w-full   { width: 100% !important; }
+.w-auto   { width: auto !important; }
+.h-full   { height: 100% !important; }
+.h-screen { height: 100dvh !important; }
+.min-w-0  { min-width: 0 !important; }
+
+/* ── Position ───────────────────────────────────────────────────── */
+.relative { position: relative !important; }
+.absolute { position: absolute !important; }
+.fixed    { position: fixed !important; }
+.sticky   { position: sticky !important; }
+.inset-0  { inset: 0 !important; }
+
+/* ── Overflow ───────────────────────────────────────────────────── */
+.overflow-hidden { overflow: hidden !important; }
+.overflow-auto   { overflow: auto !important; }
+.overflow-x-auto { overflow-x: auto !important; }
+
+/* ── Border radius ──────────────────────────────────────────────── */
+.rounded-none { border-radius: var(--radius-none) !important; }
+.rounded-sm   { border-radius: var(--radius-sm) !important; }
+.rounded-md   { border-radius: var(--radius-md) !important; }
+.rounded-lg   { border-radius: var(--radius-lg) !important; }
+.rounded-full { border-radius: var(--radius-full) !important; }
+
+/* ── Opacity ────────────────────────────────────────────────────── */
+.opacity-0   { opacity: var(--opacity-0) !important; }
+.opacity-50  { opacity: var(--opacity-50) !important; }
+.opacity-75  { opacity: var(--opacity-75) !important; }
+.opacity-100 { opacity: var(--opacity-100) !important; }
+
+/* ── Pointer events ─────────────────────────────────────────────── */
+.pointer-none { pointer-events: none !important; }
+.pointer-auto { pointer-events: auto !important; }
+
+/* ── User select ────────────────────────────────────────────────── */
+.select-none { user-select: none !important; -webkit-user-select: none !important; }
+.select-text { user-select: text !important; -webkit-user-select: text !important; }
+
+/* ── Cursor ─────────────────────────────────────────────────────── */
+.cursor-pointer  { cursor: pointer !important; }
+.cursor-default  { cursor: default !important; }
+.cursor-grab     { cursor: grab !important; }
+.cursor-grabbing { cursor: grabbing !important; }
+.cursor-not-allowed { cursor: not-allowed !important; }
+
+/* ── Transitions ────────────────────────────────────────────────── */
+.transition-none     { transition: none !important; }
+.transition-opacity  { transition: opacity var(--duration-normal) var(--ease-out) !important; }
+.transition-transform { transition: transform var(--duration-normal) var(--ease-out) !important; }
+
+/* ── Fade in/out (JS toggles data-attr) ────────────────────────── */
+.u-fade {
+  opacity: 0;
+  transition:
+    opacity   var(--duration-moderate) var(--ease-out),
+    transform var(--duration-moderate) var(--ease-expo-out);
+  transform: translateY(var(--space-3));
+}
+
+.u-fade[data-visible] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Divider ────────────────────────────────────────────────────── */
+.u-divider {
+  background-color: var(--color-border-subtle);
+  border: none;
+  height: 1px;
+  width: 100%;
+}
+
+/* ── Container ──────────────────────────────────────────────────── */
+.u-container {
+  margin: 0 auto;
+  max-width: var(--layout-max-content);
+  padding-left: var(--space-5);
+  padding-right: var(--space-5);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .u-container {
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+  }
+}
+
+/* ── No print ───────────────────────────────────────────────────── */
+@media print {
+  .no-print { display: none !important; }
+}

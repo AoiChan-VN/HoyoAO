@@ -96,36 +96,6 @@
   max-width: 36ch;
 }
 
-/* ── Nav (chỉ 2 link thật — không lặp lại nav chính bằng cột thừa) ── */
-.footer__nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-6);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.footer__nav-link {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  text-decoration: none;
-  transition: color var(--duration-quick) var(--ease-out);
-}
-
-.footer__nav-link:hover {
-  color: var(--color-text-primary);
-}
-
-/* ── Divider ────────────────────────────────────────────────────── */
-.footer__divider {
-  background-color: var(--color-border-subtle);
-  border: none;
-  height: 1px;
-  margin: var(--space-8) 0 var(--space-6);
-}
-
 /* ── Copyright ──────────────────────────────────────────────────── */
 .footer__copy {
   color: var(--color-text-muted);

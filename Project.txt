@@ -1,0 +1,554 @@
+# PROJECT SPECIFICATION
+
+Project Name:
+Parallax Camera Matrix Cube 3D
+
+Platform:
+GitHub Pages
+
+Technology Stack:
+
+- HTML5
+- CSS3
+- Vanilla JavaScript (ES Modules)
+
+Allowed:
+
+- Browser Native APIs
+- Canvas API
+- CSS 3D Transforms
+- Web APIs
+
+Forbidden:
+
+- Three.js
+- Babylon.js
+- PixiJS
+- GSAP
+- React
+- Vue
+- Angular
+- Svelte
+- jQuery
+- TypeScript
+- Webpack
+- Vite
+- Rollup
+- Parcel
+- Any third-party framework or library
+
+The entire project must run directly in the browser and deploy directly through GitHub Pages.
+
+No build step.
+No runtime dependencies.
+No package manager requirement.
+
+==================================================
+DESIGN PHILOSOPHY
+==================================================
+
+This is NOT a traditional Skybox project.
+
+DO NOT implement:
+
+Skybox
+├── front
+├── back
+├── left
+├── right
+├── top
+└── bottom
+
+A 6-face skybox is only a static visual shell and does not create believable spatial depth.
+
+Instead implement:
+
+Multi-Layer Environment System
+
+combined with
+
+Independent Sky System
+
+to simulate how human vision perceives depth, distance, atmosphere and scale.
+
+==================================================
+WORLD DEPTH MODEL
+==================================================
+
+Camera observes multiple depth zones.
+
+Layer Order:
+
+Layer 0
+UI Layer
+
+Layer 1
+Near Layer
+
+Layer 2
+Mid Layer
+
+Layer 3
+Far Layer
+
+Layer 4
+Horizon Layer
+
+Layer 5
+Atmosphere Layer
+
+Sky System
+
+Layer 6
+Deep Space Layer
+
+==================================================
+LAYER RESPONSIBILITIES
+==================================================
+
+UI Layer
+
+Purpose:
+
+- HUD
+- Debug Overlay
+- FPS Monitor
+- Developer Tools
+
+Near Layer
+
+Purpose:
+
+- Floating Cubes
+- Cube Fragments
+- Particles
+- Debris
+- Foreground Elements
+
+Highest parallax movement.
+
+Mid Layer
+
+Purpose:
+
+- Matrix Cubes
+- Cube Clusters
+- Main Gameplay Objects
+- Interactive Objects
+
+Primary scene content.
+
+Far Layer
+
+Purpose:
+
+- Mega Structures
+- Massive Cubes
+- Distant Architecture
+- Large Grids
+
+Reduced parallax movement.
+
+Horizon Layer
+
+Purpose:
+
+- Skyline
+- Horizon Geometry
+- Distance Glow
+- Landscape Silhouettes
+
+Creates visual transition into atmosphere.
+
+Atmosphere Layer
+
+Purpose:
+
+- Fog
+- Mist
+- Light Shafts
+- Volumetric Illusions
+- Atmospheric Noise
+
+Creates perceived scale.
+
+Deep Space Layer
+
+Purpose:
+
+- Deep Background
+- Infinite Space
+- Remote Cosmic Content
+
+Lowest parallax movement.
+
+==================================================
+SKY SYSTEM
+==================================================
+
+Sky is NOT a layer.
+
+Sky is a dedicated subsystem.
+
+Purpose:
+
+- Sky generation
+- Celestial objects
+- Atmospheric simulation
+- Space simulation
+
+The sky subsystem exists independently from world layers.
+
+Architecture:
+
+SkySystem
+├── StarField
+├── NebulaField
+├── AtmosphericScattering
+├── CelestialObjects
+└── SkyRenderer
+
+Responsibilities:
+
+StarField
+
+- stars
+- star clusters
+- procedural distribution
+
+NebulaField
+
+- nebula clouds
+- cosmic fog
+- distant visual formations
+
+AtmosphericScattering
+
+- horizon tint
+- altitude fading
+- atmospheric color blending
+
+CelestialObjects
+
+- planets
+- moons
+- suns
+- distant structures
+
+SkyRenderer
+
+- rendering order
+- depth ordering
+- sky composition
+
+==================================================
+PARALLAX SYSTEM
+==================================================
+
+Each depth layer uses a unique parallax factor.
+
+Example:
+
+Near Layer
+factor = 1.0
+
+Mid Layer
+factor = 0.5
+
+Far Layer
+factor = 0.25
+
+Horizon Layer
+factor = 0.10
+
+Atmosphere Layer
+factor = 0.05
+
+Deep Space Layer
+factor = 0.01
+
+Rules:
+
+Objects closer to camera move more.
+
+Objects farther from camera move less.
+
+Never move all layers equally.
+
+==================================================
+ARCHITECTURE STYLE
+==================================================
+
+Use:
+
+Simple Modular Architecture
+
+Avoid:
+
+- DDD
+- CQRS
+- Event Sourcing
+- Hexagonal Architecture
+- Onion Architecture
+- Clean Architecture Overengineering
+- Microservices Concepts
+
+Goal:
+
+Maintainable
+Readable
+Scalable
+Browser-Native
+
+==================================================
+FOLDER STRUCTURE
+==================================================
+
+parallax-camera-matrix-cube/
+│
+├── .github/
+│   └── workflows/
+│       └── deploy.yml
+│
+├── public/
+│   │
+│   ├── assets/
+│   │   │
+│   │   ├── images/
+│   │   │   │
+│   │   │   ├── layers/
+│   │   │   │   ├── near/
+│   │   │   │   ├── mid/
+│   │   │   │   ├── far/
+│   │   │   │   ├── horizon/
+│   │   │   │   └── atmosphere/
+│   │   │   │
+│   │   │   ├── sky/
+│   │   │   │   ├── stars/
+│   │   │   │   ├── nebulae/
+│   │   │   │   ├── planets/
+│   │   │   │   └── atmosphere/
+│   │   │   │
+│   │   │   ├── textures/
+│   │   │   └── ui/
+│   │   │
+│   │   ├── audio/
+│   │   └── fonts/
+│   │
+│   └── favicon.ico
+│
+├── src/
+│   │
+│   ├── core/
+│   │   ├── Engine.js
+│   │   ├── Renderer.js
+│   │   ├── Scene.js
+│   │   └── Loop.js
+│   │
+│   ├── math/
+│   │   ├── Vector3.js
+│   │   ├── Matrix4.js
+│   │   ├── Transform.js
+│   │   └── Projection.js
+│   │
+│   ├── camera/
+│   │   ├── Camera.js
+│   │   ├── CameraController.js
+│   │   └── Frustum.js
+│   │
+│   ├── world/
+│   │   │
+│   │   ├── World.js
+│   │   │
+│   │   ├── environments/
+│   │   │   └── MatrixEnvironment.js
+│   │   │
+│   │   └── layers/
+│   │       ├── UILayer.js
+│   │       ├── NearLayer.js
+│   │       ├── MidLayer.js
+│   │       ├── FarLayer.js
+│   │       ├── HorizonLayer.js
+│   │       ├── AtmosphereLayer.js
+│   │       └── DeepSpaceLayer.js
+│   │
+│   ├── sky/
+│   │   ├── SkySystem.js
+│   │   ├── StarField.js
+│   │   ├── NebulaField.js
+│   │   ├── AtmosphericScattering.js
+│   │   ├── CelestialObjects.js
+│   │   └── SkyRenderer.js
+│   │
+│   ├── objects/
+│   │   ├── Entity.js
+│   │   ├── Cube.js
+│   │   ├── MatrixCube.js
+│   │   ├── Particle.js
+│   │   └── Grid.js
+│   │
+│   ├── render/
+│   │   ├── LayerRenderer.js
+│   │   ├── CubeRenderer.js
+│   │   ├── AtmosphereRenderer.js
+│   │   └── SpaceRenderer.js
+│   │
+│   ├── effects/
+│   │   ├── ParallaxEffect.js
+│   │   ├── DepthEffect.js
+│   │   ├── FogEffect.js
+│   │   └── AnimationEffect.js
+│   │
+│   ├── systems/
+│   │   ├── InputSystem.js
+│   │   ├── ResizeSystem.js
+│   │   ├── TimeSystem.js
+│   │   └── VisibilitySystem.js
+│   │
+│   ├── loaders/
+│   │   ├── AssetLoader.js
+│   │   └── TextureLoader.js
+│   │
+│   ├── utils/
+│   │   ├── Helpers.js
+│   │   ├── EventBus.js
+│   │   └── Dom.js
+│   │
+│   ├── styles/
+│   │   ├── reset.css
+│   │   ├── variables.css
+│   │   └── main.css
+│   │
+│   └── main.js
+│
+├── docs/
+│   ├── architecture.md
+│   ├── rendering-pipeline.md
+│   ├── sky-system.md
+│   └── parallax-system.md
+│
+├── index.html
+├── README.md
+├── LICENSE
+├── .gitignore
+└── jsconfig.json
+
+==================================================
+RENDER PIPELINE
+==================================================
+
+main.js
+↓
+Engine
+↓
+Scene
+↓
+SkySystem
+↓
+World
+↓
+Layers
+↓
+Renderer
+↓
+Canvas
+
+Render Order:
+
+SkySystem
+↓
+Deep Space Layer
+↓
+Atmosphere Layer
+↓
+Horizon Layer
+↓
+Far Layer
+↓
+Mid Layer
+↓
+Near Layer
+↓
+UI Layer
+
+==================================================
+CAMERA FLOW
+==================================================
+
+InputSystem
+↓
+CameraController
+↓
+Camera
+↓
+ParallaxEffect
+↓
+Layer Offsets
+↓
+Renderers
+
+==================================================
+CODING RULES
+==================================================
+
+Use:
+
+- ES Modules
+- requestAnimationFrame
+- strict mode
+- classes
+- private fields (#)
+- composition over inheritance
+
+Avoid:
+
+- global variables
+- inline scripts
+- inline styles
+- callback hell
+- God Objects
+- giant utility files
+
+Naming:
+
+Folders:
+lowercase
+
+Files:
+PascalCase.js
+
+Classes:
+PascalCase
+
+Methods:
+camelCase
+
+Constants:
+UPPER_SNAKE_CASE
+
+CSS:
+kebab-case
+
+==================================================
+DELIVERABLE
+==================================================
+
+Design only.
+
+Do NOT generate implementation code.
+
+Generate:
+
+- complete architecture
+- complete folder tree
+- complete file tree
+- responsibility matrix
+- rendering pipeline
+- camera pipeline
+- sky subsystem design
+- parallax design
+- naming conventions
+- coding standards
+
+Target:
+Production-quality Vanilla JavaScript architecture for a Multi-Layer Parallax Matrix Cube World with an independent Sky System running directly on GitHub Pages. 

@@ -1,0 +1,30 @@
+/* css/pc/variables.css */
+:root {
+    /* Tiêu cự phối cảnh màn hình PC (Góc rộng hơn mobile để phù hợp màn hình ngang) */
+    --pc-perspective: 1000px;
+
+    /* Kích thước một mặt của khối hộp theo từng tầng không gian trên PC */
+    --size-pc-far: 4000px;
+    --size-pc-medium: 2500px;
+    --size-pc-near: 1200px;
+
+    /* Khoảng tịnh tiến Z để khép kín khối lập phương (Bằng 1/2 kích thước mặt hộp) */
+    --translate-z-pc-far: 2000px;
+    --translate-z-pc-medium: 1250px;
+    --translate-z-pc-near: 600px;
+
+    /* Các biến nhận giá trị tọa độ góc xoay động từ logic JavaScript PC */
+    --pc-rotation-x: 0deg;
+    --pc-rotation-y: 0deg;
+
+    /* Các biến nhận giá trị tịnh tiến Parallax độc lập cho từng tầng (Tạo độ sâu đa lớp) */
+    --pc-parallax-near-x: 0px;
+    --pc-parallax-near-y: 0px;
+    
+    --pc-parallax-medium-x: 0px;
+    --pc-parallax-medium-y: 0px;
+    
+    --pc-parallax-far-x: 0px;
+    --pc-parallax-far-y: 0px;
+}
+ 

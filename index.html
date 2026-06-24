@@ -5,67 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Website Parallax - Multi-layered 3D Skybox Cube</title>
     
-    <!-- Khởi tạo các biến cấu hình đường dẫn ảnh gốc (Hỗ trợ mọi định dạng: PNG, JPG, WEBP, HDR,...) -->
-    <style>
-        :root {
-            /* Đường dẫn ảnh tầng GẦN (Near Layer) */
-            --near-front: url('./assets/skybox/near/front.png');
-            --near-back: url('./assets/skybox/near/back.png');
-            --near-left: url('./assets/skybox/near/left.png');
-            --near-right: url('./assets/skybox/near/right.png');
-            --near-top: url('./assets/skybox/near/top.png');
-            --near-bottom: url('./assets/skybox/near/bottom.png');
-
-            /* Đường dẫn ảnh tầng VỪA (Medium Layer) */
-            --medium-front: url('./assets/skybox/medium/front.webp');
-            --medium-back: url('./assets/skybox/medium/back.webp');
-            --medium-left: url('./assets/skybox/medium/left.webp');
-            --medium-right: url('./assets/skybox/medium/right.webp');
-            --medium-top: url('./assets/skybox/medium/top.webp');
-            --medium-bottom: url('./assets/skybox/medium/bottom.webp');
-
-            /* Đường dẫn ảnh tầng XA (Far Layer) */
-            --far-front: url('./assets/skybox/far/front.hdr');
-            --far-back: url('./assets/skybox/far/back.hdr');
-            --far-left: url('./assets/skybox/far/left.hdr');
-            --far-right: url('./assets/skybox/far/right.hdr');
-            --far-top: url('./assets/skybox/far/top.hdr');
-            --far-bottom: url('./assets/skybox/far/bottom.hdr');
-        }
-    </style>
+    <!-- Cấu hình đường dẫn ảnh động bằng JavaScript để tương thích tự động mọi môi trường deploy -->
+    <style id="skybox-images"></style>
 
     <!-- Script nhận diện thiết bị và nạp file CSS tối ưu đường dẫn tương thích GitHub Pages -->
     <script>
         (function() {
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
-            // Tự động phân tách lấy đường dẫn gốc để chạy được cả Localhost lẫn sub-folder trên GitHub Pages
-            const pathSegments = window.location.pathname.split('/').filter(segment => segment.length > 0);
             const isGitHubPages = window.location.hostname.includes('github.io');
+            const pathSegments = window.location.pathname.split('/').filter(s => s.length > 0);
+            
+            // Sửa lỗi: Lấy chính xác tên repository và tạo đường dẫn tuyệt đối chuẩn xác
             const basePath = (isGitHubPages && pathSegments.length > 0) ? '/' + pathSegments[0] : '';
             
-            const cssPath = isMobile 
-                ? basePath + '/css/mobile/main.css' 
-                : basePath + '/css/pc/main.css';
-            
+            // Tự động thiết lập cấu hình biến ảnh chạy từ gốc dự án
+            const styleTag = document.getElementById('skybox-images');
+            styleTag.innerHTML = `
+                :root {
+                    --near-front: url('${basePath}/assets/skybox/near/front.png');
+                    --near-back: url('${basePath}/assets/skybox/near/back.png');
+                    --near-left: url('${basePath}/assets/skybox/near/left.png');
+                    --near-right: url('${basePath}/assets/skybox/near/right.png');
+                    --near-top: url('${basePath}/assets/skybox/near/top.png');
+                    --near-bottom: url('${basePath}/assets/skybox/near/bottom.png');
+
+                    --medium-front: url('${basePath}/assets/skybox/medium/front.webp');
+                    --medium-back: url('${basePath}/assets/skybox/medium/back.webp');
+                    --medium-left: url('${basePath}/assets/skybox/medium/left.webp');
+                    --medium-right: url('${basePath}/assets/skybox/medium/right.webp');
+                    --medium-top: url('${basePath}/assets/skybox/medium/top.webp');
+                    --medium-bottom: url('${basePath}/assets/skybox/medium/bottom.webp');
+
+                    --far-front: url('${basePath}/assets/skybox/far/front.hdr');
+                    --far-back: url('${basePath}/assets/skybox/far/back.hdr');
+                    --far-left: url('${basePath}/assets/skybox/far/left.hdr');
+                    --far-right: url('${basePath}/assets/skybox/far/right.hdr');
+                    --far-top: url('${basePath}/assets/skybox/far/top.hdr');
+                    --far-bottom: url('${basePath}/assets/skybox/far/bottom.hdr');
+                }
+            `;
+
+            const cssPath = isMobile ? `${basePath}/css/mobile/main.css` : `${basePath}/css/pc/main.css`;
             const link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = cssPath;
             document.head.appendChild(link);
             
-            // Thiết lập thuộc tính để CSS và JS nhận diện chính xác môi trường thiết bị hiện tại
             document.documentElement.setAttribute('data-device', isMobile ? 'mobile' : 'pc');
         })();
     </script>
 </head>
 <body>
 
-    <!-- Khung nhìn phối cảnh 3D (Viewport Perspective) -->
     <div id="viewport-3d">
-        <!-- Không gian chứa các lớp Cube đồng tâm -->
         <div id="world-container">
-            
-            <!-- TẦNG XA / SIÊU XA (Far Layer - Khối lập phương kích thước Lớn nhất) -->
+            <!-- TẦNG XA -->
             <div class="cube-layer layer-far" id="cube-far">
                 <div class="cube-face face-front"></div>
                 <div class="cube-face face-back"></div>
@@ -75,7 +69,7 @@
                 <div class="cube-face face-bottom"></div>
             </div>
 
-            <!-- TẦNG VỪA (Medium Layer - Khối lập phương kích thước Trung bình) -->
+            <!-- TẦNG VỪA -->
             <div class="cube-layer layer-medium" id="cube-medium">
                 <div class="cube-face face-front"></div>
                 <div class="cube-face face-back"></div>
@@ -85,7 +79,7 @@
                 <div class="cube-face face-bottom"></div>
             </div>
 
-            <!-- TẦNG GẦN (Near Layer - Khối lập phương kích thước Nhỏ nhất chứa các chi tiết PNG) -->
+            <!-- TẦNG GẦN -->
             <div class="cube-layer layer-near" id="cube-near">
                 <div class="cube-face face-front"></div>
                 <div class="cube-face face-back"></div>
@@ -94,29 +88,23 @@
                 <div class="cube-face face-top"></div>
                 <div class="cube-face face-bottom"></div>
             </div>
-
         </div>
     </div>
 
-    <!-- Script nhận diện thiết bị để nạp file JS Logic tương ứng với đường dẫn chuẩn hóa -->
     <script>
         (function() {
             const isMobile = document.documentElement.getAttribute('data-device') === 'mobile';
-            
-            // Tái cấu trúc logic lấy gốc dẫn đường để đồng bộ với thẻ head phía trên
-            const pathSegments = window.location.pathname.split('/').filter(segment => segment.length > 0);
             const isGitHubPages = window.location.hostname.includes('github.io');
+            const pathSegments = window.location.pathname.split('/').filter(s => s.length > 0);
             const basePath = (isGitHubPages && pathSegments.length > 0) ? '/' + pathSegments[0] : '';
             
-            const jsPath = isMobile 
-                ? basePath + '/js/mobile/app.js' 
-                : basePath + '/js/pc/app.js';
-            
+            const jsPath = isMobile ? `${basePath}/js/mobile/app.js` : `${basePath}/js/pc/app.js`;
             const script = document.createElement('script');
-            script.type = 'module'; // Sử dụng cấu trúc ES Modules thuần của trình duyệt
+            script.type = 'module';
             script.src = jsPath;
             document.body.appendChild(script);
         })();
     </script>
 </body>
 </html>
+ 

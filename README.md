@@ -38,51 +38,63 @@
 ```txt
 parallax-cube-world/
 │
-├── index.html                      # Điểm nhập ứng dụng, kiểm tra User Agent để chuyển hướng/tải mã tương ứng
+├── index.html                      # Điểm nhập ứng dụng, điều hướng luồng tải CSS/JS theo thiết bị
 │
-├── assets/                         # Nơi lưu trữ tài nguyên tĩnh (Static Assets)
+├── assets/                         # Thư mục chứa ảnh cục bộ (Đồng bộ cho cả PC và Mobile)
 │   └── skybox/
-│       ├── pc/
-│       │   ├── near/               # 6 mặt ảnh cho lớp Cube Gần (Nhỏ) trên PC (front, back, left, right, top, bottom)
-│       │   ├── medium/             # 6 mặt ảnh cho lớp Cube Vừa trên PC
-│       │   └── far/                # 6 mặt ảnh cho lớp Cube Xa (To) trên PC
-│       └── mobile/
-│           ├── near/               # 6 mặt ảnh tối ưu dung lượng/độ phân giải cho Mobile
-│           ├── medium/             # 6 mặt ảnh lớp Vừa cho Mobile
-│           └── far/                # 6 mặt ảnh lớp Xa cho Mobile
+│       ├── near/                   # Tầng GẦN: Chứa các vật thể như cây cối, chi tiết tiền cảnh (Hỗ trợ PNG trong suốt, WEBP)
+│       │   ├── front.png
+│       │   ├── back.png
+│       │   ├── left.png
+│       │   ├── right.png
+│       │   ├── top.png
+│       │   └── bottom.png
+│       ├── medium/                 # Tầng VỪA: Chứa cảnh quan tầm trung (Hỗ trợ JPEG, WEBP)
+│       │   ├── front.webp
+│       │   ├── back.webp
+│       │   ├── left.webp
+│       │   ├── right.webp
+│       │   ├── top.webp
+│       │   └── bottom.webp
+│       └── far/                    # Tầng XA/SIÊU XA: Chứa bầu trời, mây dải ngân hà (Hỗ trợ HDRI, JPEG kích thước lớn)
+│           ├── front.hdr
+│           ├── back.hdr
+│           ├── left.hdr
+│           ├── right.hdr
+│           ├── top.hdr
+│           └── bottom.hdr
 │
-├── css/                            # Tầng quản lý giao diện phân tách theo nền tảng
-│   ├── common/                     # CSS dùng chung cho cả PC và Mobile
-│   │   ├── reset.css               # Khởi tạo lại CSS mặc định của trình duyệt
-│   │   └── variables.css           # Định nghĩa các biến CSS dùng chung
-│   ├── pc/                         # CSS đặc thù cho máy tính (Giao diện rộng, hiệu ứng đổ bóng phức tạp)
-│   │   ├── viewport.css            # Khởi tạo không gian Perspective 3D diện rộng cho PC
-│   │   ├── layers.css              # Ma trận 3D cho 3 tầng Cube trên PC
-│   │   ├── cube-face.css           # Khai báo background ảnh từ assets/skybox/pc/
-│   │   └── main.css                # File tổng hợp CSS dành riêng cho PC
-│   └── mobile/                     # CSS đặc thù cho điện thoại (Tối ưu màn hình dọc, GPU Mobile)
-│       ├── viewport.css            # Khởi tạo không gian Perspective 3D dọc cho Mobile
-│       ├── layers.css              # Ma trận 3D tinh chỉnh khoảng cách cho Mobile
-│       ├── cube-face.css           # Khai báo background ảnh từ assets/skybox/mobile/
-│       └── main.css                # File tổng hợp CSS dành riêng cho Mobile
+├── css/                            # Tầng giao diện - TÁCH BIỆT HOÀN TOÀN FILE
+│   ├── pc/                         # CSS chuyên biệt cho PC (Xử lý không gian rộng, hiệu ứng desktop)
+│   │   ├── reset.css
+│   │   ├── variables.css           # Cấu hình tiêu cự phối cảnh (Perspective) cho màn hình ngang
+│   │   ├── viewport.css
+│   │   ├── layers.css              # Quản lý tỷ lệ khoảng cách 3 lớp Cube trên PC
+│   │   ├── cube-face.css           # Đổ map ảnh tương ứng (PNG/JPEG/HDRI) lên các mặt Cube PC
+│   │   └── main.css                # File tổng hợp CSS của PC
+│   └── mobile/                     # CSS chuyên biệt cho Mobile (Tối ưu màn hình dọc, GPU di động)
+│       ├── reset.css
+│       ├── variables.css           # Cấu hình tiêu cự phối cảnh (Perspective) cho màn hình dọc
+│       ├── viewport.css
+│       ├── layers.css              # Quản lý tỷ lệ khoảng cách 3 lớp Cube trên Mobile
+│       ├── cube-face.css           # Đổ map ảnh tương ứng (PNG/JPEG/HDRI) lên các mặt Cube Mobile
+│       └── main.css                # File tổng hợp CSS của Mobile
 │
-└── js/                             # Tầng xử lý logic mã nguồn tách biệt
-    ├── common/                     # Logic dùng chung
-    │   ├── constants.js            # Các hằng số toán học hệ thống
-    │   ├── state.js                # Quản lý trạng thái tọa độ và góc xoay mục tiêu
-    │   └── loop.js                 # Vòng lặp đồ họa chung bằng requestAnimationFrame
-    ├── pc/                         # Logic xử lý điều khiển dành riêng cho PC
-    │   ├── config.js               # Cấu hình tham số Parallax, độ nhạy chuột, tốc độ cuộn cho PC
-    │   ├── input-mouse.js          # Lắng nghe sự kiện di chuyển chuột (Mousemove)
-    │   ├── input-scroll.js         # Lắng nghe sự kiện cuộn trang (Wheel/Scroll)
-    │   ├── transformer.js          # Tính toán ma trận CSS Transform cho PC dựa trên chuột/cuộn
-    │   ├── dom-updater.js          # Thực thi cập nhật thuộc tính CSS vào DOM cho PC
-    │   └── app.js                  # Điểm khởi chạy (Bootstrapper) hệ thống trên PC
-    └── mobile/                     # Logic xử lý điều khiển dành riêng cho Mobile
-        ├── config.js               # Cấu hình tham số Parallax, độ nhạy cảm ứng, Gyroscope cho Mobile
-        ├── input-touch.js          # Lắng nghe sự kiện vuốt chạm (Touchmove) thay cho chuột
-        ├── input-gyro.js           # Lắng nghe cảm biến gia tốc/góc nghiêng thiết bị (DeviceOrientation)
-        ├── transformer.js          # Tính toán ma trận CSS Transform tối ưu cho chip xử lý Mobile
-        ├── dom-updater.js          # Thực thi cập nhật thuộc tính CSS vào DOM cho Mobile
-        └── app.js                  # Điểm khởi chạy (Bootstrapper) hệ thống trên Mobile
+└── js/                             # Logic xử lý - TÁCH BIỆT HOÀN TOÀN FILE
+    ├── pc/                         # Mã nguồn điều khiển trên Máy tính
+    │   ├── config.js               # Tham số độ nhạy chuột, ma trận cuộn Parallax của PC
+    │   ├── state.js                # Trạng thái tọa độ con trỏ và vị trí cuộn trang
+    │   ├── input-mouse.js          # Lắng nghe sự kiện Mousemove
+    │   ├── input-scroll.js         # Lắng nghe sự kiện Wheel/Scroll
+    │   ├── transformer.js          # Tính toán ma trận CSS Transform 3D dựa trên chuột/cuộn cho PC
+    │   ├── dom-updater.js          # Ghi trực tiếp thuộc tính transform vào DOM
+    │   └── app.js                  # Khởi chạy logic PC
+    └── mobile/                     # Mã nguồn điều khiển trên Điện thoại/Máy tính bảng
+        ├── config.js               # Tham số độ nhạy vuốt, bộ lọc nhiễu cảm biến Gyroscope
+        ├── state.js                # Trạng thái tọa độ cảm ứng và góc nghiêng thiết bị
+        ├── input-touch.js          # Lắng nghe sự kiện Touchmove thay thế chuột
+        ├── input-gyro.js           # Lắng nghe cảm biến độ nghiêng (DeviceOrientation)
+        ├── transformer.js          # Tính toán ma trận CSS Transform 3D mượt mà cho phần cứng di động
+        ├── dom-updater.js          # Ghi trực tiếp thuộc tính transform vào DOM
+        └── app.js                  # Khởi chạy logic Mobile
 ```

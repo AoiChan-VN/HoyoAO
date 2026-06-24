@@ -1,0 +1,25 @@
+/* css/mobile/viewport.css */
+#viewport-3d {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* Hỗ trợ Dynamic Viewport trên trình duyệt di động */
+    perspective: var(--mobile-perspective);
+    perspective-origin: center center;
+    overflow: hidden;
+    position: relative;
+}
+
+#world-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-style: preserve-3d;
+    /* Kết hợp cả góc xoay sinh ra do vuốt chạm và góc xoay sinh ra do cảm biến nghiêng Gyro */
+    transform: translateZ(0px) 
+               rotateX(calc(var(--mobile-scroll-rotation-x) + var(--mobile-gyro-rotation-x))) 
+               rotateY(calc(var(--mobile-scroll-rotation-y) + var(--mobile-gyro-rotation-y)));
+    will-change: transform;
+}
+ 

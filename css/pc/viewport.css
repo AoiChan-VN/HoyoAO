@@ -1,0 +1,22 @@
+/* css/pc/viewport.css */
+#viewport-3d {
+    width: 100vw;
+    height: 100vh;
+    perspective: var(--pc-perspective);
+    perspective-origin: center center;
+    overflow: hidden;
+    position: relative;
+}
+
+#world-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-style: preserve-3d;
+    /* Xoay toàn bộ hệ thống thế giới dựa trên hướng nhìn của chuột/cuộn */
+    transform: translateZ(0px) rotateX(var(--pc-rotation-x)) rotateY(var(--pc-rotation-y));
+    will-change: transform;
+}
+ 

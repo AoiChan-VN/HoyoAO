@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Website Parallax - Multi-layered 3D Skybox Cube</title>
+    
+    <!-- Khởi tạo các biến cấu hình đường dẫn ảnh động (Hỗ trợ mọi định dạng: PNG, JPG, WEBP, HDR,...) -->
+    <style>
+        :root {
+            /* Đường dẫn ảnh tầng GẦN (Near Layer) */
+            --near-front: url('./assets/skybox/near/front.png');
+            --near-back: url('./assets/skybox/near/back.png');
+            --near-left: url('./assets/skybox/near/left.png');
+            --near-right: url('./assets/skybox/near/right.png');
+            --near-top: url('./assets/skybox/near/top.png');
+            --near-bottom: url('./assets/skybox/near/bottom.png');
+
+            /* Đường dẫn ảnh tầng VỪA (Medium Layer) */
+            --medium-front: url('./assets/skybox/medium/front.webp');
+            --medium-back: url('./assets/skybox/medium/back.webp');
+            --medium-left: url('./assets/skybox/medium/left.webp');
+            --medium-right: url('./assets/skybox/medium/right.webp');
+            --medium-top: url('./assets/skybox/medium/top.webp');
+            --medium-bottom: url('./assets/skybox/medium/bottom.webp');
+
+            /* Đường dẫn ảnh tầng XA (Far Layer) */
+            --far-front: url('./assets/skybox/far/front.hdr');
+            --far-back: url('./assets/skybox/far/back.hdr');
+            --far-left: url('./assets/skybox/far/left.hdr');
+            --far-right: url('./assets/skybox/far/right.hdr');
+            --far-top: url('./assets/skybox/far/top.hdr');
+            --far-bottom: url('./assets/skybox/far/bottom.hdr');
+        }
+    </style>
+
+    <!-- Script nhận diện thiết bị để nạp file CSS tương ứng (Tách biệt hoàn toàn) -->
+    <script>
+        (function() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const cssPath = isMobile ? './css/mobile/main.css' : './css/pc/main.css';
+            
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = cssPath;
+            document.head.appendChild(link);
+            
+            // Lưu trạng thái thiết bị vào thuộc tính của html để CSS tiện truy vấn nếu cần
+            document.documentElement.setAttribute('data-device', isMobile ? 'mobile' : 'pc');
+        })();
+    </script>
+</head>
+<body>
+
+    <!-- Khung nhìn 3D (Viewport Perspective) -->
+    <div id="viewport-3d">
+        <!-- Không gian chứa các lớp Cube đồng tâm -->
+        <div id="world-container">
+            
+            <!-- TẦNG XA / SIÊU XA (Far Layer - Kích thước Lớn nhất - Tốc độ dịch chuyển Parallax chậm nhất) -->
+            <div class="cube-layer layer-far" id="cube-far">
+                <div class="cube-face face-front"></div>
+                <div class="cube-face face-back"></div>
+                <div class="cube-face face-left"></div>
+                <div class="cube-face face-right"></div>
+                <div class="cube-face face-top"></div>
+                <div class="cube-face face-bottom"></div>
+            </div>
+
+            <!-- TẦNG VỪA (Medium Layer - Kích thước Trung bình - Tốc độ dịch chuyển Trung bình) -->
+            <div class="cube-layer layer-medium" id="cube-medium">
+                <div class="cube-face face-front"></div>
+                <div class="cube-face face-back"></div>
+                <div class="cube-face face-left"></div>
+                <div class="cube-face face-right"></div>
+                <div class="cube-face face-top"></div>
+                <div class="cube-face face-bottom"></div>
+            </div>
+
+            <!-- TẦNG GẦN (Near Layer - Kích thước Nhỏ nhất - Tốc độ dịch chuyển Parallax nhanh nhất) -->
+            <div class="cube-layer layer-near" id="cube-near">
+                <div class="cube-face face-front"></div>
+                <div class="cube-face face-back"></div>
+                <div class="cube-face face-left"></div>
+                <div class="cube-face face-right"></div>
+                <div class="cube-face face-top"></div>
+                <div class="cube-face face-bottom"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Script nhận diện thiết bị để nạp file JS Logic tương ứng (Tách biệt hoàn toàn) -->
+    <script>
+        (function() {
+            const isMobile = document.documentElement.getAttribute('data-device') === 'mobile';
+            const jsPath = isMobile ? './js/mobile/app.js' : './js/pc/app.js';
+            
+            const script = document.createElement('script');
+            script.type = 'module'; // Sử dụng ES Modules thuần của trình duyệt
+            script.src = jsPath;
+            document.body.appendChild(script);
+        })();
+    </script>
+</body>
+</html>
+ 

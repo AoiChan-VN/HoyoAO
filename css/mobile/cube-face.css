@@ -1,0 +1,43 @@
+/* css/mobile/cube-face.css */
+.cube-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    /* Khử răng cưa biên (Aliasing) khi xoay ma trận 3D trên GPU di động */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* ==========================================
+   TOÁN TỌA ĐỘ ĐỘC LẬP CHO KHỐI XA (FAR)
+   ========================================== */
+.layer-far .face-front  { transform: rotateY(0deg) translateZ(var(--translate-z-far)); background-image: var(--far-front); }
+.layer-far .face-back   { transform: rotateY(180deg) translateZ(var(--translate-z-far)); background-image: var(--far-back); }
+.layer-far .face-left   { transform: rotateY(-90deg) translateZ(var(--translate-z-far)); background-image: var(--far-left); }
+.layer-far .face-right  { transform: rotateY(90deg) translateZ(var(--translate-z-far)); background-image: var(--far-right); }
+.layer-far .face-top    { transform: rotateX(90deg) translateZ(var(--translate-z-far)); background-image: var(--far-top); }
+.layer-far .face-bottom { transform: rotateX(-90deg) translateZ(var(--translate-z-far)); background-image: var(--far-bottom); }
+
+/* ==========================================
+   TOÁN TỌA ĐỘ ĐỘC LẬP CHO KHỐI VỪA (MEDIUM)
+   ========================================== */
+.layer-medium .face-front  { transform: rotateY(0deg) translateZ(var(--translate-z-medium)); background-image: var(--medium-front); }
+.layer-medium .face-back   { transform: rotateY(180deg) translateZ(var(--translate-z-medium)); background-image: var(--medium-back); }
+.layer-medium .face-left   { transform: rotateY(-90deg) translateZ(var(--translate-z-medium)); background-image: var(--medium-left); }
+.layer-medium .face-right  { transform: rotateY(90deg) translateZ(var(--translate-z-medium)); background-image: var(--medium-right); }
+.layer-medium .face-top    { transform: rotateX(90deg) translateZ(var(--translate-z-medium)); background-image: var(--medium-top); }
+.layer-medium .face-bottom { transform: rotateX(-90deg) translateZ(var(--translate-z-medium)); background-image: var(--medium-bottom); }
+
+/* ==========================================
+   TOÁN TỌA ĐỘ ĐỘC LẬP CHO KHỐI GẦN (NEAR)
+   ========================================== */
+.layer-near .face-front  { transform: rotateY(0deg) translateZ(var(--translate-z-near)); background-image: var(--near-front); }
+.layer-near .face-back   { transform: rotateY(180deg) translateZ(var(--translate-z-near)); background-image: var(--near-back); }
+.layer-near .face-left   { transform: rotateY(-90deg) translateZ(var(--translate-z-near)); background-image: var(--near-left); }
+.layer-near .face-right  { transform: rotateY(90deg) translateZ(var(--translate-z-near)); background-image: var(--near-right); }
+.layer-near .face-top    { transform: rotateX(90deg) translateZ(var(--translate-z-near)); background-image: var(--near-top); }
+.layer-near .face-bottom { transform: rotateX(-90deg) translateZ(var(--translate-z-near)); background-image: var(--near-bottom); }
+ 

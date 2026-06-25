@@ -1,110 +1,374 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Website Parallax - Multi-layered 3D Skybox Cube</title>
-    
-    <!-- Cấu hình đường dẫn ảnh động bằng JavaScript để tương thích tự động mọi môi trường deploy -->
-    <style id="skybox-images"></style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2D Plane Shooter</title>
+<style>
+html,
+body{
+margin:0;
+padding:0;
+width:100%;
+height:100%;
+overflow:hidden;
+background:#000;
+font-family:Arial,sans-serif;
+}
 
-    <!-- Script nhận diện thiết bị và nạp file CSS tối ưu đường dẫn tương thích GitHub Pages -->
-    <script>
-        (function() {
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const isGitHubPages = window.location.hostname.includes('github.io');
-            const pathSegments = window.location.pathname.split('/').filter(s => s.length > 0);
-            
-            // Sửa lỗi: Lấy chính xác tên repository và tạo đường dẫn tuyệt đối chuẩn xác
-            const basePath = (isGitHubPages && pathSegments.length > 0) ? '/' + pathSegments[0] : '';
-            
-            // Tự động thiết lập cấu hình biến ảnh chạy từ gốc dự án
-            const styleTag = document.getElementById('skybox-images');
-            styleTag.innerHTML = `
-                :root {
-                    --near-front: url('${basePath}/assets/skybox/near/front.png');
-                    --near-back: url('${basePath}/assets/skybox/near/back.png');
-                    --near-left: url('${basePath}/assets/skybox/near/left.png');
-                    --near-right: url('${basePath}/assets/skybox/near/right.png');
-                    --near-top: url('${basePath}/assets/skybox/near/top.png');
-                    --near-bottom: url('${basePath}/assets/skybox/near/bottom.png');
+canvas{
+display:block;
+width:100vw;
+height:100vh;
+background:#050816;
+touch-action:none;
+}
 
-                    --medium-front: url('${basePath}/assets/skybox/medium/front.webp');
-                    --medium-back: url('${basePath}/assets/skybox/medium/back.webp');
-                    --medium-left: url('${basePath}/assets/skybox/medium/left.webp');
-                    --medium-right: url('${basePath}/assets/skybox/medium/right.webp');
-                    --medium-top: url('${basePath}/assets/skybox/medium/top.webp');
-                    --medium-bottom: url('${basePath}/assets/skybox/medium/bottom.webp');
+#ui{
+position:fixed;
+top:12px;
+left:12px;
+color:#fff;
+font-size:18px;
+font-weight:bold;
+user-select:none;
+pointer-events:none;
+text-shadow:0 0 8px #000;
+}
 
-                    --far-front: url('${basePath}/assets/skybox/far/front.hdr');
-                    --far-back: url('${basePath}/assets/skybox/far/back.hdr');
-                    --far-left: url('${basePath}/assets/skybox/far/left.hdr');
-                    --far-right: url('${basePath}/assets/skybox/far/right.hdr');
-                    --far-top: url('${basePath}/assets/skybox/far/top.hdr');
-                    --far-bottom: url('${basePath}/assets/skybox/far/bottom.hdr');
-                }
-            `;
-
-            const cssPath = isMobile ? `${basePath}/css/mobile/main.css` : `${basePath}/css/pc/main.css`;
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = cssPath;
-            document.head.appendChild(link);
-            
-            document.documentElement.setAttribute('data-device', isMobile ? 'mobile' : 'pc');
-        })();
-    </script>
+#overlay{
+position:fixed;
+inset:0;
+display:flex;
+align-items:center;
+justify-content:center;
+background:rgba(0,0,0,.65);
+color:#fff;
+font-size:22px;
+font-weight:bold;
+text-align:center;
+cursor:pointer;
+}
+</style>
 </head>
 <body>
+<canvas id="game"></canvas>
+<div id="ui">Score: 0 | HP: 100</div>
+<div id="overlay">BẮN MÁY BAY 2D<br><br>WASD hoặc ←↑↓→ để di chuyển<br>SPACE để bắn<br><br>Nhấn để bắt đầu</div>
 
-    <div id="viewport-3d">
-        <div id="world-container">
-            <!-- TẦNG XA -->
-            <div class="cube-layer layer-far" id="cube-far">
-                <div class="cube-face face-front"></div>
-                <div class="cube-face face-back"></div>
-                <div class="cube-face face-left"></div>
-                <div class="cube-face face-right"></div>
-                <div class="cube-face face-top"></div>
-                <div class="cube-face face-bottom"></div>
-            </div>
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+const ui=document.getElementById("ui");
+const overlay=document.getElementById("overlay");
 
-            <!-- TẦNG VỪA -->
-            <div class="cube-layer layer-medium" id="cube-medium">
-                <div class="cube-face face-front"></div>
-                <div class="cube-face face-back"></div>
-                <div class="cube-face face-left"></div>
-                <div class="cube-face face-right"></div>
-                <div class="cube-face face-top"></div>
-                <div class="cube-face face-bottom"></div>
-            </div>
+function resize(){
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+}
+resize();
+window.addEventListener("resize",resize);
 
-            <!-- TẦNG GẦN -->
-            <div class="cube-layer layer-near" id="cube-near">
-                <div class="cube-face face-front"></div>
-                <div class="cube-face face-back"></div>
-                <div class="cube-face face-left"></div>
-                <div class="cube-face face-right"></div>
-                <div class="cube-face face-top"></div>
-                <div class="cube-face face-bottom"></div>
-            </div>
-        </div>
-    </div>
+const keys={};
 
-    <script>
-        (function() {
-            const isMobile = document.documentElement.getAttribute('data-device') === 'mobile';
-            const isGitHubPages = window.location.hostname.includes('github.io');
-            const pathSegments = window.location.pathname.split('/').filter(s => s.length > 0);
-            const basePath = (isGitHubPages && pathSegments.length > 0) ? '/' + pathSegments[0] : '';
-            
-            const jsPath = isMobile ? `${basePath}/js/mobile/app.js` : `${basePath}/js/pc/app.js`;
-            const script = document.createElement('script');
-            script.type = 'module';
-            script.src = jsPath;
-            document.body.appendChild(script);
-        })();
-    </script>
+window.addEventListener("keydown",e=>{
+keys[e.code]=true;
+if(e.code==="Space")e.preventDefault();
+});
+
+window.addEventListener("keyup",e=>{
+keys[e.code]=false;
+});
+
+let running=false;
+let score=0;
+let stars=[];
+let bullets=[];
+let enemies=[];
+let particles=[];
+let enemyTimer=0;
+let lastTime=0;
+
+const player={
+x:0,
+y:0,
+w:42,
+h:56,
+speed:420,
+hp:100,
+cooldown:0
+};
+
+function resetGame(){
+score=0;
+bullets.length=0;
+enemies.length=0;
+particles.length=0;
+stars.length=0;
+
+for(let i=0;i<140;i++){
+stars.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+s:Math.random()*2+1,
+v:Math.random()*100+40
+});
+}
+
+player.x=canvas.width/2-player.w/2;
+player.y=canvas.height-player.h-30;
+player.hp=100;
+player.cooldown=0;
+
+enemyTimer=0;
+}
+
+function startGame(){
+resetGame();
+running=true;
+overlay.style.display="none";
+lastTime=performance.now();
+requestAnimationFrame(loop);
+}
+
+overlay.addEventListener("click",()=>{
+if(!running){
+startGame();
+}
+});
+
+function spawnEnemy(){
+const size=28+Math.random()*30;
+enemies.push({
+x:Math.random()*(canvas.width-size),
+y:-size,
+w:size,
+h:size,
+speed:120+Math.random()*220,
+hp:1+Math.floor(score/25)
+});
+}
+
+function createExplosion(x,y,count){
+for(let i=0;i<count;i++){
+const angle=Math.random()*Math.PI*2;
+const speed=50+Math.random()*220;
+particles.push({
+x,
+y,
+vx:Math.cos(angle)*speed,
+vy:Math.sin(angle)*speed,
+life:0.4+Math.random()*0.6,
+size:2+Math.random()*4
+});
+}
+}
+
+function rectsIntersect(a,b){
+return(
+a.x<b.x+b.w &&
+a.x+a.w>b.x &&
+a.y<b.y+b.h &&
+a.y+a.h>b.y
+);
+}
+
+function update(dt){
+for(const star of stars){
+star.y+=star.v*dt;
+if(star.y>canvas.height){
+star.y=-5;
+star.x=Math.random()*canvas.width;
+}
+}
+
+let dx=0;
+let dy=0;
+
+if(keys["ArrowLeft"]||keys["KeyA"])dx=-1;
+if(keys["ArrowRight"]||keys["KeyD"])dx=1;
+if(keys["ArrowUp"]||keys["KeyW"])dy=-1;
+if(keys["ArrowDown"]||keys["KeyS"])dy=1;
+
+const len=Math.hypot(dx,dy)||1;
+
+player.x+=(dx/len)*player.speed*dt;
+player.y+=(dy/len)*player.speed*dt;
+
+player.x=Math.max(0,Math.min(canvas.width-player.w,player.x));
+player.y=Math.max(0,Math.min(canvas.height-player.h,player.y));
+
+player.cooldown-=dt;
+
+if(keys["Space"]&&player.cooldown<=0){
+player.cooldown=0.12;
+
+bullets.push({
+x:player.x+player.w/2-3,
+y:player.y-10,
+w:6,
+h:14,
+speed:700
+});
+}
+
+for(let i=bullets.length-1;i>=0;i--){
+const b=bullets[i];
+b.y-=b.speed*dt;
+
+if(b.y+b.h<0){
+bullets.splice(i,1);
+}
+}
+
+enemyTimer+=dt;
+
+const spawnRate=Math.max(0.25,1.1-score*0.003);
+
+if(enemyTimer>=spawnRate){
+enemyTimer=0;
+spawnEnemy();
+}
+
+for(let i=enemies.length-1;i>=0;i--){
+const e=enemies[i];
+e.y+=e.speed*dt;
+
+if(e.y>canvas.height+100){
+enemies.splice(i,1);
+player.hp-=5;
+continue;
+}
+
+if(rectsIntersect(player,e)){
+createExplosion(e.x+e.w/2,e.y+e.h/2,30);
+enemies.splice(i,1);
+player.hp-=15;
+continue;
+}
+
+for(let j=bullets.length-1;j>=0;j--){
+const b=bullets[j];
+
+if(rectsIntersect(b,e)){
+bullets.splice(j,1);
+e.hp--;
+
+if(e.hp<=0){
+score++;
+createExplosion(e.x+e.w/2,e.y+e.h/2,18);
+enemies.splice(i,1);
+}
+break;
+}
+}
+}
+
+for(let i=particles.length-1;i>=0;i--){
+const p=particles[i];
+p.life-=dt;
+p.x+=p.vx*dt;
+p.y+=p.vy*dt;
+
+if(p.life<=0){
+particles.splice(i,1);
+}
+}
+
+if(player.hp<=0){
+running=false;
+overlay.innerHTML="GAME OVER<br><br>Score: "+score+"<br><br>Nhấn để chơi lại";
+overlay.style.display="flex";
+}
+}
+
+function drawStars(){
+ctx.fillStyle="#ffffff";
+
+for(const star of stars){
+ctx.globalAlpha=0.3+star.s*0.2;
+ctx.fillRect(star.x,star.y,star.s,star.s);
+}
+
+ctx.globalAlpha=1;
+}
+
+function drawPlayer(){
+ctx.save();
+ctx.translate(player.x,player.y);
+
+ctx.fillStyle="#49b3ff";
+ctx.beginPath();
+ctx.moveTo(player.w/2,0);
+ctx.lineTo(player.w,player.h);
+ctx.lineTo(player.w/2,player.h*0.8);
+ctx.lineTo(0,player.h);
+ctx.closePath();
+ctx.fill();
+
+ctx.fillStyle="#d9f4ff";
+ctx.fillRect(player.w/2-5,14,10,14);
+
+ctx.restore();
+}
+
+function drawEnemies(){
+for(const e of enemies){
+ctx.fillStyle="#ff4b4b";
+
+ctx.beginPath();
+ctx.moveTo(e.x+e.w/2,e.y+e.h);
+ctx.lineTo(e.x+e.w,e.y);
+ctx.lineTo(e.x,e.y);
+ctx.closePath();
+ctx.fill();
+}
+}
+
+function drawBullets(){
+ctx.fillStyle="#ffe66d";
+
+for(const b of bullets){
+ctx.fillRect(b.x,b.y,b.w,b.h);
+}
+}
+
+function drawParticles(){
+for(const p of particles){
+ctx.globalAlpha=Math.max(0,p.life);
+ctx.fillStyle="#ffb347";
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+ctx.fill();
+}
+ctx.globalAlpha=1;
+}
+
+function render(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+drawStars();
+drawBullets();
+drawEnemies();
+drawParticles();
+drawPlayer();
+
+ui.textContent="Score: "+score+" | HP: "+Math.max(0,player.hp);
+}
+
+function loop(time){
+if(!running){
+return;
+}
+
+const dt=Math.min(0.033,(time-lastTime)/1000);
+lastTime=time;
+
+update(dt);
+render();
+
+requestAnimationFrame(loop);
+}
+</script>
 </body>
-</html>
- 
+</html> 

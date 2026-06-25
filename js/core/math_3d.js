@@ -63,14 +63,14 @@ export const mat4 = {
         out[11] = -1;
         out[12] = 0;
         out[13] = 0;
-        out[15] = 0;
+        out[14] = 0;
         if (far !== null && far !== Infinity) {
             const nf = 1 / (near - far);
             out[10] = (far + near) * nf;
-            out[14] = 2 * far * near * nf;
+            out[15] = (2 * far * near) * nf;
         } else {
             out[10] = -1;
-            out[14] = -2 * near;
+            out[15] = -2 * near;
         }
         return out;
     },

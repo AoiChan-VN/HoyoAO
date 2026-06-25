@@ -2,373 +2,112 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2D Plane Shooter</title>
-<style>
-html,
-body{
-margin:0;
-padding:0;
-width:100%;
-height:100%;
-overflow:hidden;
-background:#000;
-font-family:Arial,sans-serif;
-}
-
-canvas{
-display:block;
-width:100vw;
-height:100vh;
-background:#050816;
-touch-action:none;
-}
-
-#ui{
-position:fixed;
-top:12px;
-left:12px;
-color:#fff;
-font-size:18px;
-font-weight:bold;
-user-select:none;
-pointer-events:none;
-text-shadow:0 0 8px #000;
-}
-
-#overlay{
-position:fixed;
-inset:0;
-display:flex;
-align-items:center;
-justify-content:center;
-background:rgba(0,0,0,.65);
-color:#fff;
-font-size:22px;
-font-weight:bold;
-text-align:center;
-cursor:pointer;
-}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>3D Space Shooter 2026</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layouts/game_layout.css">
+<link rel="stylesheet" href="css/components/menu.css">
+<link rel="stylesheet" href="css/components/shop.css">
+<link rel="stylesheet" href="css/components/inventory.css">
+<link rel="stylesheet" href="css/components/joystick.css">
 </head>
 <body>
-<canvas id="game"></canvas>
-<div id="ui">Score: 0 | HP: 100</div>
-<div id="overlay">BẮN MÁY BAY 2D<br><br>WASD hoặc ←↑↓→ để di chuyển<br>SPACE để bắn<br><br>Nhấn để bắt đầu</div>
-
-<script>
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
-const ui=document.getElementById("ui");
-const overlay=document.getElementById("overlay");
-
-function resize(){
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
-}
-resize();
-window.addEventListener("resize",resize);
-
-const keys={};
-
-window.addEventListener("keydown",e=>{
-keys[e.code]=true;
-if(e.code==="Space")e.preventDefault();
-});
-
-window.addEventListener("keyup",e=>{
-keys[e.code]=false;
-});
-
-let running=false;
-let score=0;
-let stars=[];
-let bullets=[];
-let enemies=[];
-let particles=[];
-let enemyTimer=0;
-let lastTime=0;
-
-const player={
-x:0,
-y:0,
-w:42,
-h:56,
-speed:420,
-hp:100,
-cooldown:0
-};
-
-function resetGame(){
-score=0;
-bullets.length=0;
-enemies.length=0;
-particles.length=0;
-stars.length=0;
-
-for(let i=0;i<140;i++){
-stars.push({
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
-s:Math.random()*2+1,
-v:Math.random()*100+40
-});
-}
-
-player.x=canvas.width/2-player.w/2;
-player.y=canvas.height-player.h-30;
-player.hp=100;
-player.cooldown=0;
-
-enemyTimer=0;
-}
-
-function startGame(){
-resetGame();
-running=true;
-overlay.style.display="none";
-lastTime=performance.now();
-requestAnimationFrame(loop);
-}
-
-overlay.addEventListener("click",()=>{
-if(!running){
-startGame();
-}
-});
-
-function spawnEnemy(){
-const size=28+Math.random()*30;
-enemies.push({
-x:Math.random()*(canvas.width-size),
-y:-size,
-w:size,
-h:size,
-speed:120+Math.random()*220,
-hp:1+Math.floor(score/25)
-});
-}
-
-function createExplosion(x,y,count){
-for(let i=0;i<count;i++){
-const angle=Math.random()*Math.PI*2;
-const speed=50+Math.random()*220;
-particles.push({
-x,
-y,
-vx:Math.cos(angle)*speed,
-vy:Math.sin(angle)*speed,
-life:0.4+Math.random()*0.6,
-size:2+Math.random()*4
-});
-}
-}
-
-function rectsIntersect(a,b){
-return(
-a.x<b.x+b.w &&
-a.x+a.w>b.x &&
-a.y<b.y+b.h &&
-a.y+a.h>b.y
-);
-}
-
-function update(dt){
-for(const star of stars){
-star.y+=star.v*dt;
-if(star.y>canvas.height){
-star.y=-5;
-star.x=Math.random()*canvas.width;
-}
-}
-
-let dx=0;
-let dy=0;
-
-if(keys["ArrowLeft"]||keys["KeyA"])dx=-1;
-if(keys["ArrowRight"]||keys["KeyD"])dx=1;
-if(keys["ArrowUp"]||keys["KeyW"])dy=-1;
-if(keys["ArrowDown"]||keys["KeyS"])dy=1;
-
-const len=Math.hypot(dx,dy)||1;
-
-player.x+=(dx/len)*player.speed*dt;
-player.y+=(dy/len)*player.speed*dt;
-
-player.x=Math.max(0,Math.min(canvas.width-player.w,player.x));
-player.y=Math.max(0,Math.min(canvas.height-player.h,player.y));
-
-player.cooldown-=dt;
-
-if(keys["Space"]&&player.cooldown<=0){
-player.cooldown=0.12;
-
-bullets.push({
-x:player.x+player.w/2-3,
-y:player.y-10,
-w:6,
-h:14,
-speed:700
-});
-}
-
-for(let i=bullets.length-1;i>=0;i--){
-const b=bullets[i];
-b.y-=b.speed*dt;
-
-if(b.y+b.h<0){
-bullets.splice(i,1);
-}
-}
-
-enemyTimer+=dt;
-
-const spawnRate=Math.max(0.25,1.1-score*0.003);
-
-if(enemyTimer>=spawnRate){
-enemyTimer=0;
-spawnEnemy();
-}
-
-for(let i=enemies.length-1;i>=0;i--){
-const e=enemies[i];
-e.y+=e.speed*dt;
-
-if(e.y>canvas.height+100){
-enemies.splice(i,1);
-player.hp-=5;
-continue;
-}
-
-if(rectsIntersect(player,e)){
-createExplosion(e.x+e.w/2,e.y+e.h/2,30);
-enemies.splice(i,1);
-player.hp-=15;
-continue;
-}
-
-for(let j=bullets.length-1;j>=0;j--){
-const b=bullets[j];
-
-if(rectsIntersect(b,e)){
-bullets.splice(j,1);
-e.hp--;
-
-if(e.hp<=0){
-score++;
-createExplosion(e.x+e.w/2,e.y+e.h/2,18);
-enemies.splice(i,1);
-}
-break;
-}
-}
-}
-
-for(let i=particles.length-1;i>=0;i--){
-const p=particles[i];
-p.life-=dt;
-p.x+=p.vx*dt;
-p.y+=p.vy*dt;
-
-if(p.life<=0){
-particles.splice(i,1);
-}
-}
-
-if(player.hp<=0){
-running=false;
-overlay.innerHTML="GAME OVER<br><br>Score: "+score+"<br><br>Nhấn để chơi lại";
-overlay.style.display="flex";
-}
-}
-
-function drawStars(){
-ctx.fillStyle="#ffffff";
-
-for(const star of stars){
-ctx.globalAlpha=0.3+star.s*0.2;
-ctx.fillRect(star.x,star.y,star.s,star.s);
-}
-
-ctx.globalAlpha=1;
-}
-
-function drawPlayer(){
-ctx.save();
-ctx.translate(player.x,player.y);
-
-ctx.fillStyle="#49b3ff";
-ctx.beginPath();
-ctx.moveTo(player.w/2,0);
-ctx.lineTo(player.w,player.h);
-ctx.lineTo(player.w/2,player.h*0.8);
-ctx.lineTo(0,player.h);
-ctx.closePath();
-ctx.fill();
-
-ctx.fillStyle="#d9f4ff";
-ctx.fillRect(player.w/2-5,14,10,14);
-
-ctx.restore();
-}
-
-function drawEnemies(){
-for(const e of enemies){
-ctx.fillStyle="#ff4b4b";
-
-ctx.beginPath();
-ctx.moveTo(e.x+e.w/2,e.y+e.h);
-ctx.lineTo(e.x+e.w,e.y);
-ctx.lineTo(e.x,e.y);
-ctx.closePath();
-ctx.fill();
-}
-}
-
-function drawBullets(){
-ctx.fillStyle="#ffe66d";
-
-for(const b of bullets){
-ctx.fillRect(b.x,b.y,b.w,b.h);
-}
-}
-
-function drawParticles(){
-for(const p of particles){
-ctx.globalAlpha=Math.max(0,p.life);
-ctx.fillStyle="#ffb347";
-ctx.beginPath();
-ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
-ctx.fill();
-}
-ctx.globalAlpha=1;
-}
-
-function render(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-
-drawStars();
-drawBullets();
-drawEnemies();
-drawParticles();
-drawPlayer();
-
-ui.textContent="Score: "+score+" | HP: "+Math.max(0,player.hp);
-}
-
-function loop(time){
-if(!running){
-return;
-}
-
-const dt=Math.min(0.033,(time-lastTime)/1000);
-lastTime=time;
-
-update(dt);
-render();
-
-requestAnimationFrame(loop);
-}
-</script>
+<div id="game-container">
+<canvas id="webgl-canvas"></canvas>
+<div id="game-hud" class="hidden">
+<div class="hud-top">
+<div id="hud-score">SCORE: 0</div>
+<div id="hud-credits">CREDITS: 0$</div>
+</div>
+<div class="hud-bottom">
+<div class="bar-container">
+<div class="bar-label">HP</div>
+<div class="bar-outer">
+<div id="hud-hp-bar" class="bar-inner hp-bg"></div>
+</div>
+</div>
+<div class="bar-container">
+<div class="bar-label">SHIELD</div>
+<div class="bar-outer">
+<div id="hud-shield-bar" class="bar-inner shield-bg"></div>
+</div>
+</div>
+</div>
+<button id="btn-pause-game">II</button>
+</div>
+<div id="screen-menu" class="screen-overlay">
+<div class="menu-box">
+<h1 class="game-title">SPACE SHOOTER 3D</h1>
+<div class="menu-buttons">
+<button id="btn-start-game" class="menu-btn primary">KÍCH HOẠT HỆ THỐNG</button>
+<button id="btn-open-inventory" class="menu-btn">KHO ĐỒ TRANG BỊ</button>
+<button id="btn-open-shop" class="menu-btn">TRẠM CUNG ỨNG</button>
+</div>
+</div>
+</div>
+<div id="screen-shop" class="screen-overlay hidden">
+<div class="panel-box">
+<div class="panel-header">
+<h2>TRẠM CUNG ỨNG VŨ KHÍ</h2>
+<span id="shop-currency">0$</span>
+</div>
+<div class="panel-body">
+<div class="shop-grid" id="shop-item-container"></div>
+</div>
+<div class="panel-footer">
+<button id="btn-close-shop" class="panel-btn-close">QUAY LẠI</button>
+</div>
+</div>
+</div>
+<div id="screen-inventory" class="screen-overlay hidden">
+<div class="panel-box">
+<div class="panel-header">
+<h2>KHO ĐỒ PHI THUYỀN</h2>
+</div>
+<div class="panel-body">
+<div class="inventory-grid" id="inventory-item-container"></div>
+</div>
+<div class="panel-footer">
+<button id="btn-close-inventory" class="panel-btn-close">QUAY LẠI</button>
+</div>
+</div>
+</div>
+<div id="screen-pause" class="screen-overlay hidden">
+<div class="menu-box">
+<h2 class="pause-title">HỆ THỐNG TẠM DỪNG</h2>
+<div class="menu-buttons">
+<button id="btn-resume-game" class="menu-btn primary">TIẾP TỤC</button>
+<button id="btn-quit-game" class="menu-btn danger">THOÁT RA MENU</button>
+</div>
+</div>
+</div>
+<div id="screen-gameover" class="screen-overlay hidden">
+<div class="menu-box">
+<h1 class="gameover-title">PHI THUYỀN BỊ PHÁ HỦY</h1>
+<div class="gameover-stats">
+<p>DIỂM SỐ ĐẠT ĐƯỢC: <span id="final-score">0</span></p>
+<p>TIỀN THƯỞNG THU THẬP: <span id="final-credits">0</span>$</p>
+</div>
+<div class="menu-buttons">
+<button id="btn-restart-game" class="menu-btn primary">TÁI KHỞI ĐỘNG</button>
+<button id="btn-go-menu" class="menu-btn">QUAY LẠI MENU</button>
+</div>
+</div>
+</div>
+<div id="screen-loading" class="screen-overlay">
+<div class="loading-box">
+<div class="loading-spinner"></div>
+<div id="loading-text">DANG TẢI TÀI NGUYÊN KHÔNG GIAN... 0%</div>
+</div>
+</div>
+<div id="virtual-joystick-zone" class="hidden">
+<div id="joystick-base">
+<div id="joystick-handle"></div>
+</div>
+<button id="btn-virtual-fire"></button>
+</div>
+</div>
+<script type="module" src="js/app.js"></script>
 </body>
-</html> 
+</html>
+ 

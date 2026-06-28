@@ -9,7 +9,7 @@
 
 # 𝓐𝓸𝓲𝓒𝓱𝓪𝓷︵❤
 
-### ✦ Production VR-XR Platform ✦
+### ✦ Đang thử nghiệm ✦
 
 </div>
 
@@ -17,19 +17,19 @@
   <summary><b>【Hướng dẫn】</b></summary>
 
   ### Các bước thực hiện:
-  1. Chạy lệnh `npm install`
-  2. Tạo file `.env`
-  3. Chạy `npm start` để khởi động dự án.
+  1. Chạy lệnh ``
+  2. Tạo file ``
+  3. Chạy `` để khởi động dự án.
 </details>
 
 <table width="100%">
   <tr>
     <td width="50%">
-      <h3>Giao diện「Máy tính」</h3>
+      <h3>「Máy tính」</h3>
       <img src="https://placeholder.com" alt="Desktop View">
     </td>
     <td width="50%">
-      <h3>Giao diện「Điện thoại」</h3>
+      <h3>「Điện thoại」</h3>
       <img src="https://placeholder.com" alt="Mobile View">
     </td>
   </tr>

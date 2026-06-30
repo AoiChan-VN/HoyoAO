@@ -100,4 +100,4 @@ class Preloader {
     get errorCount() { return this.#errors.length; }
 }
 
-export const preloader = new Preloader(); 
+export const preloader = new Preloader();

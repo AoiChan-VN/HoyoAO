@@ -1,0 +1,2150 @@
+<!doctype html>
+<html lang="vi" data-theme="system" data-background="gradient-mesh" data-motion="full">
+<head>
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
+
+    <meta
+        name="description"
+        content="Website portfolio cá nhân với hệ thống dự án, bài viết, tìm kiếm, giao diện tùy chỉnh và nền động."
+    >
+
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#0b1020">
+
+    <meta name="robots" content="index, follow">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <title>Portfolio</title>
+
+    <link rel="stylesheet" href="./assets/css/app.css">
+
+    <script
+        type="module"
+        src="./assets/js/app.js"
+    ></script>
+</head>
+
+<body
+    id="app"
+    class="app"
+    data-site-config="./data/site.json"
+    data-navigation-config="./data/navigation.json"
+    data-projects-source="./data/projects.json"
+    data-articles-source="./data/articles.json"
+    data-backgrounds-source="./data/backgrounds.json"
+>
+    <a class="skip-link" href="#main-content">
+        Chuyển đến nội dung chính
+    </a>
+
+    <div
+        id="page-background"
+        class="page-background"
+        aria-hidden="true"
+    >
+        <div class="page-background__layer page-background__layer--base"></div>
+        <div class="page-background__layer page-background__layer--visual"></div>
+        <div class="page-background__layer page-background__layer--overlay"></div>
+        <div class="page-background__layer page-background__layer--noise"></div>
+    </div>
+
+    <div
+        id="page-progress"
+        class="page-progress"
+        role="progressbar"
+        aria-label="Tiến trình cuộn trang"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+    >
+        <span class="page-progress__bar"></span>
+    </div>
+
+    <div id="app-shell" class="app-shell">
+        <header
+            id="site-header"
+            class="site-header"
+            data-header
+        >
+            <div class="site-header__container">
+                <a
+                    class="site-brand"
+                    href="#home"
+                    aria-label="Đi đến trang chủ"
+                    data-route-link="home"
+                >
+                    <span
+                        class="site-brand__mark"
+                        aria-hidden="true"
+                        data-site-mark
+                    >
+                        P
+                    </span>
+
+                    <span class="site-brand__content">
+                        <span
+                            class="site-brand__name"
+                            data-site-name
+                        >
+                            Portfolio
+                        </span>
+
+                        <span
+                            class="site-brand__tagline"
+                            data-site-tagline
+                        >
+                            Creative Developer
+                        </span>
+                    </span>
+                </a>
+
+                <nav
+                    class="desktop-navigation"
+                    aria-label="Điều hướng chính"
+                >
+                    <ul
+                        id="desktop-navigation-list"
+                        class="desktop-navigation__list"
+                        data-navigation-list="desktop"
+                    >
+                        <li class="desktop-navigation__item">
+                            <a
+                                class="desktop-navigation__link is-active"
+                                href="#home"
+                                data-route-link="home"
+                                aria-current="page"
+                            >
+                                Trang chủ
+                            </a>
+                        </li>
+
+                        <li class="desktop-navigation__item">
+                            <a
+                                class="desktop-navigation__link"
+                                href="#about"
+                                data-route-link="about"
+                            >
+                                Giới thiệu
+                            </a>
+                        </li>
+
+                        <li class="desktop-navigation__item">
+                            <a
+                                class="desktop-navigation__link"
+                                href="#projects"
+                                data-route-link="projects"
+                            >
+                                Dự án
+                            </a>
+                        </li>
+
+                        <li class="desktop-navigation__item">
+                            <a
+                                class="desktop-navigation__link"
+                                href="#articles"
+                                data-route-link="articles"
+                            >
+                                Bài viết
+                            </a>
+                        </li>
+
+                        <li class="desktop-navigation__item">
+                            <a
+                                class="desktop-navigation__link"
+                                href="#contact"
+                                data-route-link="contact"
+                            >
+                                Liên hệ
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="site-header__actions">
+                    <button
+                        class="icon-button"
+                        type="button"
+                        aria-label="Mở tìm kiếm"
+                        aria-haspopup="dialog"
+                        aria-controls="search-dialog"
+                        data-open-dialog="search-dialog"
+                    >
+                        <svg
+                            class="icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            ></path>
+                        </svg>
+                    </button>
+
+                    <button
+                        class="icon-button"
+                        type="button"
+                        aria-label="Mở cài đặt giao diện"
+                        aria-haspopup="dialog"
+                        aria-controls="settings-dialog"
+                        data-open-dialog="settings-dialog"
+                    >
+                        <svg
+                            class="icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            ></path>
+
+                            <path
+                                d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.5 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.5 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.13.38.36.72.68.96.32.24.7.38 1.1.4H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15Z"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            ></path>
+                        </svg>
+                    </button>
+
+                    <button
+                        class="icon-button site-header__menu-button"
+                        type="button"
+                        aria-label="Mở menu"
+                        aria-haspopup="dialog"
+                        aria-controls="navigation-drawer"
+                        aria-expanded="false"
+                        data-open-drawer="navigation-drawer"
+                    >
+                        <svg
+                            class="icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M4 7h16M4 12h16M4 17h16"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            ></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <aside
+            id="navigation-drawer"
+            class="navigation-drawer"
+            aria-labelledby="navigation-drawer-title"
+            aria-hidden="true"
+            inert
+            data-drawer
+        >
+            <div
+                class="navigation-drawer__backdrop"
+                data-close-drawer="navigation-drawer"
+                aria-hidden="true"
+            ></div>
+
+            <div
+                class="navigation-drawer__panel"
+                role="dialog"
+                aria-modal="true"
+                tabindex="-1"
+            >
+                <header class="navigation-drawer__header">
+                    <div>
+                        <p class="eyebrow">Điều hướng</p>
+
+                        <h2
+                            id="navigation-drawer-title"
+                            class="navigation-drawer__title"
+                        >
+                            Menu
+                        </h2>
+                    </div>
+
+                    <button
+                        class="icon-button"
+                        type="button"
+                        aria-label="Đóng menu"
+                        data-close-drawer="navigation-drawer"
+                    >
+                        <svg
+                            class="icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M6 6l12 12M18 6 6 18"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            ></path>
+                        </svg>
+                    </button>
+                </header>
+
+                <nav
+                    class="mobile-navigation"
+                    aria-label="Điều hướng di động"
+                >
+                    <ul
+                        id="mobile-navigation-list"
+                        class="mobile-navigation__list"
+                        data-navigation-list="mobile"
+                    >
+                        <li class="mobile-navigation__item">
+                            <a
+                                class="mobile-navigation__link is-active"
+                                href="#home"
+                                data-route-link="home"
+                                data-close-drawer="navigation-drawer"
+                                aria-current="page"
+                            >
+                                <span>Trang chủ</span>
+                                <span aria-hidden="true">01</span>
+                            </a>
+                        </li>
+
+                        <li class="mobile-navigation__item">
+                            <a
+                                class="mobile-navigation__link"
+                                href="#about"
+                                data-route-link="about"
+                                data-close-drawer="navigation-drawer"
+                            >
+                                <span>Giới thiệu</span>
+                                <span aria-hidden="true">02</span>
+                            </a>
+                        </li>
+
+                        <li class="mobile-navigation__item">
+                            <a
+                                class="mobile-navigation__link"
+                                href="#projects"
+                                data-route-link="projects"
+                                data-close-drawer="navigation-drawer"
+                            >
+                                <span>Dự án</span>
+                                <span aria-hidden="true">03</span>
+                            </a>
+                        </li>
+
+                        <li class="mobile-navigation__item">
+                            <a
+                                class="mobile-navigation__link"
+                                href="#articles"
+                                data-route-link="articles"
+                                data-close-drawer="navigation-drawer"
+                            >
+                                <span>Bài viết</span>
+                                <span aria-hidden="true">04</span>
+                            </a>
+                        </li>
+
+                        <li class="mobile-navigation__item">
+                            <a
+                                class="mobile-navigation__link"
+                                href="#contact"
+                                data-route-link="contact"
+                                data-close-drawer="navigation-drawer"
+                            >
+                                <span>Liên hệ</span>
+                                <span aria-hidden="true">05</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <footer class="navigation-drawer__footer">
+                    <div
+                        class="social-links"
+                        data-social-links="drawer"
+                        aria-label="Liên kết mạng xã hội"
+                    ></div>
+                </footer>
+            </div>
+        </aside>
+
+        <main
+            id="main-content"
+            class="main-content"
+            tabindex="-1"
+        >
+            <section
+                id="home"
+                class="page-section hero-section"
+                aria-labelledby="hero-title"
+                data-page-section="home"
+                data-observe-section
+            >
+                <div class="section-container hero-section__container">
+                    <div class="hero-section__content">
+                        <p
+                            class="eyebrow hero-section__eyebrow"
+                            data-hero-eyebrow
+                        >
+                            Portfolio cá nhân
+                        </p>
+
+                        <h1
+                            id="hero-title"
+                            class="hero-section__title"
+                            data-hero-title
+                        >
+                            Sáng tạo trải nghiệm số bằng thiết kế, âm nhạc và mã nguồn.
+                        </h1>
+
+                        <p
+                            class="hero-section__description"
+                            data-hero-description
+                        >
+                            Không gian giới thiệu dự án, sản phẩm, bài viết và hành trình sáng tạo.
+                        </p>
+
+                        <div class="hero-section__actions">
+                            <a
+                                class="button button--primary"
+                                href="#projects"
+                                data-route-link="projects"
+                            >
+                                <span>Xem dự án</span>
+
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        d="M5 12h14m-6-6 6 6-6 6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    ></path>
+                                </svg>
+                            </a>
+
+                            <a
+                                class="button button--secondary"
+                                href="#contact"
+                                data-route-link="contact"
+                            >
+                                Liên hệ
+                            </a>
+                        </div>
+
+                        <dl
+                            class="hero-statistics"
+                            data-hero-statistics
+                        ></dl>
+                    </div>
+
+                    <div
+                        class="hero-section__visual"
+                        aria-hidden="true"
+                    >
+                        <div class="hero-orbit">
+                            <span class="hero-orbit__ring hero-orbit__ring--outer"></span>
+                            <span class="hero-orbit__ring hero-orbit__ring--middle"></span>
+                            <span class="hero-orbit__ring hero-orbit__ring--inner"></span>
+                            <span class="hero-orbit__core"></span>
+                        </div>
+                    </div>
+
+                    <a
+                        class="scroll-indicator"
+                        href="#about"
+                        aria-label="Cuộn xuống phần giới thiệu"
+                        data-route-link="about"
+                    >
+                        <span>Khám phá</span>
+
+                        <svg
+                            class="icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="m6 9 6 6 6-6"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            ></path>
+                        </svg>
+                    </a>
+                </div>
+            </section>
+
+            <section
+                id="about"
+                class="page-section about-section"
+                aria-labelledby="about-title"
+                data-page-section="about"
+                data-observe-section
+            >
+                <div class="section-container">
+                    <header class="section-header">
+                        <div class="section-header__content">
+                            <p class="eyebrow">Giới thiệu</p>
+
+                            <h2
+                                id="about-title"
+                                class="section-title"
+                            >
+                                Con người phía sau những sản phẩm
+                            </h2>
+                        </div>
+
+                        <p
+                            class="section-header__description"
+                            data-about-summary
+                        >
+                            Thông tin cá nhân, định hướng sáng tạo và năng lực chuyên môn.
+                        </p>
+                    </header>
+
+                    <div class="about-layout">
+                        <article class="surface-card about-profile">
+                            <div
+                                class="about-profile__media"
+                                data-profile-media
+                            >
+                                <div
+                                    class="about-profile__fallback"
+                                    aria-hidden="true"
+                                >
+                                    <svg
+                                        class="icon"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7 8a7 7 0 0 0-14 0"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="1.5"
+                                            stroke-linecap="round"
+                                        ></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="about-profile__content">
+                                <p
+                                    class="about-profile__role"
+                                    data-profile-role
+                                >
+                                    Creative Developer
+                                </p>
+
+                                <h3
+                                    class="about-profile__name"
+                                    data-profile-name
+                                >
+                                    Portfolio
+                                </h3>
+
+                                <div
+                                    class="prose"
+                                    data-about-content
+                                >
+                                    <p>
+                                        Nội dung giới thiệu được quản lý trực tiếp từ dữ liệu cấu hình của website.
+                                    </p>
+                                </div>
+                            </div>
+                        </article>
+
+                        <div class="about-details">
+                            <article class="surface-card">
+                                <header class="card-header">
+                                    <div>
+                                        <p class="eyebrow">Năng lực</p>
+                                        <h3 class="card-title">Kỹ năng chuyên môn</h3>
+                                    </div>
+                                </header>
+
+                                <div
+                                    class="skill-list"
+                                    data-skill-list
+                                    aria-live="polite"
+                                ></div>
+                            </article>
+
+                            <article class="surface-card">
+                                <header class="card-header">
+                                    <div>
+                                        <p class="eyebrow">Công cụ</p>
+                                        <h3 class="card-title">Công nghệ sử dụng</h3>
+                                    </div>
+                                </header>
+
+                                <ul
+                                    class="tag-list"
+                                    data-technology-list
+                                ></ul>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                id="projects"
+                class="page-section projects-section"
+                aria-labelledby="projects-title"
+                data-page-section="projects"
+                data-observe-section
+            >
+                <div class="section-container">
+                    <header class="section-header">
+                        <div class="section-header__content">
+                            <p class="eyebrow">Dự án</p>
+
+                            <h2
+                                id="projects-title"
+                                class="section-title"
+                            >
+                                Sản phẩm và thử nghiệm nổi bật
+                            </h2>
+                        </div>
+
+                        <p class="section-header__description">
+                            Danh sách dự án được đọc từ tệp JSON và có thể lọc theo nhóm nội dung.
+                        </p>
+                    </header>
+
+                    <div class="content-toolbar">
+                        <div
+                            class="filter-tabs"
+                            role="tablist"
+                            aria-label="Lọc dự án theo danh mục"
+                            data-project-filters
+                        >
+                            <button
+                                id="project-filter-all"
+                                class="filter-tab is-active"
+                                type="button"
+                                role="tab"
+                                aria-selected="true"
+                                tabindex="0"
+                                data-project-filter="all"
+                            >
+                                Tất cả
+                            </button>
+                        </div>
+
+                        <div class="view-controls">
+                            <button
+                                class="icon-button is-active"
+                                type="button"
+                                aria-label="Hiển thị dự án dạng lưới"
+                                aria-pressed="true"
+                                data-project-view="grid"
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linejoin="round"
+                                    ></path>
+                                </svg>
+                            </button>
+
+                            <button
+                                class="icon-button"
+                                type="button"
+                                aria-label="Hiển thị dự án dạng danh sách"
+                                aria-pressed="false"
+                                data-project-view="list"
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                    ></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div
+                        id="projects-status"
+                        class="content-status"
+                        role="status"
+                        aria-live="polite"
+                        data-content-status="projects"
+                    >
+                        <span class="loading-spinner" aria-hidden="true"></span>
+                        <span>Đang tải danh sách dự án</span>
+                    </div>
+
+                    <div
+                        id="projects-grid"
+                        class="project-grid"
+                        aria-busy="true"
+                        aria-describedby="projects-status"
+                        data-project-list
+                    ></div>
+
+                    <div
+                        class="empty-state"
+                        hidden
+                        data-empty-state="projects"
+                    >
+                        <svg
+                            class="empty-state__icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M4 5h16v14H4V5Zm0 4h16M9 5v14"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            ></path>
+                        </svg>
+
+                        <h3 class="empty-state__title">
+                            Không tìm thấy dự án
+                        </h3>
+
+                        <p class="empty-state__description">
+                            Hãy chọn danh mục khác hoặc thay đổi từ khóa tìm kiếm.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                id="articles"
+                class="page-section articles-section"
+                aria-labelledby="articles-title"
+                data-page-section="articles"
+                data-observe-section
+            >
+                <div class="section-container">
+                    <header class="section-header">
+                        <div class="section-header__content">
+                            <p class="eyebrow">Bài viết</p>
+
+                            <h2
+                                id="articles-title"
+                                class="section-title"
+                            >
+                                Ghi chép, kiến thức và câu chuyện
+                            </h2>
+                        </div>
+
+                        <p class="section-header__description">
+                            Thông tin bài viết được quản lý bằng JSON, nội dung chi tiết được đọc từ Markdown hoặc TXT.
+                        </p>
+                    </header>
+
+                    <div class="content-toolbar">
+                        <div
+                            class="filter-tabs"
+                            role="tablist"
+                            aria-label="Lọc bài viết theo danh mục"
+                            data-article-filters
+                        >
+                            <button
+                                id="article-filter-all"
+                                class="filter-tab is-active"
+                                type="button"
+                                role="tab"
+                                aria-selected="true"
+                                tabindex="0"
+                                data-article-filter="all"
+                            >
+                                Tất cả
+                            </button>
+                        </div>
+
+                        <label class="select-field select-field--compact">
+                            <span class="select-field__label">
+                                Sắp xếp
+                            </span>
+
+                            <select
+                                class="select-field__control"
+                                data-article-sort
+                            >
+                                <option value="newest">
+                                    Mới nhất
+                                </option>
+
+                                <option value="oldest">
+                                    Cũ nhất
+                                </option>
+
+                                <option value="title-asc">
+                                    Tiêu đề A–Z
+                                </option>
+
+                                <option value="title-desc">
+                                    Tiêu đề Z–A
+                                </option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div
+                        id="articles-status"
+                        class="content-status"
+                        role="status"
+                        aria-live="polite"
+                        data-content-status="articles"
+                    >
+                        <span class="loading-spinner" aria-hidden="true"></span>
+                        <span>Đang tải danh sách bài viết</span>
+                    </div>
+
+                    <div
+                        id="articles-grid"
+                        class="article-grid"
+                        aria-busy="true"
+                        aria-describedby="articles-status"
+                        data-article-list
+                    ></div>
+
+                    <div
+                        class="empty-state"
+                        hidden
+                        data-empty-state="articles"
+                    >
+                        <svg
+                            class="empty-state__icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M6 3h9l3 3v15H6V3Zm9 0v4h4M9 11h6M9 15h6"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            ></path>
+                        </svg>
+
+                        <h3 class="empty-state__title">
+                            Không tìm thấy bài viết
+                        </h3>
+
+                        <p class="empty-state__description">
+                            Hãy chọn danh mục khác hoặc thay đổi từ khóa tìm kiếm.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                id="contact"
+                class="page-section contact-section"
+                aria-labelledby="contact-title"
+                data-page-section="contact"
+                data-observe-section
+            >
+                <div class="section-container">
+                    <div class="contact-panel surface-card">
+                        <div class="contact-panel__content">
+                            <p class="eyebrow">Liên hệ</p>
+
+                            <h2
+                                id="contact-title"
+                                class="section-title"
+                                data-contact-title
+                            >
+                                Cùng tạo nên một sản phẩm đáng nhớ
+                            </h2>
+
+                            <p
+                                class="contact-panel__description"
+                                data-contact-description
+                            >
+                                Thông tin liên hệ và các nền tảng kết nối được quản lý từ dữ liệu cấu hình.
+                            </p>
+
+                            <div
+                                class="contact-actions"
+                                data-contact-actions
+                            ></div>
+                        </div>
+
+                        <div
+                            class="contact-panel__links"
+                            data-contact-links
+                            aria-label="Các phương thức liên hệ"
+                        ></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer
+            id="site-footer"
+            class="site-footer"
+        >
+            <div class="section-container site-footer__container">
+                <div class="site-footer__brand">
+                    <a
+                        class="site-brand site-brand--footer"
+                        href="#home"
+                        data-route-link="home"
+                        aria-label="Trở về đầu trang"
+                    >
+                        <span
+                            class="site-brand__mark"
+                            aria-hidden="true"
+                            data-site-mark
+                        >
+                            P
+                        </span>
+
+                        <span
+                            class="site-brand__name"
+                            data-site-name
+                        >
+                            Portfolio
+                        </span>
+                    </a>
+
+                    <p
+                        class="site-footer__description"
+                        data-footer-description
+                    >
+                        Không gian lưu giữ dự án, bài viết và hành trình sáng tạo.
+                    </p>
+                </div>
+
+                <nav
+                    class="footer-navigation"
+                    aria-label="Điều hướng cuối trang"
+                >
+                    <a href="#about" data-route-link="about">
+                        Giới thiệu
+                    </a>
+
+                    <a href="#projects" data-route-link="projects">
+                        Dự án
+                    </a>
+
+                    <a href="#articles" data-route-link="articles">
+                        Bài viết
+                    </a>
+
+                    <a href="#contact" data-route-link="contact">
+                        Liên hệ
+                    </a>
+                </nav>
+
+                <div
+                    class="social-links"
+                    data-social-links="footer"
+                    aria-label="Liên kết mạng xã hội"
+                ></div>
+
+                <div class="site-footer__bottom">
+                    <p>
+                        ©
+                        <time
+                            data-current-year
+                            datetime="2026"
+                        >
+                            2026
+                        </time>
+                        <span data-site-name>Portfolio</span>.
+                        Bảo lưu mọi quyền.
+                    </p>
+
+                    <button
+                        class="back-to-top"
+                        type="button"
+                        aria-label="Trở về đầu trang"
+                        data-back-to-top
+                    >
+                        <span>Lên đầu trang</span>
+
+                        <svg
+                            class="icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="m6 15 6-6 6 6"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            ></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <dialog
+        id="search-dialog"
+        class="app-dialog search-dialog"
+        aria-labelledby="search-dialog-title"
+        data-dialog
+    >
+        <div
+            class="app-dialog__backdrop"
+            data-close-dialog="search-dialog"
+            aria-hidden="true"
+        ></div>
+
+        <div class="app-dialog__panel search-dialog__panel">
+            <header class="app-dialog__header">
+                <div>
+                    <p class="eyebrow">Tìm kiếm</p>
+
+                    <h2
+                        id="search-dialog-title"
+                        class="app-dialog__title"
+                    >
+                        Tìm trong portfolio
+                    </h2>
+                </div>
+
+                <button
+                    class="icon-button"
+                    type="button"
+                    aria-label="Đóng tìm kiếm"
+                    data-close-dialog="search-dialog"
+                >
+                    <svg
+                        class="icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            d="M6 6l12 12M18 6 6 18"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        ></path>
+                    </svg>
+                </button>
+            </header>
+
+            <div class="search-dialog__body">
+                <form
+                    class="search-form"
+                    role="search"
+                    data-search-form
+                >
+                    <label
+                        class="search-field"
+                        for="global-search-input"
+                    >
+                        <svg
+                            class="icon search-field__icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            ></path>
+                        </svg>
+
+                        <span class="sr-only">
+                            Nhập từ khóa tìm kiếm
+                        </span>
+
+                        <input
+                            id="global-search-input"
+                            class="search-field__input"
+                            type="search"
+                            name="query"
+                            inputmode="search"
+                            autocomplete="off"
+                            spellcheck="false"
+                            enterkeyhint="search"
+                            aria-controls="search-results"
+                            aria-describedby="search-help"
+                            data-search-input
+                        >
+
+                        <button
+                            class="search-field__clear"
+                            type="button"
+                            aria-label="Xóa từ khóa tìm kiếm"
+                            hidden
+                            data-clear-search
+                        >
+                            <svg
+                                class="icon"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    d="M6 6l12 12M18 6 6 18"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                ></path>
+                            </svg>
+                        </button>
+                    </label>
+                </form>
+
+                <p
+                    id="search-help"
+                    class="search-dialog__help"
+                >
+                    Tìm kiếm theo tiêu đề, mô tả, danh mục, công nghệ và nội dung bài viết.
+                </p>
+
+                <div
+                    class="search-scope"
+                    role="group"
+                    aria-label="Phạm vi tìm kiếm"
+                >
+                    <button
+                        class="search-scope__button is-active"
+                        type="button"
+                        aria-pressed="true"
+                        data-search-scope="all"
+                    >
+                        Tất cả
+                    </button>
+
+                    <button
+                        class="search-scope__button"
+                        type="button"
+                        aria-pressed="false"
+                        data-search-scope="projects"
+                    >
+                        Dự án
+                    </button>
+
+                    <button
+                        class="search-scope__button"
+                        type="button"
+                        aria-pressed="false"
+                        data-search-scope="articles"
+                    >
+                        Bài viết
+                    </button>
+                </div>
+
+                <div
+                    id="search-status"
+                    class="search-status"
+                    role="status"
+                    aria-live="polite"
+                    data-search-status
+                >
+                    Nhập từ khóa để bắt đầu tìm kiếm.
+                </div>
+
+                <div
+                    id="search-results"
+                    class="search-results"
+                    aria-live="polite"
+                    data-search-results
+                ></div>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog
+        id="settings-dialog"
+        class="app-dialog settings-dialog"
+        aria-labelledby="settings-dialog-title"
+        data-dialog
+    >
+        <div
+            class="app-dialog__backdrop"
+            data-close-dialog="settings-dialog"
+            aria-hidden="true"
+        ></div>
+
+        <div class="app-dialog__panel settings-dialog__panel">
+            <header class="app-dialog__header">
+                <div>
+                    <p class="eyebrow">Tùy chỉnh</p>
+
+                    <h2
+                        id="settings-dialog-title"
+                        class="app-dialog__title"
+                    >
+                        Cài đặt giao diện
+                    </h2>
+                </div>
+
+                <button
+                    class="icon-button"
+                    type="button"
+                    aria-label="Đóng cài đặt"
+                    data-close-dialog="settings-dialog"
+                >
+                    <svg
+                        class="icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            d="M6 6l12 12M18 6 6 18"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        ></path>
+                    </svg>
+                </button>
+            </header>
+
+            <div class="settings-dialog__body">
+                <section
+                    class="settings-group"
+                    aria-labelledby="theme-setting-title"
+                >
+                    <header class="settings-group__header">
+                        <div>
+                            <h3
+                                id="theme-setting-title"
+                                class="settings-group__title"
+                            >
+                                Chế độ màu
+                            </h3>
+
+                            <p class="settings-group__description">
+                                Chọn giao diện sáng, tối hoặc đồng bộ với thiết bị.
+                            </p>
+                        </div>
+                    </header>
+
+                    <div
+                        class="option-grid option-grid--three"
+                        role="radiogroup"
+                        aria-labelledby="theme-setting-title"
+                        data-theme-options
+                    >
+                        <label class="visual-option">
+                            <input
+                                class="visual-option__input"
+                                type="radio"
+                                name="theme"
+                                value="system"
+                                checked
+                                data-theme-option
+                            >
+
+                            <span class="visual-option__preview visual-option__preview--system">
+                                <span></span>
+                                <span></span>
+                            </span>
+
+                            <span class="visual-option__label">
+                                Hệ thống
+                            </span>
+                        </label>
+
+                        <label class="visual-option">
+                            <input
+                                class="visual-option__input"
+                                type="radio"
+                                name="theme"
+                                value="light"
+                                data-theme-option
+                            >
+
+                            <span class="visual-option__preview visual-option__preview--light">
+                                <span></span>
+                            </span>
+
+                            <span class="visual-option__label">
+                                Sáng
+                            </span>
+                        </label>
+
+                        <label class="visual-option">
+                            <input
+                                class="visual-option__input"
+                                type="radio"
+                                name="theme"
+                                value="dark"
+                                data-theme-option
+                            >
+
+                            <span class="visual-option__preview visual-option__preview--dark">
+                                <span></span>
+                            </span>
+
+                            <span class="visual-option__label">
+                                Tối
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
+                <section
+                    class="settings-group"
+                    aria-labelledby="panel-theme-setting-title"
+                >
+                    <header class="settings-group__header">
+                        <div>
+                            <h3
+                                id="panel-theme-setting-title"
+                                class="settings-group__title"
+                            >
+                                Kiểu bảng giao diện
+                            </h3>
+
+                            <p class="settings-group__description">
+                                Áp dụng cho Menu, Settings, Modal, Popup và các thẻ nội dung.
+                            </p>
+                        </div>
+                    </header>
+
+                    <div
+                        class="option-grid option-grid--two"
+                        role="radiogroup"
+                        aria-labelledby="panel-theme-setting-title"
+                    >
+                        <label class="panel-option">
+                            <input
+                                class="panel-option__input"
+                                type="radio"
+                                name="panel-theme"
+                                value="glass"
+                                checked
+                                data-panel-theme-option
+                            >
+
+                            <span class="panel-option__preview panel-option__preview--glass">
+                                <span></span>
+                            </span>
+
+                            <span class="panel-option__content">
+                                <strong>Kính mờ</strong>
+                                <small>Trong suốt và có hiệu ứng làm mờ nền</small>
+                            </span>
+                        </label>
+
+                        <label class="panel-option">
+                            <input
+                                class="panel-option__input"
+                                type="radio"
+                                name="panel-theme"
+                                value="solid"
+                                data-panel-theme-option
+                            >
+
+                            <span class="panel-option__preview panel-option__preview--solid">
+                                <span></span>
+                            </span>
+
+                            <span class="panel-option__content">
+                                <strong>Đặc</strong>
+                                <small>Màu nền rõ ràng và độ tương phản cao</small>
+                            </span>
+                        </label>
+
+                        <label class="panel-option">
+                            <input
+                                class="panel-option__input"
+                                type="radio"
+                                name="panel-theme"
+                                value="outline"
+                                data-panel-theme-option
+                            >
+
+                            <span class="panel-option__preview panel-option__preview--outline">
+                                <span></span>
+                            </span>
+
+                            <span class="panel-option__content">
+                                <strong>Viền</strong>
+                                <small>Tối giản với đường viền nổi bật</small>
+                            </span>
+                        </label>
+
+                        <label class="panel-option">
+                            <input
+                                class="panel-option__input"
+                                type="radio"
+                                name="panel-theme"
+                                value="elevated"
+                                data-panel-theme-option
+                            >
+
+                            <span class="panel-option__preview panel-option__preview--elevated">
+                                <span></span>
+                            </span>
+
+                            <span class="panel-option__content">
+                                <strong>Nổi</strong>
+                                <small>Chiều sâu rõ với bóng đổ mềm</small>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
+                <section
+                    class="settings-group"
+                    aria-labelledby="background-setting-title"
+                >
+                    <header class="settings-group__header">
+                        <div>
+                            <h3
+                                id="background-setting-title"
+                                class="settings-group__title"
+                            >
+                                Hình nền
+                            </h3>
+
+                            <p class="settings-group__description">
+                                Danh sách nền được tải từ tệp dữ liệu riêng và có thể mở rộng.
+                            </p>
+                        </div>
+                    </header>
+
+                    <div
+                        class="background-options"
+                        role="radiogroup"
+                        aria-labelledby="background-setting-title"
+                        data-background-options
+                    >
+                        <label class="background-option">
+                            <input
+                                class="background-option__input"
+                                type="radio"
+                                name="background"
+                                value="gradient-mesh"
+                                checked
+                                data-background-option
+                            >
+
+                            <span class="background-option__preview background-option__preview--gradient-mesh"></span>
+
+                            <span class="background-option__label">
+                                Gradient Mesh
+                            </span>
+                        </label>
+
+                        <label class="background-option">
+                            <input
+                                class="background-option__input"
+                                type="radio"
+                                name="background"
+                                value="midnight-grid"
+                                data-background-option
+                            >
+
+                            <span class="background-option__preview background-option__preview--midnight-grid"></span>
+
+                            <span class="background-option__label">
+                                Midnight Grid
+                            </span>
+                        </label>
+
+                        <label class="background-option">
+                            <input
+                                class="background-option__input"
+                                type="radio"
+                                name="background"
+                                value="soft-aurora"
+                                data-background-option
+                            >
+
+                            <span class="background-option__preview background-option__preview--soft-aurora"></span>
+
+                            <span class="background-option__label">
+                                Soft Aurora
+                            </span>
+                        </label>
+
+                        <label class="background-option">
+                            <input
+                                class="background-option__input"
+                                type="radio"
+                                name="background"
+                                value="minimal"
+                                data-background-option
+                            >
+
+                            <span class="background-option__preview background-option__preview--minimal"></span>
+
+                            <span class="background-option__label">
+                                Tối giản
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
+                <section
+                    class="settings-group"
+                    aria-labelledby="motion-setting-title"
+                >
+                    <header class="settings-group__header">
+                        <div>
+                            <h3
+                                id="motion-setting-title"
+                                class="settings-group__title"
+                            >
+                                Chuyển động
+                            </h3>
+
+                            <p class="settings-group__description">
+                                Kiểm soát animation khi chuyển phần, mở bảng và hiển thị nội dung.
+                            </p>
+                        </div>
+                    </header>
+
+                    <label class="switch-field">
+                        <span class="switch-field__content">
+                            <strong>Hiệu ứng giao diện</strong>
+                            <small>Bật animation chuyển trang và đóng mở bảng</small>
+                        </span>
+
+                        <input
+                            class="switch-field__input"
+                            type="checkbox"
+                            role="switch"
+                            checked
+                            data-motion-toggle
+                        >
+
+                        <span
+                            class="switch-field__control"
+                            aria-hidden="true"
+                        ></span>
+                    </label>
+
+                    <label class="switch-field">
+                        <span class="switch-field__content">
+                            <strong>Cuộn mượt</strong>
+                            <small>Di chuyển nhẹ nhàng giữa các khu vực nội dung</small>
+                        </span>
+
+                        <input
+                            class="switch-field__input"
+                            type="checkbox"
+                            role="switch"
+                            checked
+                            data-smooth-scroll-toggle
+                        >
+
+                        <span
+                            class="switch-field__control"
+                            aria-hidden="true"
+                        ></span>
+                    </label>
+
+                    <label class="switch-field">
+                        <span class="switch-field__content">
+                            <strong>Hiệu ứng nền</strong>
+                            <small>Cho phép nền sử dụng chuyển động trang trí</small>
+                        </span>
+
+                        <input
+                            class="switch-field__input"
+                            type="checkbox"
+                            role="switch"
+                            checked
+                            data-background-motion-toggle
+                        >
+
+                        <span
+                            class="switch-field__control"
+                            aria-hidden="true"
+                        ></span>
+                    </label>
+                </section>
+
+                <section
+                    class="settings-group"
+                    aria-labelledby="accessibility-setting-title"
+                >
+                    <header class="settings-group__header">
+                        <div>
+                            <h3
+                                id="accessibility-setting-title"
+                                class="settings-group__title"
+                            >
+                                Khả năng hiển thị
+                            </h3>
+
+                            <p class="settings-group__description">
+                                Điều chỉnh kích thước chữ và độ tương phản.
+                            </p>
+                        </div>
+                    </header>
+
+                    <label class="range-field">
+                        <span class="range-field__header">
+                            <span>Cỡ chữ</span>
+
+                            <output
+                                for="font-scale-control"
+                                data-font-scale-output
+                            >
+                                100%
+                            </output>
+                        </span>
+
+                        <input
+                            id="font-scale-control"
+                            class="range-field__input"
+                            type="range"
+                            min="90"
+                            max="120"
+                            step="5"
+                            value="100"
+                            data-font-scale-control
+                        >
+                    </label>
+
+                    <label class="switch-field">
+                        <span class="switch-field__content">
+                            <strong>Tương phản cao</strong>
+                            <small>Tăng độ rõ của chữ, viền và nút điều khiển</small>
+                        </span>
+
+                        <input
+                            class="switch-field__input"
+                            type="checkbox"
+                            role="switch"
+                            data-contrast-toggle
+                        >
+
+                        <span
+                            class="switch-field__control"
+                            aria-hidden="true"
+                        ></span>
+                    </label>
+                </section>
+            </div>
+
+            <footer class="app-dialog__footer">
+                <button
+                    class="button button--secondary"
+                    type="button"
+                    data-reset-settings
+                >
+                    Khôi phục mặc định
+                </button>
+
+                <button
+                    class="button button--primary"
+                    type="button"
+                    data-close-dialog="settings-dialog"
+                >
+                    Hoàn tất
+                </button>
+            </footer>
+        </div>
+    </dialog>
+
+    <dialog
+        id="content-dialog"
+        class="app-dialog content-dialog"
+        aria-labelledby="content-dialog-title"
+        data-dialog
+    >
+        <div
+            class="app-dialog__backdrop"
+            data-close-dialog="content-dialog"
+            aria-hidden="true"
+        ></div>
+
+        <article class="app-dialog__panel content-dialog__panel">
+            <header class="content-dialog__header">
+                <div class="content-dialog__heading">
+                    <p
+                        class="eyebrow"
+                        data-content-dialog-category
+                    >
+                        Nội dung
+                    </p>
+
+                    <h2
+                        id="content-dialog-title"
+                        class="content-dialog__title"
+                        data-content-dialog-title
+                    >
+                        Chi tiết
+                    </h2>
+                </div>
+
+                <button
+                    class="icon-button"
+                    type="button"
+                    aria-label="Đóng nội dung"
+                    data-close-dialog="content-dialog"
+                >
+                    <svg
+                        class="icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            d="M6 6l12 12M18 6 6 18"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        ></path>
+                    </svg>
+                </button>
+            </header>
+
+            <div class="content-dialog__meta">
+                <time data-content-dialog-date></time>
+
+                <span
+                    class="content-dialog__reading-time"
+                    data-content-dialog-reading-time
+                ></span>
+            </div>
+
+            <div
+                class="content-dialog__cover"
+                hidden
+                data-content-dialog-cover
+            ></div>
+
+            <div
+                class="content-dialog__body prose"
+                data-content-dialog-body
+            ></div>
+
+            <footer class="content-dialog__footer">
+                <div
+                    class="tag-list"
+                    data-content-dialog-tags
+                ></div>
+
+                <button
+                    class="button button--secondary"
+                    type="button"
+                    data-share-content
+                >
+                    <svg
+                        class="icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            d="M18 8a3 3 0 1 0-2.83-4A3 3 0 0 0 18 8ZM6 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm12 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM8.59 16.51l6.83-3.42M8.59 7.49l6.83 3.42"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        ></path>
+                    </svg>
+
+                    <span>Chia sẻ</span>
+                </button>
+            </footer>
+        </article>
+    </dialog>
+
+    <dialog
+        id="confirm-dialog"
+        class="app-dialog confirm-dialog"
+        aria-labelledby="confirm-dialog-title"
+        aria-describedby="confirm-dialog-message"
+        data-dialog
+    >
+        <div
+            class="app-dialog__backdrop"
+            data-confirm-cancel
+            aria-hidden="true"
+        ></div>
+
+        <div class="app-dialog__panel confirm-dialog__panel">
+            <div
+                class="confirm-dialog__icon"
+                aria-hidden="true"
+                data-confirm-dialog-icon
+            >
+                <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-14v5m0 4h.01"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                    ></path>
+                </svg>
+            </div>
+
+            <div class="confirm-dialog__content">
+                <h2
+                    id="confirm-dialog-title"
+                    class="confirm-dialog__title"
+                    data-confirm-dialog-title
+                >
+                    Xác nhận thao tác
+                </h2>
+
+                <p
+                    id="confirm-dialog-message"
+                    class="confirm-dialog__message"
+                    data-confirm-dialog-message
+                >
+                    Bạn có chắc chắn muốn thực hiện thao tác này?
+                </p>
+            </div>
+
+            <div class="confirm-dialog__actions">
+                <button
+                    class="button button--secondary"
+                    type="button"
+                    data-confirm-cancel
+                >
+                    Hủy
+                </button>
+
+                <button
+                    class="button button--primary"
+                    type="button"
+                    data-confirm-accept
+                >
+                    Xác nhận
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <div
+        id="toast-region"
+        class="toast-region"
+        aria-label="Thông báo"
+        aria-live="polite"
+        aria-relevant="additions"
+        data-toast-region
+    ></div>
+
+    <div
+        id="connection-status"
+        class="connection-status"
+        role="status"
+        aria-live="polite"
+        hidden
+        data-connection-status
+    >
+        <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+        >
+            <path
+                d="M2 8.82a15.9 15.9 0 0 1 20 0M5 12.86a11 11 0 0 1 14 0M8.5 16.43a6 6 0 0 1 7 0M12 20h.01"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+            ></path>
+        </svg>
+
+        <span data-connection-status-text>
+            Không có kết nối mạng
+        </span>
+    </div>
+
+    <template id="project-card-template">
+        <article
+            class="project-card surface-card"
+            data-project-card
+        >
+            <div class="project-card__media">
+                <img
+                    class="project-card__image"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    data-project-image
+                >
+
+                <div class="project-card__media-overlay"></div>
+
+                <span
+                    class="project-card__status"
+                    data-project-status
+                ></span>
+            </div>
+
+            <div class="project-card__content">
+                <div class="project-card__meta">
+                    <span data-project-category></span>
+                    <time data-project-date></time>
+                </div>
+
+                <h3 class="project-card__title">
+                    <button
+                        class="project-card__title-button"
+                        type="button"
+                        data-project-open
+                    >
+                        <span data-project-title></span>
+                    </button>
+                </h3>
+
+                <p
+                    class="project-card__description"
+                    data-project-description
+                ></p>
+
+                <ul
+                    class="tag-list"
+                    aria-label="Công nghệ dự án"
+                    data-project-technologies
+                ></ul>
+
+                <div class="project-card__actions">
+                    <button
+                        class="text-button"
+                        type="button"
+                        data-project-open
+                    >
+                        <span>Xem chi tiết</span>
+
+                        <svg
+                            class="icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M5 12h14m-6-6 6 6-6 6"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            ></path>
+                        </svg>
+                    </button>
+
+                    <div
+                        class="project-card__links"
+                        data-project-links
+                    ></div>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <template id="article-card-template">
+        <article
+            class="article-card surface-card"
+            data-article-card
+        >
+            <div class="article-card__media">
+                <img
+                    class="article-card__image"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    data-article-image
+                >
+            </div>
+
+            <div class="article-card__content">
+                <div class="article-card__meta">
+                    <span data-article-category></span>
+                    <time data-article-date></time>
+                </div>
+
+                <h3 class="article-card__title">
+                    <button
+                        class="article-card__title-button"
+                        type="button"
+                        data-article-open
+                    >
+                        <span data-article-title></span>
+                    </button>
+                </h3>
+
+                <p
+                    class="article-card__description"
+                    data-article-description
+                ></p>
+
+                <div class="article-card__footer">
+                    <span
+                        class="article-card__reading-time"
+                        data-article-reading-time
+                    ></span>
+
+                    <button
+                        class="text-button"
+                        type="button"
+                        data-article-open
+                    >
+                        <span>Đọc bài viết</span>
+
+                        <svg
+                            class="icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M5 12h14m-6-6 6 6-6 6"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            ></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <template id="search-result-template">
+        <button
+            class="search-result"
+            type="button"
+            data-search-result
+        >
+            <span
+                class="search-result__type"
+                data-search-result-type
+            ></span>
+
+            <span class="search-result__content">
+                <strong
+                    class="search-result__title"
+                    data-search-result-title
+                ></strong>
+
+                <span
+                    class="search-result__description"
+                    data-search-result-description
+                ></span>
+            </span>
+
+            <svg
+                class="icon search-result__arrow"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <path
+                    d="M5 12h14m-6-6 6 6-6 6"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                ></path>
+            </svg>
+        </button>
+    </template>
+
+    <template id="toast-template">
+        <div
+            class="toast"
+            role="status"
+            data-toast
+        >
+            <div
+                class="toast__icon"
+                aria-hidden="true"
+                data-toast-icon
+            ></div>
+
+            <div class="toast__content">
+                <strong
+                    class="toast__title"
+                    data-toast-title
+                ></strong>
+
+                <p
+                    class="toast__message"
+                    data-toast-message
+                ></p>
+            </div>
+
+            <button
+                class="toast__close"
+                type="button"
+                aria-label="Đóng thông báo"
+                data-toast-close
+            >
+                <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M6 6l12 12M18 6 6 18"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    ></path>
+                </svg>
+            </button>
+
+            <span
+                class="toast__progress"
+                aria-hidden="true"
+                data-toast-progress
+            ></span>
+        </div>
+    </template>
+
+    <noscript>
+        <div class="noscript-notice">
+            Website cần JavaScript để tải dữ liệu JSON, đọc bài viết Markdown/TXT, tìm kiếm và vận hành các bảng giao diện.
+        </div>
+    </noscript>
+</body>
+</html> 

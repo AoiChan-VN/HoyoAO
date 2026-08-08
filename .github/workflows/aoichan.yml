@@ -1,8 +1,11 @@
 name: 🍒𝓐𝓸𝓲𝓒𝓱𝓪𝓷🦋
 
 on:
-  #push:
-    #branches: ["main"]
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**' # chỉ chạy khi có thay đổi
   workflow_dispatch:
 
 concurrency:
@@ -32,7 +35,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: "./docs"
+          path: './docs'
 
       - name: Deploy to GitHub Pages
         id: deployment

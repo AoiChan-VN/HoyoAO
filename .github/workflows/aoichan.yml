@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'docs/**' # chỉ chạy khi có thay đổi
   workflow_dispatch:
 
 concurrency:
@@ -35,7 +33,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: './docs'
+          path: '.'
 
       - name: Deploy to GitHub Pages
         id: deployment

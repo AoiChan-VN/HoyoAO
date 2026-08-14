@@ -2,7 +2,7 @@ import { APP_ROOT_ID, APP_EVENTS, APP_STATE } from "../core/constants.js";
 import { createEventBus } from "../core/event-bus.js";
 import { createStore } from "../core/state.js";
 import { loadAppData } from "../core/data.js";
-import { createRouter } from "../core/router.js";
+import { createRouter } from "./router.js";
 import { renderShell } from "./shell.js";
 import { mountHeader } from "../components/header.js";
 import { mountFooter } from "../components/footer.js";
@@ -241,7 +241,7 @@ export async function bootstrapApplication() {
 
     mountFooter(context);
 
-    context.app = mountApplication(context);
+    context.app = await mountApplication(context);
 
     context.router = createRouter(context);
     await context.router.start();
@@ -283,4 +283,4 @@ export async function bootstrapApplication() {
 
     throw error;
   }
-} 
+}

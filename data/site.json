@@ -1,0 +1,269 @@
+{
+  "version": "1.0.0",
+  "siteId": "hoyoao",
+  "name": "HoyoAO",
+  "displayName": "HoyoAO",
+  "tagline": "High-end Web 3D Environment",
+  "locale": "vi",
+  "legalName": "HoyoAO, Inc.",
+  "copyrightYear": 2026,
+  "copyrightText": "© 2026 HoyoAO, Inc.",
+  "environment": {
+    "runtime": "static",
+    "hosting": "github-pages",
+    "basePathMode": "relative",
+    "hashRouting": true
+  },
+  "meta": {
+    "title": "HoyoAO",
+    "description": "High-end Web 3D Environment",
+    "themeColor": "#070a10",
+    "colorScheme": "dark"
+  },
+  "theme": {
+    "default": "dark",
+    "respectSystem": false,
+    "tokenEntrypoint": "./css/Clr_tok.css"
+  },
+  "layout": {
+    "header": "sticky",
+    "footer": "center",
+    "contentMaxWidthToken": "--app-content-max-width",
+    "safeAreaAware": true
+  },
+  "brand": {
+    "logo": {
+      "type": "initials",
+      "src": null,
+      "alt": "HoyoAO logo",
+      "initials": "AO",
+      "icon": "logo",
+      "shape": "circle",
+      "action": {
+        "type": "navigate",
+        "pageId": "home",
+        "route": "#/home",
+        "ariaLabel": "Về trang chủ HoyoAO"
+      }
+    }
+  },
+  "features": {
+    "menu": true,
+    "pageSwitcher": true,
+    "search": true,
+    "accountPanel": true,
+    "authentication": false,
+    "3dEnvironment": true
+  },
+  "account": {
+    "authenticationEnabled": false,
+    "guestLabel": "Khách",
+    "statusText": "Hiện tại chưa có hệ thống authentication.",
+    "panel": "account"
+  },
+  "3d": {
+    "enabled": true,
+    "engine": "webgl",
+    "canvasId": "hoyoao-3d-canvas",
+    "quality": "auto",
+    "dprCap": 2,
+    "antialias": true,
+    "alpha": true,
+    "pauseWhenHidden": true,
+    "cleanupOnPageChange": true
+  },
+  "services": {
+    "data": {
+      "provider": "local",
+      "basePath": "./data",
+      "cache": true,
+      "endpoints": {
+        "pages": "./data/pages.json",
+        "navigation": "./data/navigation.json",
+        "site": "./data/site.json"
+      }
+    },
+    "search": {
+      "provider": "local",
+      "sources": ["pages", "navigation"],
+      "minQueryLength": 2,
+      "maxResults": 12,
+      "debounceMs": 180,
+      "placeholder": "Tìm kiếm...",
+      "noResultsText": "Không có kết quả phù hợp."
+    },
+    "storage": {
+      "provider": "memory",
+      "namespace": "hoyoao"
+    }
+  },
+  "footer": {
+    "layout": "center",
+    "centered": true,
+    "wrap": true,
+    "showLogo": true,
+    "showCopyright": true,
+    "showSeparators": true,
+    "separator": "|",
+    "ariaLabel": "Footer",
+    "navigationAriaLabel": "Liên kết chân trang",
+    "logo": {
+      "type": "initials",
+      "src": null,
+      "alt": "HoyoAO logo",
+      "initials": "AO",
+      "icon": "logo",
+      "shape": "circle",
+      "action": {
+        "type": "navigate",
+        "pageId": "home",
+        "route": "#/home",
+        "ariaLabel": "Về trang chủ HoyoAO"
+      }
+    },
+    "copyright": "© 2026 HoyoAO, Inc.",
+    "links": [
+      {
+        "id": "teams",
+        "label": "Teams",
+        "type": "route",
+        "route": "#/teams",
+        "pageId": null,
+        "href": null,
+        "icon": "users",
+        "external": false,
+        "enabled": true,
+        "hidden": false,
+        "order": 10,
+        "target": "_self",
+        "rel": null,
+        "ariaLabel": "Teams"
+      },
+      {
+        "id": "privacy",
+        "label": "Privacy",
+        "type": "route",
+        "route": "#/privacy",
+        "pageId": null,
+        "href": null,
+        "icon": "lock",
+        "external": false,
+        "enabled": true,
+        "hidden": false,
+        "order": 20,
+        "target": "_self",
+        "rel": null,
+        "ariaLabel": "Privacy"
+      },
+      {
+        "id": "security",
+        "label": "Security",
+        "type": "route",
+        "route": "#/security",
+        "pageId": null,
+        "href": null,
+        "icon": "shield",
+        "external": false,
+        "enabled": true,
+        "hidden": false,
+        "order": 30,
+        "target": "_self",
+        "rel": null,
+        "ariaLabel": "Security"
+      },
+      {
+        "id": "status",
+        "label": "Status",
+        "type": "route",
+        "route": "#/status",
+        "pageId": null,
+        "href": null,
+        "icon": "activity",
+        "external": false,
+        "enabled": true,
+        "hidden": false,
+        "order": 40,
+        "target": "_self",
+        "rel": null,
+        "ariaLabel": "Status"
+      },
+      {
+        "id": "community",
+        "label": "Community",
+        "type": "route",
+        "route": "#/community",
+        "pageId": null,
+        "href": null,
+        "icon": "message",
+        "external": false,
+        "enabled": true,
+        "hidden": false,
+        "order": 50,
+        "target": "_self",
+        "rel": null,
+        "ariaLabel": "Community"
+      },
+      {
+        "id": "docs",
+        "label": "Docs",
+        "type": "route",
+        "route": "#/docs",
+        "pageId": null,
+        "href": null,
+        "icon": "book",
+        "external": false,
+        "enabled": true,
+        "hidden": false,
+        "order": 60,
+        "target": "_self",
+        "rel": null,
+        "ariaLabel": "Docs"
+      },
+      {
+        "id": "contact",
+        "label": "Contact",
+        "type": "route",
+        "route": "#/contact",
+        "pageId": null,
+        "href": null,
+        "icon": "mail",
+        "external": false,
+        "enabled": true,
+        "hidden": false,
+        "order": 70,
+        "target": "_self",
+        "rel": null,
+        "ariaLabel": "Contact"
+      },
+      {
+        "id": "cookies",
+        "label": "Cookies",
+        "type": "route",
+        "route": "#/cookies",
+        "pageId": null,
+        "href": null,
+        "icon": "cookie",
+        "external": false,
+        "enabled": true,
+        "hidden": false,
+        "order": 80,
+        "target": "_self",
+        "rel": null,
+        "ariaLabel": "Cookies"
+      }
+    ]
+  },
+  "i18n": {
+    "menuOpen": "Mở menu",
+    "menuClose": "Đóng menu",
+    "searchOpen": "Mở tìm kiếm",
+    "searchClose": "Đóng tìm kiếm",
+    "accountOpen": "Mở bảng tài khoản",
+    "accountClose": "Đóng bảng tài khoản",
+    "pageSwitcherOpen": "Chuyển trang",
+    "logoHome": "Về trang chủ HoyoAO",
+    "footerNavigation": "Liên kết chân trang",
+    "guest": "Khách",
+    "noAuthentication": "Hiện tại chưa có hệ thống authentication."
+  }
+} 

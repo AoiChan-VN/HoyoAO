@@ -278,9 +278,9 @@ export const DATA_PROVIDERS = deepFreeze({
 });
 
 export const DATA_ENDPOINTS = deepFreeze({
-  SITE: "./data/site.json",
-  PAGES: "./data/pages.json",
-  NAVIGATION: "./data/navigation.json",
+  site: "./data/site.json",
+  pages: "./data/pages.json",
+  navigation: "./data/navigation.json",
 });
 
 export const STORAGE_PROVIDERS = deepFreeze({

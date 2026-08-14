@@ -7,6 +7,7 @@ import { renderShell } from "./shell.js";
 import { mountHeader } from "../components/header.js";
 import { mountFooter } from "../components/footer.js";
 import { mountEnvironment } from "../env/environment.js";
+import { mountApplication } from "./app.js";
 
 let appContext = null;
 
@@ -129,6 +130,7 @@ export async function bootstrapApplication() {
     i18n: {},
     router: null,
     env: null,
+    app: null,
     services: {},
     disposers: [],
     isDestroyed: false,
@@ -238,6 +240,8 @@ export async function bootstrapApplication() {
     }
 
     mountFooter(context);
+
+    context.app = mountApplication(context);
 
     context.router = createRouter(context);
     await context.router.start();

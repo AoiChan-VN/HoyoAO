@@ -188,4 +188,4 @@ export function mountFooter(context) {
   return Object.freeze({
     root: footerInner,
   });
-} 
+}

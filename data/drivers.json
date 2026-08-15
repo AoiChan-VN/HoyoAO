@@ -1,0 +1,162 @@
+{
+  "version": "1.0.0",
+  "defaultDriveId": "web",
+  "drives": [
+    {
+      "id": "web",
+      "label": "Ổ Web",
+      "description": "Dữ liệu vận hành website HoyoAO — cập nhật theo ngày.",
+      "icon": "globe",
+      "enabled": true,
+      "requiresAuth": false,
+      "stats": [
+        {
+          "label": "Truy cập hôm nay",
+          "value": "1.284",
+          "caption": "+12% so với hôm qua"
+        },
+        {
+          "label": "Request / ngày",
+          "value": "8,4k",
+          "caption": "Trung bình 7 ngày"
+        },
+        {
+          "label": "Uptime",
+          "value": "99,98%",
+          "caption": "30 ngày gần nhất"
+        },
+        {
+          "label": "Build",
+          "value": "pass",
+          "caption": "GitHub Actions"
+        }
+      ],
+      "main": {
+        "labels": ["18/05", "19/05", "20/05", "21/05", "22/05", "23/05", "24/05"],
+        "series": [
+          {
+            "name": "Truy cập",
+            "data": [820, 932, 901, 1090, 1230, 1180, 1284]
+          },
+          {
+            "name": "Request",
+            "data": [5200, 6100, 5900, 7400, 8400, 8100, 8600]
+          }
+        ]
+      },
+      "details": [
+        {
+          "id": "traffic-week",
+          "title": "Truy cập theo ngày",
+          "subtitle": "Số lượt truy cập 7 ngày gần nhất",
+          "note": "Mỗi cột là một ngày. Cột càng cao, lượt truy cập càng nhiều.",
+          "chart": {
+            "type": "bar",
+            "labels": ["18/05", "19/05", "20/05", "21/05", "22/05", "23/05", "24/05"],
+            "series": [
+              {
+                "name": "Truy cập",
+                "data": [820, 932, 901, 1090, 1230, 1180, 1284]
+              }
+            ]
+          }
+        },
+        {
+          "id": "request-flow",
+          "title": "Luồng request",
+          "subtitle": "Dao động lưu lượng theo khung giờ",
+          "note": "Đường sóng thể hiện lưu lượng request trong ngày; vùng tô màu là cường độ.",
+          "chart": {
+            "type": "area",
+            "labels": ["00h", "04h", "08h", "12h", "16h", "20h", "24h"],
+            "series": [
+              {
+                "name": "Request",
+                "data": [320, 180, 620, 940, 860, 720, 410]
+              },
+              {
+                "name": "Lỗi",
+                "data": [12, 4, 9, 15, 11, 8, 5]
+              }
+            ]
+          }
+        },
+        {
+          "id": "growth",
+          "title": "Tăng trưởng theo tháng",
+          "subtitle": "Stars / Forks của repository",
+          "note": "Đường nhiều khúc nối các mốc tháng, dùng để nhìn xu hướng dài hạn.",
+          "chart": {
+            "type": "line",
+            "labels": ["T11", "T12", "T01", "T02", "T03", "T04", "T05"],
+            "series": [
+              {
+                "name": "Stars",
+                "data": [120, 180, 240, 300, 420, 510, 640]
+              },
+              {
+                "name": "Forks",
+                "data": [18, 24, 30, 41, 52, 60, 74]
+              }
+            ]
+          }
+        },
+        {
+          "id": "storage",
+          "title": "Dung lượng ổ Web",
+          "subtitle": "Phân bổ theo nhóm tài nguyên",
+          "note": "Cột thể hiện dung lượng (KB) của từng nhóm file trong repository.",
+          "chart": {
+            "type": "bar",
+            "labels": ["CSS", "JS", "Data", "Assets"],
+            "series": [
+              {
+                "name": "KB",
+                "data": [120, 180, 40, 260]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "user",
+      "label": "Ổ người dùng",
+      "description": "Repository, tài khoản và dữ liệu cá nhân — sẽ đồng bộ khi có hệ thống đăng nhập.",
+      "icon": "user",
+      "enabled": true,
+      "requiresAuth": true,
+      "stats": [
+        {
+          "label": "Repository",
+          "value": "—",
+          "caption": "Cần đăng nhập"
+        },
+        {
+          "label": "Stars đã nhận",
+          "value": "—",
+          "caption": "Cần đăng nhập"
+        },
+        {
+          "label": "Theo dõi",
+          "value": "—",
+          "caption": "Cần đăng nhập"
+        }
+      ],
+      "main": null,
+      "details": [
+        {
+          "id": "user-repos",
+          "title": "Repository người dùng",
+          "subtitle": "Đồng bộ từ tài khoản khi đăng nhập",
+          "note": "Yêu cầu đăng nhập để hiển thị dữ liệu. Hệ thống hiện chưa có authentication — đây là trạng thái thật, không phải dữ liệu giả.",
+          "chart": {
+            "type": "bar",
+            "labels": [],
+            "series": []
+          }
+        }
+      ]
+    }
+  ]
+} 

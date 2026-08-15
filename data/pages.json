@@ -1,7 +1,7 @@
 {
-  "version": "1.0.0",
-  "defaultPageId": "home",
-  "fallbackPageId": "home",
+  "version": "1.1.0",
+  "defaultPageId": "dashboard",
+  "fallbackPageId": "dashboard",
   "locale": "vi",
   "router": {
     "mode": "hash",
@@ -20,19 +20,50 @@
   },
   "pages": [
     {
+      "id": "dashboard",
+      "slug": "dashboard",
+      "label": "Dashboard",
+      "shortLabel": "Dashboard",
+      "title": "HoyoAO / Dashboard",
+      "description": "Bảng điều khiển tổng thể với biểu đồ dữ liệu theo ổ đĩa.",
+      "route": "#/dashboard",
+      "icon": "chart",
+      "enabled": true,
+      "hidden": false,
+      "searchable": true,
+      "order": 1,
+      "layout": "dashboard",
+      "mode": "2d",
+      "theme": "dark",
+      "scene": null,
+      "preload": true,
+      "keywords": [
+        "dashboard",
+        "biểu đồ",
+        "thống kê",
+        "ổ đĩa",
+        "dữ liệu"
+      ],
+      "meta": {
+        "robots": "index,follow",
+        "ogTitle": "HoyoAO / Dashboard",
+        "ogDescription": "Bảng điều khiển tổng thể với biểu đồ dữ liệu theo ổ đĩa."
+      }
+    },
+    {
       "id": "home",
       "slug": "home",
       "label": "Trang chủ",
       "shortLabel": "Trang chủ",
       "title": "HoyoAO / Trang chủ",
-      "description": "Bảng điều khiển và điểm khởi động của HoyoAO.",
+      "description": "Thông tin cơ bản về HoyoAO.",
       "route": "#/home",
       "icon": "home",
       "enabled": true,
       "hidden": false,
       "searchable": true,
       "order": 10,
-      "layout": "dashboard",
+      "layout": "home",
       "mode": "2d",
       "theme": "dark",
       "scene": null,
@@ -40,14 +71,12 @@
       "keywords": [
         "HoyoAO",
         "trang chủ",
-        "dashboard",
-        "web 3d",
-        "môi trường 3d"
+        "giới thiệu nhanh"
       ],
       "meta": {
         "robots": "index,follow",
         "ogTitle": "HoyoAO / Trang chủ",
-        "ogDescription": "Bảng điều khiển và điểm khởi động của HoyoAO."
+        "ogDescription": "Thông tin cơ bản về HoyoAO."
       }
     },
     {
@@ -127,7 +156,7 @@
       "label": "Giới thiệu",
       "shortLabel": "Giới thiệu",
       "title": "HoyoAO / Giới thiệu",
-      "description": "Thông tin về HoyoAO, kiến trúc và định hướng phát triển.",
+      "description": "Thông tin về HoyoAO, chủ sở hữu và định hướng phát triển.",
       "route": "#/about",
       "icon": "info",
       "enabled": true,
@@ -139,17 +168,18 @@
       "theme": "dark",
       "scene": null,
       "preload": false,
+      "docs": ["about"],
       "keywords": [
         "HoyoAO",
         "giới thiệu",
         "about",
-        "kiến trúc",
+        "chủ sở hữu",
         "dự án"
       ],
       "meta": {
         "robots": "index,follow",
         "ogTitle": "HoyoAO / Giới thiệu",
-        "ogDescription": "Thông tin về HoyoAO, kiến trúc và định hướng phát triển."
+        "ogDescription": "Thông tin về HoyoAO, chủ sở hữu và định hướng phát triển."
       }
     },
     {

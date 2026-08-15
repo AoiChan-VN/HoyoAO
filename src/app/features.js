@@ -3,9 +3,11 @@ import { COMPONENT_IDS, FEATURE_KEYS } from "../core/constants.js";
 
 import { createHomeFeature } from "../features/home/home-feature.js";
 import { createPagesFeature } from "../features/pages/pages-feature.js";
+import { createDashboardFeature } from "../features/dashboard/dashboard-feature.js";
 import { createMenuFeature } from "../features/menu/menu-feature.js";
 import { createSearchFeature } from "../features/search/search-feature.js";
 import { createAccountFeature } from "../features/account/account-feature.js";
+import { createSettingsFeature } from "../features/settings/settings-feature.js";
 
 const FEATURE_TYPE = "feature";
 
@@ -56,8 +58,7 @@ export function createFeatureManager(context) {
       );
     }
 
-    const enabled =
-      options.enabled ?? feature.enabled ?? true;
+    const enabled = options.enabled ?? feature.enabled ?? true;
 
     const definition = {
       id: feature.id,
@@ -79,12 +80,16 @@ export function createFeatureManager(context) {
   }
 
   function registerDefaultFeatures() {
+    if (isFeatureFlagEnabled(context, "pages")) {
+      registerFeature(createPagesFeature(context));
+    }
+
     if (isFeatureFlagEnabled(context, "home")) {
       registerFeature(createHomeFeature(context));
     }
 
-    if (isFeatureFlagEnabled(context, "pages")) {
-      registerFeature(createPagesFeature(context));
+    if (isFeatureFlagEnabled(context, "dashboard")) {
+      registerFeature(createDashboardFeature(context));
     }
 
     if (isFeatureFlagEnabled(context, FEATURE_KEYS.MENU)) {
@@ -97,6 +102,10 @@ export function createFeatureManager(context) {
 
     if (isFeatureFlagEnabled(context, FEATURE_KEYS.ACCOUNT_PANEL)) {
       registerFeature(createAccountFeature(context));
+    }
+
+    if (isFeatureFlagEnabled(context, "settings")) {
+      registerFeature(createSettingsFeature(context));
     }
   }
 
@@ -185,15 +194,19 @@ export function createFeatureManager(context) {
 
   const api = Object.freeze({
     registerFeature,
+
     getFeatures() {
       return registry.getAll(FEATURE_TYPE);
     },
+
     getEnabledFeatures() {
       return registry.getEnabled(FEATURE_TYPE, context);
     },
+
     isMounted() {
       return mounted;
     },
+
     mount,
     unmount,
     destroy,

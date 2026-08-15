@@ -1,101 +1,24 @@
 import { LINK_TYPES } from "../core/constants.js";
 
-function el(tag, options = {}, children = []) {
-  const element = document.createElement(tag);
+import { el } from "../utils/dom.js";
 
-  const {
-    id,
-    className,
-    text,
-    attrs = {},
-    dataset = {},
-  } = options;
-
-  if (id) {
-    element.id = id;
-  }
-
-  if (className) {
-    element.className = className;
-  }
-
-  if (text !== undefined && text !== null) {
-    element.textContent = text;
-  }
-
-  for (const [key, value] of Object.entries(attrs)) {
-    if (value === undefined || value === null || value === false) {
-      continue;
-    }
-
-    if (value === true) {
-      element.setAttribute(key, "");
-    } else {
-      element.setAttribute(key, String(value));
-    }
-  }
-
-  for (const [key, value] of Object.entries(dataset)) {
-    if (value !== undefined && value !== null) {
-      element.dataset[key] = String(value);
-    }
-  }
-
-  for (const child of Array.isArray(children) ? children : [children]) {
-    if (child === undefined || child === null) {
-      continue;
-    }
-
-    element.append(child);
-  }
-
-  return element;
-}
-
-function createFooterLogo(context, logoConfig) {
-  const label = context.i18n?.logoHome ?? "Về trang chủ HoyoAO";
-  const defaultPageId = context.data.pages?.defaultPageId ?? "home";
-  const targetPageId = logoConfig?.action?.pageId ?? defaultPageId;
-
-  const button = el("button", {
-    className: "app-footer-logo",
-    attrs: {
-      type: "button",
-      "aria-label": label,
-    },
-  });
-
-  if (logoConfig?.src) {
-    const image = document.createElement("img");
-    image.src = logoConfig.src;
-    image.alt = logoConfig.alt ?? label;
-    button.append(image);
-  } else {
-    const fallback = el("span", {
-      text: logoConfig?.initials ?? "AO",
-    });
-
-    button.append(fallback);
-  }
-
-  button.addEventListener("click", () => {
-    context.router?.navigate?.(targetPageId);
-  });
-
-  return button;
-}
+import { createMediaServiceFromContext } from "../services/media/media-service.js";
 
 export function mountFooter(context) {
+  const footer = context.shell?.footer;
   const footerInner = context.shell?.footerInner;
 
-  if (!footerInner) {
-    throw new Error("[HoyoAO] Footer requires footerInner shell region.");
+  if (!footer || !footerInner) {
+    throw new Error("[HoyoAO] Footer requires footer and footerInner shell regions.");
   }
 
   footerInner.replaceChildren();
 
+  const media = createMediaServiceFromContext(context);
   const siteConfig = context.config ?? {};
   const footerConfig = siteConfig.footer ?? {};
+  const defaultPageId =
+    context.data?.pages?.defaultPageId ?? "dashboard";
 
   if (
     footerConfig.links &&
@@ -105,13 +28,14 @@ export function mountFooter(context) {
     const nav = el("nav", {
       className: "app-footer-nav",
       attrs: {
-        "aria-label": footerConfig.navigationAriaLabel ?? "Footer navigation",
+        "aria-label":
+          footerConfig.navigationAriaLabel ?? "Footer navigation",
       },
     });
 
-    const visibleLinks = footerConfig.links.filter(
-      (link) => link.enabled !== false && link.hidden !== true,
-    );
+    const visibleLinks = footerConfig.links
+      .filter((link) => link.enabled !== false && link.hidden !== true)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
     visibleLinks.forEach((link, index) => {
       const linkEl = el("a", {
@@ -124,7 +48,10 @@ export function mountFooter(context) {
       });
 
       linkEl.addEventListener("click", (event) => {
-        if (link.type === LINK_TYPES.ROUTE || link.type === LINK_TYPES.PAGE) {
+        if (
+          link.type === LINK_TYPES.ROUTE ||
+          link.type === LINK_TYPES.PAGE
+        ) {
           event.preventDefault();
           context.router?.navigate?.(link.route ?? link.pageId);
         }
@@ -139,9 +66,7 @@ export function mountFooter(context) {
         nav.append(
           el("span", {
             className: "app-footer-separator",
-            attrs: {
-              "aria-hidden": "true",
-            },
+            attrs: { "aria-hidden": "true" },
             text: footerConfig.separator ?? "|",
           }),
         );
@@ -156,23 +81,46 @@ export function mountFooter(context) {
   });
 
   if (footerConfig.showLogo !== false) {
-    const logoConfig = footerConfig.logo ?? siteConfig.brand?.logo;
+    const logoButton = el("button", {
+      className: "app-footer-logo",
+      attrs: {
+        type: "button",
+        "aria-label": media.getLogoAlt(),
+      },
+    });
 
-    if (logoConfig) {
-      brandContainer.append(createFooterLogo(context, logoConfig));
-    }
+    const logoImg = document.createElement("img");
+
+    logoImg.src = media.getLogoUrl();
+    logoImg.alt = media.getLogoAlt();
+
+    logoImg.addEventListener(
+      "error",
+      () => {
+        logoImg.replaceWith(
+          el("span", { text: media.getLogoInitials() }),
+        );
+      },
+      { once: true },
+    );
+
+    logoButton.append(logoImg);
+
+    logoButton.addEventListener("click", () => {
+      context.router?.navigate?.(defaultPageId);
+    });
+
+    brandContainer.append(logoButton);
   }
 
   if (footerConfig.showCopyright !== false) {
-    const copyrightText =
-      footerConfig.copyright ??
-      siteConfig.copyrightText ??
-      `© ${new Date().getFullYear()} ${siteConfig.name ?? "HoyoAO"}`;
-
     brandContainer.append(
       el("span", {
         className: "app-footer-copy",
-        text: copyrightText,
+        text:
+          footerConfig.copyright ??
+          siteConfig.copyrightText ??
+          `© ${new Date().getFullYear()} ${siteConfig.name ?? "HoyoAO"}`,
       }),
     );
   }
@@ -181,8 +129,28 @@ export function mountFooter(context) {
     footerInner.append(brandContainer);
   }
 
+  function syncVisibility(pageId) {
+    const effectivePageId = pageId ?? defaultPageId;
+
+    footer.hidden = effectivePageId !== defaultPageId;
+  }
+
+  const disposeVisibility = context.store?.subscribeSelector?.(
+    (state) => state.route?.pageId,
+    syncVisibility,
+  );
+
+  syncVisibility(context.store?.getState?.().route?.pageId);
+
   context.registerDisposer?.(() => {
+    try {
+      disposeVisibility?.();
+    } catch {
+      /* Ignore disposer errors. */
+    }
+
     footerInner.replaceChildren();
+    footer.hidden = false;
   });
 
   return Object.freeze({

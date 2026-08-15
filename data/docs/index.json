@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-01-01",
+  "docs": [
+    {
+      "id": "about",
+      "title": "Về HoyoAO",
+      "excerpt": "HoyoAO là một Web 3D Environment chạy hoàn toàn trên GitHub Pages — không cần backend, không cần build step, toàn bộ UI được khởi tạo từ các module ES thuần."
+    }
+  ]
+} 

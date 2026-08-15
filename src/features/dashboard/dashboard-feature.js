@@ -1,5 +1,6 @@
 import { el } from "../../utils/dom.js";
 import { createChart, CHART_TYPES } from "../../utils/charts.js";
+import { createMediaServiceFromContext } from "../../services/media/media-service.js";
 
 const DASHBOARD_LAYOUT_ID = "dashboard";
 
@@ -76,7 +77,9 @@ function buildDefaultWebDrive(context) {
       {
         label: "Môi trường",
         value:
-          envConfig.enabled === false ? "disabled" : envConfig.engine ?? "webgl",
+          envConfig.enabled === false
+            ? "disabled"
+            : envConfig.engine ?? "webgl",
         caption: `Chất lượng: ${envConfig.quality ?? "auto"}`,
       },
       {
@@ -98,6 +101,8 @@ export function createDashboardFeature(context) {
   const disposers = [];
 
   let pendingSpecs = [];
+
+  const media = createMediaServiceFromContext(context);
 
   function addDisposer(disposer) {
     if (typeof disposer === "function") {
@@ -123,9 +128,7 @@ export function createDashboardFeature(context) {
     }
 
     try {
-      const url = new URL("../../data/drives.json", import.meta.url);
-
-      const response = await fetch(url.href, {
+      const response = await fetch(media.getDrivesUrl(), {
         headers: {
           Accept: "application/json",
         },
@@ -252,7 +255,9 @@ export function createDashboardFeature(context) {
           type: "button",
           role: "tab",
           "aria-selected": String(isActive),
-          title: drive.description || undefined,
+          title:
+            drive.description ||
+            (drive.requiresAuth ? "Yêu cầu đăng nhập" : undefined),
         },
         text: drive.label,
       });
@@ -303,9 +308,7 @@ export function createDashboardFeature(context) {
   }
 
   function createChartTypeActions(spec) {
-    const actions = el("div", {
-      className: "dsd-actions",
-    });
+    const actions = el("div", { className: "dsd-actions" });
 
     const types = [
       { type: CHART_TYPES.AREA, label: "Sóng" },
@@ -362,6 +365,7 @@ export function createDashboardFeature(context) {
     const body = el("div", { className: "dsd-widget-body" });
 
     const wrapper = el("div", { className: "dsd-chart" });
+
     const canvas = el("canvas", {
       attrs: {
         "aria-label": `Biểu đồ tổng thể của ${drive.label}`,
@@ -388,7 +392,9 @@ export function createDashboardFeature(context) {
       body.append(
         el("div", {
           className: "app-panel-note",
-          text: "Ổ đĩa này chưa có dữ liệu chuỗi. Bổ sung data/drives.json để hiển thị biểu đồ luồng.",
+          text: drive.requiresAuth
+            ? "Ổ đĩa này yêu cầu đăng nhập để đồng bộ dữ liệu."
+            : "Ổ đĩa này chưa có dữ liệu chuỗi. Bổ sung data/drives.json để hiển thị biểu đồ luồng.",
         }),
       );
     }
@@ -493,9 +499,7 @@ export function createDashboardFeature(context) {
 
     const refreshButton = el("button", {
       className: "nav-control nav-control--text",
-      attrs: {
-        type: "button",
-      },
+      attrs: { type: "button" },
       text: "Làm mới dữ liệu",
     });
 
@@ -554,7 +558,10 @@ export function createDashboardFeature(context) {
           render: renderDashboard,
         });
       } catch (error) {
-        console.error("[HoyoAO Dashboard] Layout registration failed.", error);
+        console.error(
+          "[HoyoAO Dashboard] Layout registration failed.",
+          error,
+        );
       }
     }
 
@@ -634,4 +641,4 @@ export function mountDashboardFeature(context) {
   return feature;
 }
 
-export default createDashboardFeature; 
+export default createDashboardFeature;

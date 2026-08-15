@@ -11,21 +11,33 @@ import {
   focusFirstFocusable,
 } from "../../utils/dom.js";
 
-const CLOSE_ICON_PATH = `<path d="M18 6 6 18M6 6l12 12"></path>`;
+import { createSettingsServiceFromContext } from "../../services/settings/settings-service.js";
 
 const AVATAR_ICON_PATH = `
   <circle cx="12" cy="8" r="4"></circle>
   <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"></path>
 `;
 
-const ACCOUNT_TITLE_ID = "account-panel-title";
+const BACK_ICON_PATH = `
+  <path d="M19 12H5"></path>
+  <path d="m12 19-7-7 7-7"></path>
+`;
 
-function createCloseIcon() {
-  return createSvg(CLOSE_ICON_PATH);
+function resolveAvatarUrl() {
+  try {
+    return new URL("../../../assets/avatars/default.png", import.meta.url)
+      .href;
+  } catch {
+    return "./assets/avatars/default.png";
+  }
 }
 
 function createAvatarIcon() {
   return createSvg(AVATAR_ICON_PATH);
+}
+
+function createBackIcon() {
+  return createSvg(BACK_ICON_PATH);
 }
 
 export function createAccountFeature(context) {
@@ -34,9 +46,12 @@ export function createAccountFeature(context) {
 
   let panel = null;
   let backdrop = null;
+  let body = null;
   let lastFocusedElement = null;
 
   const disposers = [];
+
+  const settingsService = createSettingsServiceFromContext(context);
 
   function addDisposer(disposer) {
     if (typeof disposer === "function") {
@@ -46,18 +61,16 @@ export function createAccountFeature(context) {
 
   function open() {
     context.store?.setState?.({
-      ui: {
-        activePanel: PANEL_TYPES.ACCOUNT,
-      },
+      ui: { activePanel: PANEL_TYPES.ACCOUNT },
     });
   }
 
   function close() {
-    context.store?.setState?.({
-      ui: {
-        activePanel: null,
-      },
-    });
+    const activePanel = context.store?.getState?.().ui?.activePanel;
+
+    if (activePanel === PANEL_TYPES.ACCOUNT) {
+      context.store?.setState?.({ ui: { activePanel: null } });
+    }
   }
 
   function toggle() {
@@ -70,59 +83,92 @@ export function createAccountFeature(context) {
     }
   }
 
-  function getProfileState() {
+  function getDisplayName() {
+    const displayName = settingsService.getSetting("displayName", "");
+
+    return (
+      displayName ||
+      context.config?.account?.guestLabel ||
+      context.i18n?.guest ||
+      "Khách"
+    );
+  }
+
+  function createAvatarImage() {
     const accountConfig = context.config?.account ?? {};
 
-    const guestLabel =
-      accountConfig.guestLabel ??
-      context.i18n?.guest ??
-      "Khách";
+    const wrapper = el("div", { className: "app-panel-avatar" });
 
-    const noAuthenticationLabel =
-      accountConfig.statusText ??
-      context.i18n?.noAuthentication ??
-      "Hiện tại chưa có hệ thống authentication.";
+    const img = document.createElement("img");
 
-    const authReady =
-      context.features?.authentication === true &&
-      typeof context.services?.auth?.getProfile === "function";
+    img.alt = getDisplayName();
+    img.src = accountConfig.avatarSrc ?? resolveAvatarUrl();
 
-    if (!authReady) {
-      return {
-        title: guestLabel,
-        subtitle: noAuthenticationLabel,
-        authenticated: false,
-      };
+    img.addEventListener(
+      "error",
+      () => {
+        img.replaceWith(createAvatarIcon());
+      },
+      { once: true },
+    );
+
+    wrapper.append(img);
+
+    return wrapper;
+  }
+
+  function renderBody() {
+    if (!body) {
+      return;
     }
 
-    try {
-      const profile = context.services.auth.getProfile();
+    body.replaceChildren();
 
-      return {
-        title: profile?.name ?? guestLabel,
-        subtitle:
-          profile?.status ??
-          profile?.email ??
-          noAuthenticationLabel,
-        authenticated: Boolean(profile?.authenticated),
-      };
-    } catch (error) {
-      console.error("[HoyoAO Account] Failed to read auth profile.", error);
+    const profile = el("div", { className: "app-panel-profile" }, [
+      createAvatarImage(),
+      el("div", { className: "app-panel-profile-text" }, [
+        el("div", {
+          className: "app-panel-profile-title",
+          text: getDisplayName(),
+        }),
+        el("div", {
+          className: "app-panel-profile-subtitle",
+          text:
+            context.config?.account?.statusText ??
+            context.i18n?.noAuthentication ??
+            "Chưa có hệ thống authentication.",
+        }),
+      ]),
+    ]);
 
-      return {
-        title: guestLabel,
-        subtitle: noAuthenticationLabel,
-        authenticated: false,
-      };
-    }
+    const settingsButton = el("button", {
+      className: "nav-control nav-control--text",
+      attrs: { type: "button" },
+      text: context.i18n?.settings ?? "Cài đặt",
+    });
+
+    settingsButton.style.width = "100%";
+
+    settingsButton.addEventListener("click", () => {
+      context.eventBus?.emit?.(
+        context.services?.settingsOpenEvent ?? "hoyoao:settings:open",
+        {},
+      );
+    });
+
+    const note = el("div", {
+      className: "app-panel-note app-panel-note--info",
+      text:
+        "Account hiện tại là UI shell để kiểm tra interaction, responsive và kiến trúc. Hệ thống chưa có authentication — không có login giả.",
+    });
+
+    body.append(profile, settingsButton, note);
   }
 
   function createPanelDom() {
     backdrop = el("div", {
       className: "app-panel-backdrop",
-      attrs: {
-        "aria-hidden": "true",
-      },
+      attrs: { "aria-hidden": "true" },
     });
 
     panel = el("aside", {
@@ -131,87 +177,39 @@ export function createAccountFeature(context) {
       attrs: {
         role: "dialog",
         "aria-modal": "false",
-        "aria-labelledby": ACCOUNT_TITLE_ID,
+        "aria-label": context.i18n?.account ?? "Tài khoản",
         tabindex: "-1",
         "aria-hidden": "true",
       },
     });
 
-    const header = el("div", {
-      className: "app-panel-header",
-    });
+    const header = el("div", { className: "app-panel-header" }, [
+      el("h2", {
+        className: "app-panel-title",
+        text: context.i18n?.account ?? "Tài khoản",
+      }),
+    ]);
 
-    const title = el("h2", {
-      id: ACCOUNT_TITLE_ID,
-      className: "app-panel-title",
-      text: context.i18n?.account ?? "Tài khoản",
-    });
-
-    const closeButton = el(
+    const backButton = el(
       "button",
       {
-        className: "nav-control nav-control--sm nav-control--quiet",
+        className:
+          "nav-control nav-control--sm nav-control--quiet app-panel-close",
         attrs: {
           type: "button",
           "aria-label": context.i18n?.accountClose ?? "Đóng bảng tài khoản",
         },
       },
-      [createCloseIcon()],
+      [createBackIcon()],
     );
 
-    closeButton.addEventListener("click", () => {
+    backButton.addEventListener("click", () => {
       close();
     });
 
-    header.append(title, closeButton);
+    header.append(backButton);
 
-    const body = el("div", {
-      className: "app-panel-body",
-    });
-
-    const profileState = getProfileState();
-
-    const profile = el("div", { className: "app-panel-profile" });
-
-    const avatar = el("div", { className: "app-panel-avatar" }, [
-      createAvatarIcon(),
-    ]);
-
-    const profileText = el("div", { className: "app-panel-profile-text" }, [
-      el("div", {
-        className: "app-panel-profile-title",
-        text: profileState.title,
-      }),
-      el("div", {
-        className: "app-panel-profile-subtitle",
-        text: profileState.subtitle,
-      }),
-    ]);
-
-    profile.append(avatar, profileText);
-
-    body.append(profile);
-
-    if (!profileState.authenticated) {
-      body.append(
-        el("div", {
-          className: "app-panel-note app-panel-note--info",
-          text:
-            context.config?.account?.statusText ??
-            context.i18n?.noAuthentication ??
-            "Hiện tại chưa có hệ thống authentication.",
-        }),
-      );
-    }
-
-    body.append(
-      el("div", {
-        className: "app-panel-note",
-        text:
-          context.i18n?.accountUiShell ??
-          "Account panel là UI shell để kiểm tra interaction, responsive và kiến trúc authentication trong tương lai.",
-      }),
-    );
+    body = el("div", { className: "app-panel-body" });
 
     panel.append(header, body);
 
@@ -252,6 +250,8 @@ export function createAccountFeature(context) {
     if (isOpen) {
       lastFocusedElement = document.activeElement;
 
+      renderBody();
+
       requestAnimationFrame(() => {
         focusFirstFocusable(panel, panel);
       });
@@ -272,9 +272,7 @@ export function createAccountFeature(context) {
         ? lastFocusedElement
         : document.getElementById(COMPONENT_IDS.AVATAR_BUTTON);
 
-    restoreTarget?.focus?.({
-      preventScroll: true,
-    });
+    restoreTarget?.focus?.({ preventScroll: true });
 
     context.eventBus?.emit?.(APP_EVENTS.ACCOUNT_CLOSE, {
       panel: PANEL_TYPES.ACCOUNT,
@@ -296,22 +294,28 @@ export function createAccountFeature(context) {
 
     createPanelDom();
 
-    if (context.store?.subscribeSelector) {
-      addDisposer(
-        context.store.subscribeSelector(
-          (state) => state.ui.activePanel,
-          syncOpenState,
-        ),
-      );
+    addDisposer(
+      context.store?.subscribeSelector?.(
+        (state) => state.ui.activePanel,
+        syncOpenState,
+      ),
+    );
 
-      syncOpenState(context.store.getState()?.ui?.activePanel ?? null);
-    }
+    addDisposer(
+      settingsService.subscribe(() => {
+        if (isOpen) {
+          renderBody();
+        }
+      }),
+    );
 
     if (context.eventBus?.on) {
       addDisposer(
         context.eventBus.on(APP_EVENTS.ROUTE_CHANGED, handleRouteChanged),
       );
     }
+
+    syncOpenState(context.store?.getState?.().ui?.activePanel ?? null);
 
     context.registerDisposer?.(() => {
       unmount();
@@ -325,30 +329,28 @@ export function createAccountFeature(context) {
 
     mounted = false;
 
-    if (context.store?.getState?.().ui?.activePanel === PANEL_TYPES.ACCOUNT) {
-      context.store.setState({
-        ui: {
-          activePanel: null,
-        },
-      });
+    if (
+      context.store?.getState?.().ui?.activePanel === PANEL_TYPES.ACCOUNT
+    ) {
+      context.store.setState({ ui: { activePanel: null } });
     }
 
     if (isOpen) {
       isOpen = false;
-
       document.removeEventListener("keydown", onDocumentKeydown, true);
     }
 
-    for (const disposer of disposers.splice(0)) {
+    for (const dispose of disposers.splice(0)) {
       try {
-        disposer();
-      } catch (error) {
-        console.error("[HoyoAO Account] Disposer failed.", error);
+        dispose();
+      } catch {
+        /* Ignore disposer errors. */
       }
     }
 
     panel = null;
     backdrop = null;
+    body = null;
     lastFocusedElement = null;
   }
 
@@ -381,4 +383,4 @@ export function mountAccountFeature(context) {
   return feature;
 }
 
-export default createAccountFeature; 
+export default createAccountFeature;

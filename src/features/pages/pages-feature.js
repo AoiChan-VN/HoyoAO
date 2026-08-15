@@ -6,6 +6,7 @@ import {
 
 import { createRegistry } from "../../core/registry.js";
 import { el } from "../../utils/dom.js";
+import { createMediaServiceFromContext } from "../../services/media/media-service.js";
 
 const PAGE_LAYOUT_TYPE = "page-layout";
 const NOT_FOUND_LAYOUT_ID = "not-found";
@@ -210,35 +211,17 @@ function extractDocMeta(markdown) {
   const lines = String(markdown ?? "").split(/\r?\n/);
 
   let title = "";
-  let excerpt = "";
 
   for (const line of lines) {
     const trimmed = line.trim();
 
-    if (!trimmed) {
-      continue;
-    }
-
-    if (!title && trimmed.startsWith("#")) {
+    if (trimmed.startsWith("#")) {
       title = trimmed.replace(/^#+\s*/, "");
-      continue;
-    }
-
-    if (
-      !excerpt &&
-      !trimmed.startsWith("#") &&
-      !trimmed.startsWith("```") &&
-      !trimmed.startsWith(">")
-    ) {
-      excerpt = trimmed;
-    }
-
-    if (title && excerpt) {
       break;
     }
   }
 
-  return { title, excerpt };
+  return { title };
 }
 
 function createPageHeader(page) {
@@ -295,6 +278,13 @@ export function createPagesFeature(context) {
   let modalCloseButton = null;
   let modalOpen = false;
   let modalLastFocused = null;
+
+  let docsIndexCache = null;
+  let docsIndexPromise = null;
+
+  const docCache = new Map();
+
+  const media = createMediaServiceFromContext(context);
 
   const layoutRegistry = createRegistry({
     name: "hoyoao-page-layouts",
@@ -425,106 +415,114 @@ export function createPagesFeature(context) {
 
     document.body.classList.remove("app-modal-open");
 
-    if (
-      modalLastFocused &&
-      document.contains(modalLastFocused)
-    ) {
+    if (modalLastFocused && document.contains(modalLastFocused)) {
       modalLastFocused.focus({ preventScroll: true });
     }
   }
 
-  function loadDoc(docId) {
-    const url = new URL(
-      `../../data/docs/${encodeURIComponent(docId)}.md`,
-      import.meta.url,
-    );
+  function loadDocsIndex() {
+    if (docsIndexCache) {
+      return Promise.resolve(docsIndexCache);
+    }
 
-    return fetch(url.href, {
-      headers: {
-        Accept: "text/markdown, text/plain",
-      },
+    if (docsIndexPromise) {
+      return docsIndexPromise;
+    }
+
+    docsIndexPromise = fetch(media.getDocsIndexUrl(), {
+      headers: { Accept: "application/json" },
+    })
+      .then((response) => (response.ok ? response.json() : { docs: [] }))
+      .catch(() => ({ docs: [] }))
+      .then((json) => {
+        docsIndexCache = (json?.docs ?? [])
+          .filter((doc) => doc && doc.id)
+          .map((doc) => ({
+            id: String(doc.id),
+            title: doc.title ?? String(doc.id),
+            excerpt: doc.excerpt ?? "",
+          }));
+
+        return docsIndexCache;
+      });
+
+    return docsIndexPromise;
+  }
+
+  function loadDoc(docId) {
+    if (docCache.has(docId)) {
+      return Promise.resolve(docCache.get(docId));
+    }
+
+    return fetch(media.getDocUrl(docId), {
+      headers: { Accept: "text/markdown, text/plain" },
     }).then((response) => {
       if (!response.ok) {
         throw new Error(`Doc "${docId}" responded ${response.status}`);
       }
 
       return response.text();
+    }).then((markdown) => {
+      docCache.set(docId, markdown);
+
+      return markdown;
     });
   }
 
-  function createDocCard(docId) {
-    let docState = null;
+  function openDocDetail(meta) {
+    const show = (markdown) => {
+      const fallbackTitle = extractDocMeta(markdown).title;
 
-    const titleElement = el("h3", {
-      className: "crd-title",
-      text: docId,
-    });
+      openDetailModal({
+        title: meta.title || fallbackTitle || meta.id,
+        renderBody: (target) => {
+          renderMarkdown(markdown, target);
+        },
+      });
+    };
 
-    const subtitleElement = el("p", {
-      className: "crd-subtitle",
-      text: "Đang tải tài liệu...",
-    });
+    loadDoc(meta.id)
+      .then(show)
+      .catch(() => {
+        openDetailModal({
+          title: meta.title ?? meta.id,
+          renderBody: (target) => {
+            target.append(
+              el("p", { text: "Không tải được tài liệu." }),
+            );
+          },
+        });
+      });
+  }
 
+  function createDocCard(meta) {
     const detailButton = el("button", {
       className: "nav-control nav-control--text",
       attrs: { type: "button" },
       text: "Xem chi tiết",
     });
 
-    detailButton.disabled = true;
-
     detailButton.addEventListener("click", () => {
-      if (!docState) {
-        return;
-      }
-
-      openDetailModal({
-        title: docState.title,
-        renderBody: (target) => {
-          renderMarkdown(docState.markdown, target);
-        },
-      });
+      openDocDetail(meta);
     });
 
-    const card = el("article", { className: "crd" }, [
+    return el("article", { className: "crd" }, [
       el("div", { className: "crd-header" }, [
         el("div", { className: "crd-header-text" }, [
-          titleElement,
-          subtitleElement,
+          el("h3", {
+            className: "crd-title",
+            text: meta.title ?? meta.id,
+          }),
+          el("p", {
+            className: "crd-subtitle",
+            text: meta.excerpt || "Tài liệu giới thiệu.",
+          }),
         ]),
       ]),
       el("div", { className: "crd-body" }, [
         el("div", { className: "dsd-actions" }, [detailButton]),
       ]),
     ]);
-
-    loadDoc(docId)
-      .then((markdown) => {
-        if (!card.isConnected) {
-          return;
-        }
-
-        const meta = extractDocMeta(markdown);
-
-        docState = {
-          markdown,
-          title: meta.title || docId,
-        };
-
-        titleElement.textContent = meta.title || docId;
-        subtitleElement.textContent =
-          meta.excerpt || "Tài liệu giới thiệu.";
-        detailButton.disabled = false;
-      })
-      .catch(() => {
-        if (!card.isConnected) {
-          return;
-        }
-
-        subtitleElement.textContent = "Không tải được tài liệu.";
-      });
-
-    return card;
   }
 
   function renderArticlePage(route) {
@@ -534,39 +532,45 @@ export function createPagesFeature(context) {
 
     root.append(createPageHeader(page));
 
-    const docs = Array.isArray(page.docs) ? page.docs : [];
-
-    if (docs.length === 0) {
-      const widget = el("article", { className: "dsd-widget" });
-
-      const body = el("div", { className: "dsd-widget-body" });
-
-      if (page.description) {
-        body.append(el("p", { text: page.description }));
-      }
-
-      body.append(
-        createMetaList([
-          { title: "Page ID", subtitle: page.id ?? route?.pageId ?? "" },
-          { title: "Layout", subtitle: page.layout ?? "article" },
-          { title: "Mode", subtitle: page.mode ?? "2d" },
-          { title: "Route", subtitle: page.route ?? route?.route ?? "" },
-        ]),
-      );
-
-      widget.append(body);
-      root.append(widget);
-
-      return root;
-    }
-
     const grid = el("div", { className: "crd-grid" });
 
-    for (const docId of docs) {
-      grid.append(createDocCard(docId));
-    }
-
     root.append(grid);
+
+    loadDocsIndex().then((index) => {
+      if (!grid.isConnected) {
+        return;
+      }
+
+      let docs = index;
+
+      if (Array.isArray(page.docs) && page.docs.length > 0) {
+        docs = page.docs.map(
+          (id) =>
+            index.find((doc) => doc.id === id) ?? {
+              id: String(id),
+              title: String(id),
+              excerpt: "",
+            },
+        );
+      }
+
+      grid.replaceChildren();
+
+      if (docs.length === 0) {
+        grid.append(
+          el("div", {
+            className: "app-panel-note",
+            text: "Chưa có tài liệu. Thêm file .md vào data/docs/ và khai báo trong data/docs/index.json.",
+          }),
+        );
+
+        return;
+      }
+
+      for (const meta of docs) {
+        grid.append(createDocCard(meta));
+      }
+    });
 
     return root;
   }
@@ -578,15 +582,14 @@ export function createPagesFeature(context) {
       return page.gallery.items.filter(Boolean);
     }
 
-    const pages =
-      context.router?.getSwitcherPages?.() ?? [];
+    const pages = context.router?.getSwitcherPages?.() ?? [];
 
     return pages.filter(
       (candidate) => candidate.id !== route?.pageId,
     );
   }
 
-  function createGalleryCard(item, route) {
+  function createGalleryCard(item) {
     const title = item.title ?? item.label ?? item.id ?? "Item";
     const subtitle =
       item.subtitle ?? item.description ?? item.layout ?? "";
@@ -633,7 +636,9 @@ export function createPagesFeature(context) {
           return;
         }
 
-        context.router?.navigate?.(item.pageId ?? item.route ?? item.id);
+        context.router?.navigate?.(
+          item.pageId ?? item.route ?? item.id,
+        );
       });
 
       actions.push(openButton);
@@ -650,18 +655,7 @@ export function createPagesFeature(context) {
         openDetailModal({
           title,
           renderBody: (target) => {
-            target.append(
-              el("p", { text: item.description }),
-            );
-
-            if (item.subtitle) {
-              target.append(
-                el("p", {
-                  className: "crd-subtitle",
-                  text: item.subtitle,
-                }),
-              );
-            }
+            target.append(el("p", { text: item.description }));
           },
         });
       });
@@ -703,7 +697,7 @@ export function createPagesFeature(context) {
     const grid = el("div", { className: "crd-grid" });
 
     for (const item of items) {
-      grid.append(createGalleryCard(item, route));
+      grid.append(createGalleryCard(item));
     }
 
     root.append(grid);
@@ -716,7 +710,8 @@ export function createPagesFeature(context) {
     const envConfig = context.config?.["3d"] ?? {};
 
     const scene = page.scene;
-    const sceneId = typeof scene === "string" ? scene : scene?.id ?? null;
+    const sceneId =
+      typeof scene === "string" ? scene : scene?.id ?? null;
     const engine =
       typeof scene === "object" && scene !== null
         ? scene.engine
@@ -796,7 +791,10 @@ export function createPagesFeature(context) {
     widget.append(
       el("div", { className: "dsd-widget-body" }, [
         createMetaList([
-          { title: "Page ID", subtitle: page.id ?? route?.pageId ?? "" },
+          {
+            title: "Page ID",
+            subtitle: page.id ?? route?.pageId ?? "",
+          },
           { title: "Layout", subtitle: page.layout ?? "dashboard" },
           { title: "Mode", subtitle: page.mode ?? "2d" },
         ]),
@@ -1050,6 +1048,10 @@ export function createPagesFeature(context) {
     modalTitle = null;
     modalBody = null;
     modalCloseButton = null;
+
+    docCache.clear();
+    docsIndexCache = null;
+    docsIndexPromise = null;
 
     layoutRegistry.destroy();
 

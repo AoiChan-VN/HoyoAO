@@ -1,0 +1,21 @@
+// Seed content — thay file này để thay nội dung, không đụng code.
+export const CONTENT_SEED = [
+  { id:'c1', title:'Chào mừng đến HoyoAO Web OS', category:'Hệ thống', author:'HoyoAO Team', date:'2026-02-14', views:1284, hue:198,
+    tags:['kernel','boot'], excerpt:'Một trang quản trị vận hành như hệ điều hành: nhân bất biến, module hữu hạn, dữ liệu được khoanh vùng.',
+    body:['Đây là lớp Shell của hệ thống — nơi mọi module được nạp động và khởi chạy độc lập. Nhân không bao giờ bị sửa khi bạn thêm chức năng mới.','Mọi dữ liệu đổ vào, dù Local hay Runtime, đều được tự nhận biết, phân loại và đưa về đúng vùng của nó.']},
+  { id:'c2', title:'Kiến trúc Shell bất biến hoạt động thế nào?', category:'Hệ thống', author:'Kai', date:'2026-02-10', views:932, hue:262,
+    tags:['shell','module-loader'], excerpt:'index.html là vỏ, core/ là nhân, modules/ là ứng dụng. Ba lớp không trộn lẫn.',
+    body:['Shell chỉ làm một việc: dựng khung và chuyển điều khiển cho Kernel.','Kernel đọc modules.config.js, import từng module, đăng ký route và nav. Module lỗi bị cách ly — phần còn lại của OS vẫn chạy.']},
+  { id:'c3', title:'Data Zone: cách khoanh vùng để dữ liệu không hỗn loạn', category:'Hướng dẫn', author:'An', date:'2026-02-06', views:1657, hue:340,
+    tags:['zone','store'], excerpt:'Mỗi loại dữ liệu có một vùng riêng: buffer riêng, sự kiện riêng, thống kê riêng.',
+    body:['Khai báo vùng trong data/zones.js. Dashboard, Analytics và Settings sẽ tự nhìn thấy vùng mới.','Mỗi vùng có visual riêng — cột, sóng, sợi hay đường gấp khúc — để bạn nhận ra bản chất luồng chỉ bằng một ánh nhìn.']},
+  { id:'c4', title:'Chuẩn thiết kế bo góc & nhịp chuyển động', category:'Công nghệ', author:'HoyoAO Team', date:'2026-01-30', views:743, hue:32,
+    tags:['ui','motion'], excerpt:'Bo góc 12–20px, bề mặt phân lớp, chuyển động theo dữ liệu thật thay vì animation trang trí.',
+    body:['Visualization chạy bằng dữ liệu thật từ Engine — bạn điều hướng, thêm bài, upload file, các lane sẽ phản ứng ngay.']},
+  { id:'c5', title:'Lộ trình 2026: từ Web Admin sang ứng dụng độc lập', category:'Công nghệ', author:'Kai', date:'2026-01-22', views:2101, hue:152,
+    tags:['offline','desktop'], excerpt:'Vì toàn bộ là Vanilla JS + localStorage, gói thành app offline chỉ là việc đổi lớp vỏ.',
+    body:['Không framework, không build bắt buộc. Chuyển sang browser riêng hay desktop app chỉ cần nhúng lại shell.']},
+  { id:'c6', title:'Tham gia cộng đồng đóng góp module', category:'Cộng đồng', author:'An', date:'2026-01-15', views:518, hue:84,
+    tags:['community','open'], excerpt:'Một module chuẩn = 1 file + 1 dòng config. Gửi module của bạn về HoyoAO.',
+    body:['Quy tắc duy nhất: module không được sửa nhân, và không được gắn chết dữ liệu vào code.']},
+]; 

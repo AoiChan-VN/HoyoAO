@@ -1,226 +1,309 @@
 import { Kernel } from '../core/kernel.js';
-import { Store, CAP } from '../core/store.js';
+import { Store } from '../core/store.js';
+import { Engine } from '../core/engine.js';
+import { Router } from '../core/router.js';
 import { el, icon, fmt, openModal, download } from '../core/ui.js';
 
-// ══════ Trang chủ: 1 màn hình visualization + readouts + cards ══════
+const RANGES = [['2m', 120], ['5m', 300], ['10m', 600]];
+
 const M = {
-  manifest: { id: 'dashboard', name: 'Dashboard', icon: 'dashboard', routes: ['dashboard'] },
-  _raf: 0, _offs: [], _ro: {}, _bars: {}, _cardVals: {}, canvas: null,
+  manifest: { id: 'dashboard', name: 'Dashboard', icon: 'dashboard', routes: ['dashboard'], group: 'VẬN HÀNH' },
+  _raf: 0, _offs: [], sel: 'runtime', range: 120, hover: null,
 
   mount(root){
     const zones = [...Store.zones.values()];
-    this.canvas = el('canvas');
-    const sources = [...new Set(zones.map(z => z.def.source))];
 
-    root.append(
-      el('section', { class: 'panel viz' },
-        el('header', { class: 'viz-head' },
-          el('div', { class: 'viz-title' },
-            el('h2', { class: 'display' }, 'DATA VISUALIZATION'),
-            el('span', { class: 'live-dot' }, 'LIVE')),
-          el('div', { class: 'viz-legend' }, sources.map(s => el('span', { class: 'badge' }, s)))),
-        el('div', { class: 'viz-body' },
-          el('div', { class: 'viz-canvas' }, this.canvas),
-          el('aside', { class: 'readouts' }, zones.map(z => this.readoutRow(z))))),
-      el('section', {},
-        el('h3', { class: 'sec-title' }, 'PHÂN VÙNG DỮ LIỆU'),
-        el('div', { class: 'card-grid' }, zones.map(z => this.card(z)))));
+    // ── Ticker tape (2 bản sao để chạy vòng, refs cập nhật cả hai) ──
+    const mkSet = () => {
+      const refs = {};
+      const nodes = zones.map(z => {
+        const v = el('span', { class: 'tv mono' }, '—'), c = el('span', { class: 'tc mono' }, '');
+        refs[z.def.id] = { v, c };
+        return el('span', { class: 'tape-item' },
+          el('i', { class: 'zdot', style: { background: z.def.color } }), el('b', {}, z.def.label), v, c);
+      });
+      return { nodes, refs };
+    };
+    const a = mkSet(), b = mkSet();
+    this.tapeRefs = [a.refs, b.refs];
+    const tape = el('div', { class: 'tape' }, el('div', { class: 'tape-track' }, [...a.nodes, ...b.nodes]));
 
-    // Subscribe từng vùng — vùng mới thêm vào data/zones.js tự xuất hiện
-    for (const z of zones) {
-      this._offs.push(Kernel.on('zone:' + z.def.id, () => this.updateReadout(z.def.id)));
-      this._offs.push(Kernel.on('zone:update', d => { if (d.id === z.def.id) this.updateCard(z.def.id); }));
-      this.updateReadout(z.def.id); this.updateCard(z.def.id);
-    }
-    this.draw();
-  },
+    // ── Panel kiểu chứng khoán: chart lớn + watchlist ──
+    this.cv = el('canvas', { class: 'stock-cv' });
+    this.tip = el('div', { class: 'xtip', style: { display: 'none' } });
+    this.bigVal = el('span', { class: 'big-val mono' }, '—');
+    this.bigChg = el('span', { class: 'chg mono' }, '');
+    this.selLbl = el('b', { class: 'display' }, '');
+    this.srcBadge = el('span', { class: 'badge' }, '');
+    this.rangeChips = el('div', { class: 'chips' }, RANGES.map(([lb, n]) =>
+      el('button', { class: 'chip' + (n === this.range ? ' on' : ''), onclick: e => {
+        this.range = n;
+        e.currentTarget.parentNode.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+        e.currentTarget.classList.add('on');
+      } }, lb)));
 
-  unmount(){ cancelAnimationFrame(this._raf); this._offs.forEach(off => off()); this._offs = []; },
+    this.watch = {};
+    const watch = el('aside', { class: 'watch' }, zones.map(z => {
+      const sp = el('canvas', { width: 96, height: 30, class: 'wspark' });
+      const v = el('span', { class: 'wv mono' }, '—'), c = el('span', { class: 'wc mono' }, '');
+      this.watch[z.def.id] = { sp, v, c };
+      return el('button', { class: 'watch-row' + (z.def.id === this.sel ? ' on' : ''), 'data-z': z.def.id,
+        onclick: () => this.select(z.def.id) },
+        el('span', { class: 'wname' }, el('i', { class: 'zdot', style: { background: z.def.color } }), z.def.label),
+        sp, el('span', { class: 'wcol' }, v, c));
+    }));
 
-  // ── readout bên phải: thông số + giờ + ngày/tháng/năm theo từng vùng ──
-  readoutRow(z){
-    const refs = {};
-    const row = el('div', { class: 'readout', style: { '--zc': z.def.color } },
-      el('div', { class: 'ro-top' },
-        el('i', { class: 'zdot' }), el('b', {}, z.def.label),
-        el('span', { class: 'badge' }, z.def.source)),
-      el('div', { class: 'ro-val mono' }, refs.val = el('span', {}, '—'),
-        el('small', {}, ' ' + z.def.unit), el('em', { class: 'delta' }, refs.delta = el('span', {}, ''))),
-      el('div', { class: 'ro-sum' }, refs.sum = el('span', {}, '')),
-      el('div', { class: 'ro-time mono' }, refs.time = el('span', {}, '')));
-    this._ro[z.def.id] = refs;
-    return row;
-  },
-  updateReadout(id){
-    const z = Store.zones.get(id), r = this._ro[id]; if (!z || !r) return;
-    r.val.textContent = fmt.val(z.value);
-    const prev = z.buffer.at(-2)?.v || z.value;
-    const d = prev ? ((z.value - prev) / prev) * 100 : 0;
-    r.delta.textContent = (d >= 0 ? '▲ ' : '▼ ') + Math.abs(d).toFixed(1) + '%';
-    r.delta.className = 'delta ' + (d >= 0 ? 'up' : 'down');
-    r.sum.textContent = `Σ ${fmt.compact(z.total)} ${z.def.unit} · ${fmt.num(z.count)} sự kiện`;
-    r.time.textContent = z.last ? `${fmt.time(z.last.t)} · ${fmt.date(z.last.t)}` : '—';
-  },
+    const stock = el('section', { class: 'panel stock' },
+      el('div', { class: 'stock-main' },
+        el('header', { class: 'stock-head' },
+          el('div', { class: 'stock-id' }, this.selLbl, this.srcBadge),
+          el('div', { class: 'stock-num' }, this.bigVal, this.bigChg),
+          this.rangeChips),
+        el('div', { class: 'stock-cv-wrap' }, this.cv, this.tip)),
+      watch);
 
-  // ── card bên dưới → click mở modal chi tiết vùng ──
-  card(z){
-    const bars = el('div', { class: 'zbars' });
-    this._bars[z.def.id] = bars;
-    this._cardVals[z.def.id] = {};
-    const c = el('article', { class: 'zcard', style: { '--zc': z.def.color }, onclick: () => this.openZone(z) },
-      el('header', {},
-        el('span', { class: 'zname' }, el('i', { class: 'zdot' }), z.def.label),
-        el('span', { class: 'badge' }, z.def.source)),
-      el('div', { class: 'zval mono' }, this._cardVals[z.def.id].total = el('span', {}, '—')),
-      el('div', { class: 'zsub' }, this._cardVals[z.def.id].sub = el('span', {}, '')),
-      bars,
-      el('footer', {}, 'Chi tiết vùng', icon('chevron', 14)));
-    return c;
-  },
-  updateCard(id){
-    const z = Store.zones.get(id), r = this._cardVals[id], bars = this._bars[id];
-    if (!z || !r) return;
-    r.total.textContent = fmt.compact(z.total) + ' ' + z.def.unit;
-    r.sub.textContent = `${fmt.num(z.count)} sự kiện · đỉnh ${fmt.compact(z.peak)} ${z.def.unit}`;
-    const slice = z.buffer.slice(-22);
-    bars.innerHTML = '';
-    for (const s of slice)
-      bars.append(el('span', { style: { height: Math.max(6, Math.min(1, s.v / z.scale) * 100) + '%' } }));
-  },
+    // ── Cards KHO DỮ LIỆU: giá trị THẬT ──
+    this.cards = {};
+    const cards = el('section', {},
+      el('h3', { class: 'sec-title' }, 'KHO DỮ LIỆU · GIÁ TRỊ THẬT'),
+      el('div', { class: 'card-grid' }, this.cardDefs().map(cd => {
+        const v = el('div', { class: 'zval mono' }, '—'), s = el('div', { class: 'zsub' }, '');
+        this.cards[cd.id] = { v, s };
+        return el('article', { class: 'zcard', style: { '--zc': cd.color }, onclick: cd.open || null },
+          el('header', {}, el('span', { class: 'zname' }, icon(cd.icon, 15), ' ', cd.label),
+            el('span', { class: 'badge' }, cd.badge)),
+          v, s,
+          el('footer', {}, cd.foot, icon('chevron', 13)));
+      })));
 
-  // ── Modal chi tiết: giúp người dùng hiểu TOÀN BỘ về vùng dữ liệu ──
-  openZone(z){
-    const stats = [
-      ['Tổng', fmt.compact(z.total) + ' ' + z.def.unit], ['Sự kiện', fmt.num(z.count)],
-      ['Đỉnh', fmt.val(z.peak) + ' ' + z.def.unit], ['Trung bình', z.count ? fmt.val(z.total / z.count) : '—'],
-      ['Cập nhật', z.last ? fmt.time(z.last.t) : '—'], ['Nguồn', z.def.source]];
-    const spark = el('canvas', { width: 660, height: 84, class: 'spark' });
-    const rows = z.events.slice(0, 12).map(e =>
-      el('tr', {}, el('td', { class: 'mono' }, fmt.time(e.t)),
-        el('td', { class: 'mono' }, fmt.val(e.v) + ' ' + z.def.unit),
-        el('td', {}, el('span', { class: 'badge' }, e.origin))));
-    const body = el('div', {},
-      el('p', { class: 'zone-desc' }, z.def.desc),
-      el('code', { class: 'zone-schema' }, z.def.schema),
-      el('div', { class: 'stat-grid' }, stats.map(([k, v]) =>
-        el('div', { class: 'stat' }, el('small', {}, k), el('b', { class: 'mono' }, v)))),
-      spark,
-      el('h4', { class: 'sub-h' }, 'SỰ KIỆN GẦN NHẤT'),
+    // ── Băng sự kiện thực ──
+    this.tapeBody = el('tbody');
+    const evt = el('section', { class: 'panel pad' },
+      el('h3', { class: 'sec-title' }, 'BĂNG SỰ KIỆN THỰC'),
       el('div', { class: 'tbl-wrap' }, el('table', {},
-        el('thead', {}, el('tr', {}, el('th', {}, 'Thời gian'), el('th', {}, 'Giá trị'), el('th', {}, 'Nguồn'))),
-        el('tbody', {}, rows))));
-    openModal({
-      title: `${z.def.label} · ${z.def.source}`, icon: 'db', wide: true, body,
-      footer: [
-        el('button', { class: 'btn', onclick: () =>
-          download(`zone-${z.def.id}.json`, JSON.stringify({ def: z.def, total: z.total, count: z.count, events: z.events }, null, 2)) },
-          icon('download', 14), 'Xuất JSON'),
-      ],
+        el('thead', {}, el('tr', {}, el('th', {}, 'Thời gian'), el('th', {}, 'Vùng'), el('th', {}, 'Giá trị'), el('th', {}, 'Nguồn'))),
+        this.tapeBody)));
+
+    root.append(tape, stock, cards, evt);
+
+    this.cv.addEventListener('pointermove', e => {
+      const r = this.cv.getBoundingClientRect();
+      this.hover = { x: e.clientX - r.left, y: e.clientY - r.top };
+    }, { passive: true });
+    this.cv.addEventListener('pointerleave', () => { this.hover = null; });
+
+    this._offs.push(Kernel.on('engine:tick', () => this.onTick()));
+    this.select('runtime');
+    this.onTick();
+    this.loop();
+  },
+
+  unmount(){ cancelAnimationFrame(this._raf); this._offs.forEach(f => f()); this._offs = []; },
+
+  cardDefs(){
+    const C = Store.collections, rec = n => (C[n] || []).length;
+    return [
+      { id: 'content', label: 'Content', icon: 'content', color: '#ff6b8b', badge: 'local', foot: 'Mở trang',
+        open: () => Router.go('content'),
+        get: () => { const l = C.content;
+          return { v: fmt.num(l.length), s: `${fmt.compact(l.reduce((s, p) => s + (p.views || 0), 0))} lượt xem · ${new Set(l.map(p => p.category)).size} chuyên mục` }; } },
+      { id: 'media', label: 'Media', icon: 'media', color: '#b48bf3', badge: 'local', foot: 'Mở trang',
+        open: () => Router.go('media'),
+        get: () => { const l = C.media;
+          return { v: fmt.num(l.length), s: `${fmt.bytes(l.reduce((s, m) => s + m.sizeKB, 0) * 1024)} tổng dung lượng` }; } },
+      { id: 'files', label: 'Files', icon: 'files', color: '#e8e6a3', badge: 'local', foot: 'Mở trang',
+        open: () => Router.go('files'),
+        get: () => { const l = C.files;
+          return { v: fmt.num(l.length), s: `${fmt.bytes(l.reduce((s, f) => s + f.sizeKB, 0) * 1024)} · ${new Set(l.map(f => f.type)).size} định dạng` }; } },
+      { id: 'storage', label: 'Storage', icon: 'db', color: '#ff6b8b', badge: 'real', foot: 'Chi tiết',
+        open: () => this.openZone(Store.zones.get('storage')),
+        get: () => ({ v: fmt.bytes(Store.bytesUsed()), s: 'localStorage đo trực tiếp' }) },
+      { id: 'net', label: 'Network', icon: 'pulse', color: '#ffb454', badge: 'real', foot: 'Server',
+        open: () => Router.go('server'),
+        get: () => ({ v: Engine.online ? Engine.latency + ' ms' : 'OFFLINE', s: 'HEAD ping thực · ' + (Engine.online ? 'online' : 'mất mạng') }) },
+      { id: 'session', label: 'Phiên', icon: 'clock', color: '#4cc9f0', badge: 'real', foot: 'Clients',
+        open: () => Router.go('clients'),
+        get: () => ({ v: fmt.uptime(Kernel.uptime()), s: `${fmt.compact(Kernel.events)} sự kiện bus` }) },
+    ];
+  },
+
+  chg(z, back = 60){
+    const b = z.buffer; if (b.length < 2) return 0;
+    const cur = b.at(-1).v, prev = b[Math.max(0, b.length - 1 - back)].v || cur;
+    return prev ? ((cur - prev) / prev) * 100 : 0;
+  },
+  chgEl(txt, d){
+    txt.textContent = (d >= 0 ? '▲ ' : '▼ ') + Math.abs(d).toFixed(1) + '%';
+    txt.className = txt.className.replace(/ ?(up|down)/g, '') + ' ' + (d >= 0 ? 'up' : 'down');
+  },
+
+  select(id){
+    this.sel = id;
+    const z = Store.zones.get(id);
+    this.selLbl.textContent = z.def.label;
+    this.srcBadge.textContent = z.def.source;
+    document.querySelectorAll('.watch-row').forEach(r => r.classList.toggle('on', r.dataset.z === id));
+    this.onTick();
+  },
+
+  onTick(){
+    for (const z of Store.zones.values()) {
+      const d = this.chg(z, 60);
+      for (const refs of this.tapeRefs) {
+        refs[z.def.id].v.textContent = fmt.val(z.value) + ' ' + z.def.unit;
+        this.chgEl(refs[z.def.id].c, d);
+      }
+      const w = this.watch[z.def.id];
+      w.v.textContent = fmt.val(z.value);
+      this.chgEl(w.c, d);
+      this.spark(w.sp, z);
+    }
+    const z = Store.zones.get(this.sel);
+    this.bigVal.textContent = fmt.val(z.value) + ' ' + z.def.unit;
+    this.chgEl(this.bigChg, this.chg(z, 60));
+    for (const cd of this.cardDefs()) {
+      const r = this.cards[cd.id]; if (!r) continue;
+      const o = cd.get(); r.v.textContent = o.v; r.s.textContent = o.s;
+    }
+    // băng sự kiện
+    const rows = [...Store.zones.values()]
+      .flatMap(z => z.events.slice(0, 5).map(e => ({ t: e.t, z, e })))
+      .sort((a, b) => b.t - a.t).slice(0, 10);
+    this.tapeBody.innerHTML = '';
+    rows.forEach(r => this.tapeBody.append(el('tr', {},
+      el('td', { class: 'mono' }, fmt.time(r.t)),
+      el('td', {}, el('i', { class: 'zdot', style: { background: r.z.def.color } }), ' ', r.z.def.label),
+      el('td', { class: 'mono' }, fmt.val(r.e.v) + ' ' + r.z.def.unit),
+      el('td', {}, el('span', { class: 'badge' }, r.e.origin)))));
+  },
+
+  spark(cv, z){
+    const ctx = cv.getContext('2d'), w = cv.width, h = cv.height;
+    ctx.clearRect(0, 0, w, h);
+    const b = z.buffer.slice(-60); if (b.length < 2) return;
+    let mn = Math.min(...b.map(s => s.v)), mx = Math.max(...b.map(s => s.v));
+    if (mx === mn) { mx += 1; mn = Math.max(0, mn - 1); }
+    ctx.beginPath();
+    b.forEach((s, i) => {
+      const x = i / (b.length - 1) * w, y = h - 2 - (s.v - mn) / (mx - mn) * (h - 4);
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
     });
-    // vẽ sparkline
-    const ctx = spark.getContext('2d'), buf = z.buffer;
-    if (buf.length > 1) {
-      ctx.strokeStyle = z.def.color; ctx.lineWidth = 1.6; ctx.beginPath();
-      buf.forEach((s, i) => {
-        const x = i / (buf.length - 1) * 660, y = 78 - Math.min(1, s.v / z.scale) * 68;
+    ctx.strokeStyle = z.def.color; ctx.lineWidth = 1.4; ctx.stroke();
+  },
+
+  loop(){ this.drawChart(); this._raf = requestAnimationFrame(() => this.loop()); },
+
+  // ── Chart chính: trục giá, trục thời gian, last-price tag, crosshair ──
+  drawChart(){
+    const cv = this.cv; if (!cv?.isConnected) return;
+    const dpr = devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+    if (!W) return;
+    if (cv.width !== W * dpr || cv.height !== H * dpr) { cv.width = W * dpr; cv.height = H * dpr; }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    const z = Store.zones.get(this.sel), col = z.def.color;
+    const slice = z.buffer.slice(-this.range);
+    const padL = 52, padR = 66, padT = 14, padB = 24, pw = W - padL - padR, ph = H - padT - padB;
+    if (slice.length < 2) {
+      ctx.fillStyle = 'rgba(160,190,200,.6)'; ctx.font = '12px "Be Vietnam Pro",sans-serif';
+      ctx.fillText('Đang thu thập dữ liệu thật…', padL + 8, padT + 22);
+      return;
+    }
+    let mn = Infinity, mx = -Infinity;
+    slice.forEach(s => { mn = Math.min(mn, s.v); mx = Math.max(mx, s.v); });
+    if (mx - mn < 1e-9) { mx += 1; mn = Math.max(0, mn - 1); }
+    const pad = (mx - mn) * 0.12; mx += pad; mn = Math.max(0, mn - pad);
+    const X = i => padL + pw * i / (slice.length - 1);
+    const Y = v => padT + ph - (v - mn) / (mx - mn) * ph;
+
+    ctx.font = '10px "IBM Plex Mono",monospace';
+    for (let g = 0; g <= 4; g++) {
+      const v = mn + (mx - mn) * g / 4, y = Y(v);
+      ctx.strokeStyle = 'rgba(150,195,205,.09)';
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + pw, y); ctx.stroke();
+      ctx.fillStyle = 'rgba(160,190,200,.55)'; ctx.fillText(fmt.val(v), 8, y + 3);
+    }
+    const every = Math.ceil(slice.length / 5);
+    for (let i = 0; i < slice.length; i += every) {
+      ctx.fillStyle = 'rgba(160,190,200,.45)';
+      ctx.fillText(fmt.time(slice[i].t), X(i) - 22, H - 7);
+    }
+
+    ctx.beginPath();
+    slice.forEach((s, i) => i ? ctx.lineTo(X(i), Y(s.v)) : ctx.moveTo(X(0), Y(s.v)));
+    const g2 = ctx.createLinearGradient(0, padT, 0, padT + ph);
+    g2.addColorStop(0, col + '38'); g2.addColorStop(1, col + '00');
+    ctx.save();
+    ctx.lineTo(X(slice.length - 1), padT + ph); ctx.lineTo(X(0), padT + ph); ctx.closePath();
+    ctx.fillStyle = g2; ctx.fill(); ctx.restore();
+    ctx.beginPath();
+    slice.forEach((s, i) => i ? ctx.lineTo(X(i), Y(s.v)) : ctx.moveTo(X(0), Y(s.v)));
+    ctx.strokeStyle = col; ctx.lineWidth = 1.8; ctx.stroke();
+
+    // last-price line + tag (chuẩn trading)
+    const lv = slice.at(-1).v, ly = Y(lv);
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = col + '88';
+    ctx.beginPath(); ctx.moveTo(padL, ly); ctx.lineTo(padL + pw, ly); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = col; ctx.fillRect(padL + pw + 6, ly - 9, 56, 18);
+    ctx.fillStyle = '#06141a'; ctx.fillText(fmt.val(lv), padL + pw + 11, ly + 4);
+
+    // crosshair + tooltip
+    if (this.hover && this.hover.x >= padL && this.hover.x <= padL + pw) {
+      const idx = Math.round((this.hover.x - padL) / pw * (slice.length - 1));
+      const s = slice[idx];
+      if (s) {
+        const sx = X(idx), sy = Y(s.v);
+        ctx.strokeStyle = 'rgba(230,242,244,.25)';
+        ctx.beginPath(); ctx.moveTo(sx, padT); ctx.lineTo(sx, padT + ph); ctx.stroke();
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(sx, sy, 3, 0, 7); ctx.fill();
+        this.tip.style.display = 'block';
+        this.tip.style.left = Math.min(W - 170, sx + 12) + 'px';
+        this.tip.style.top = Math.max(4, sy - 42) + 'px';
+        this.tip.textContent = `${fmt.val(s.v)} ${z.def.unit} · ${fmt.time(s.t)}`;
+        return;
+      }
+    }
+    this.tip.style.display = 'none';
+  },
+
+  openZone(z){
+    const b = z.buffer.map(s => s.v);
+    const stats = [
+      ['Hiện tại', fmt.val(z.value) + ' ' + z.def.unit],
+      ['Thấp nhất', b.length ? fmt.val(Math.min(...b)) : '—'],
+      ['Cao nhất', b.length ? fmt.val(Math.max(...b)) : '—'],
+      ['Trung bình', b.length ? fmt.val(b.reduce((a, c) => a + c, 0) / b.length) : '—'],
+      ['Mẫu', fmt.num(b.length)], ['Nguồn', z.def.source]];
+    const spark = el('canvas', { width: 720, height: 90, class: 'spark' });
+    openModal({
+      title: `${z.def.label} · dữ liệu thật`, icon: 'db', wide: true,
+      body: el('div', {},
+        el('p', { class: 'zone-desc' }, z.def.desc),
+        el('code', { class: 'zone-schema' }, z.def.schema),
+        el('div', { class: 'stat-grid' }, stats.map(([k, v]) =>
+          el('div', { class: 'stat' }, el('small', {}, k), el('b', { class: 'mono' }, v)))),
+        spark,
+        el('h4', { class: 'sub-h' }, 'SỰ KIỆN GẦN NHẤT'),
+        el('div', { class: 'tbl-wrap' }, el('table', {},
+          el('thead', {}, el('tr', {}, el('th', {}, 'Thời gian'), el('th', {}, 'Giá trị'), el('th', {}, 'Nguồn'))),
+          el('tbody', {}, z.events.slice(0, 12).map(e => el('tr', {},
+            el('td', { class: 'mono' }, fmt.time(e.t)),
+            el('td', { class: 'mono' }, fmt.val(e.v) + ' ' + z.def.unit),
+            el('td', {}, el('span', { class: 'badge' }, e.origin)))))))),
+      footer: [el('button', { class: 'btn', onclick: () =>
+        download(`zone-${z.def.id}.json`, JSON.stringify({ def: z.def, buffer: z.buffer }, null, 2)) },
+        icon('download', 14), 'Xuất JSON')],
+    });
+    const ctx = spark.getContext('2d');
+    if (b.length > 1) {
+      const mn = Math.min(...b), mx = Math.max(...b) || 1;
+      ctx.strokeStyle = z.def.color; ctx.lineWidth = 1.5; ctx.beginPath();
+      b.forEach((v, i) => {
+        const x = i / (b.length - 1) * 720, y = 84 - (v - mn) / ((mx - mn) || 1) * 76;
         i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
       });
       ctx.stroke();
     }
   },
-
-  // ══════ CANVAS: Cột - Sóng - Sợi - Gấp khúc, cuộn theo thời gian thực ══════
-  draw(){
-    const cv = this.canvas; if (!cv?.isConnected) return;
-    const dpr = devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
-    if (cv.width !== W * dpr || cv.height !== H * dpr) { cv.width = W * dpr; cv.height = H * dpr; }
-    const ctx = cv.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
-    const zones = [...Store.zones.values()], n = zones.length, laneH = H / n, now = Date.now();
-
-    zones.forEach((z, i) => {
-      const top = i * laneH, pad = laneH * 0.16;
-      const base = top + laneH - pad * 0.7, amp = laneH - pad * 1.9;
-      if (i > 0) { ctx.strokeStyle = 'rgba(150,195,205,.10)'; ctx.beginPath(); ctx.moveTo(0, top); ctx.lineTo(W, top); ctx.stroke(); }
-      ctx.setLineDash([2, 6]); ctx.strokeStyle = 'rgba(150,195,205,.08)';
-      ctx.beginPath(); ctx.moveTo(0, base - amp / 2); ctx.lineTo(W, base - amp / 2); ctx.stroke(); ctx.setLineDash([]);
-
-      const buf = z.buffer; if (buf.length < 2) return;
-      const yFor = v => base - Math.min(1, v / z.scale) * amp;
-      const step = W / (CAP - 1);
-      const phase = Math.min(1, (now - (z.last?.t || now)) / 1000);
-      const pts = buf.map((s, idx) => ({ x: W - (buf.length - 1 - idx) * step - phase * step, y: yFor(s.v) }));
-      const prevS = buf.at(-2), lastS = buf.at(-1);
-      const head = { x: W, y: yFor(prevS.v + (lastS.v - prevS.v) * phase) };
-
-      const P = [...pts, head];
-      if (z.def.visual === 'columns') this.drawColumns(ctx, pts, head, base, z);
-      else if (z.def.visual === 'wave') this.drawWave(ctx, P, base, z);
-      else if (z.def.visual === 'threads') this.drawThreads(ctx, pts, head, base, z);
-      else if (z.def.visual === 'area') this.drawArea(ctx, P, base, z);
-      else this.drawPoly(ctx, P, z);
-
-      ctx.fillStyle = z.def.color + '33'; ctx.beginPath(); ctx.arc(head.x - 2, head.y, 8, 0, 7); ctx.fill();
-      ctx.fillStyle = z.def.color; ctx.beginPath(); ctx.arc(head.x - 2, head.y, 3, 0, 7); ctx.fill();
-
-      ctx.font = '600 10px "IBM Plex Mono", monospace';
-      ctx.fillStyle = z.def.color + 'cc'; ctx.fillText(z.def.label.toUpperCase(), 12, top + 15);
-      ctx.fillStyle = 'rgba(160,190,200,.45)';
-      ctx.fillText(z.def.unit, 12 + ctx.measureText(z.def.label.toUpperCase()).width + 8, top + 15);
-    });
-
-    // vệt quét tạo cảm giác sống
-    const sx = (now / 18) % (W + 120) - 60;
-    const g = ctx.createLinearGradient(sx - 40, 0, sx + 40, 0);
-    g.addColorStop(0, 'rgba(120,220,255,0)'); g.addColorStop(.5, 'rgba(120,220,255,.05)'); g.addColorStop(1, 'rgba(120,220,255,0)');
-    ctx.fillStyle = g; ctx.fillRect(sx - 40, 0, 80, H);
-
-    this._raf = requestAnimationFrame(() => this.draw());
-  },
-
-  drawPoly(ctx, P, z){
-    ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-    ctx.strokeStyle = z.def.color + '3d'; ctx.lineWidth = 5; ctx.stroke();
-    ctx.strokeStyle = z.def.color; ctx.lineWidth = 1.7; ctx.stroke();
-  },
-  smooth(ctx, P){
-    ctx.beginPath(); ctx.moveTo(P[0].x, P[0].y);
-    for (let i = 1; i < P.length - 1; i++) {
-      const mx = (P[i].x + P[i + 1].x) / 2, my = (P[i].y + P[i + 1].y) / 2;
-      ctx.quadraticCurveTo(P[i].x, P[i].y, mx, my);
-    }
-    ctx.lineTo(P.at(-1).x, P.at(-1).y);
-  },
-  drawWave(ctx, P, base, z){
-    this.smooth(ctx, P);
-    ctx.lineTo(P.at(-1).x, base); ctx.lineTo(P[0].x, base); ctx.closePath();
-    const g = ctx.createLinearGradient(0, base - 90, 0, base);
-    g.addColorStop(0, z.def.color + '40'); g.addColorStop(1, z.def.color + '00');
-    ctx.fillStyle = g; ctx.fill();
-    this.smooth(ctx, P); ctx.strokeStyle = z.def.color; ctx.lineWidth = 1.8; ctx.stroke();
-  },
-  drawColumns(ctx, pts, head, base, z){
-    const dx = pts.length > 1 ? pts[1].x - pts[0].x : 6, bw = Math.max(2, dx * 0.55);
-    pts.forEach((p, i) => {
-      ctx.fillStyle = i >= pts.length - 3 ? z.def.color + 'aa' : z.def.color + '48';
-      ctx.fillRect(p.x - bw / 2, p.y, bw, base - p.y);
-    });
-    ctx.fillStyle = z.def.color; ctx.fillRect(head.x - bw, head.y, bw, base - head.y);
-  },
-  drawThreads(ctx, pts, head, base, z){
-    [[1, 'ee'], [0.64, '66'], [0.4, '33']].forEach(([f, a], k) => {
-      ctx.beginPath();
-      const P = [...pts, head].map(p => ({ x: p.x, y: base - (base - p.y) * f + Math.sin(p.x * 0.02 + k * 2) * 3 }));
-      P.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-      ctx.strokeStyle = z.def.color + a; ctx.lineWidth = k ? 1 : 1.6; ctx.stroke();
-    });
-  },
-  drawArea(ctx, P, base, z){
-    ctx.beginPath(); ctx.moveTo(P[0].x, P[0].y);
-    for (let i = 1; i < P.length; i++) { ctx.lineTo(P[i].x, P[i - 1].y); ctx.lineTo(P[i].x, P[i].y); }
-    ctx.strokeStyle = z.def.color + 'bb'; ctx.lineWidth = 1.3; ctx.stroke();
-    ctx.lineTo(P.at(-1).x, base); ctx.lineTo(P[0].x, base); ctx.closePath();
-    ctx.fillStyle = z.def.color + '22'; ctx.fill();
-  },
 };
-export default M; 
+export default M;

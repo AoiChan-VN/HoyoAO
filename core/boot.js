@@ -6,13 +6,20 @@ import { Branding } from './branding.js';
 import { el, icon, fmt, toast } from './ui.js';
 import { MODULES } from '../config/modules.config.js';
 import { ZONES } from '../data/zones.js';
-import { CONTENT_SEED } from '../data/content.seed.js';
-import { MEDIA_SEED } from '../data/media.seed.js';
-import { FILES_SEED } from '../data/files.seed.js';
 
-// ══════ COMPOSITION ROOT: nơi duy nhất ghép mọi thứ lại ══════
+async function safeSeed(path){
+  try {
+    const m = await import(path);
+    for (const k of Object.keys(m)) if (k !== 'default' && Array.isArray(m[k])) return m[k];
+    return [];
+  } catch (e) { console.warn(`[Boot] seed thiếu "${path}" → dùng rỗng`); return []; }
+}
+
 async function boot(){
   Branding.load();
+  const [CONTENT_SEED, MEDIA_SEED, FILES_SEED] = await Promise.all([
+    safeSeed('../data/content.seed.js'), safeSeed('../data/media.seed.js'), safeSeed('../data/files.seed.js'),
+  ]);
   Store.init(ZONES, { content: CONTENT_SEED, media: MEDIA_SEED, files: FILES_SEED });
   Kernel.service('store', Store); Kernel.service('engine', Engine);
   await Kernel.loadModules(MODULES);
@@ -20,10 +27,12 @@ async function boot(){
   Engine.start();
   Router.start();
 
-  Kernel.on('route:changed', d => { Engine.pulse('runtime', 12); updateNav(d); });
+  // FIX v2: listener nhận CustomEvent → dùng e.detail
+  Kernel.on('route:changed', e => updateNav(e.detail));
   Kernel.on('branding:applied', renderBrand);
   addEventListener('beforeunload', () => Store.flush());
-  toast(`Kernel khởi động · ${Kernel.modules.length} module đã nạp`, 'ok');
+  document.addEventListener('visibilitychange', () => document.hidden ? Engine.stop() : Engine.start());
+  toast(`Kernel khởi động · ${Kernel.modules.length} module · dữ liệu THẬT`, 'ok');
 }
 
 function renderBrand(){
@@ -41,8 +50,6 @@ function renderBrand(){
 
 function buildChrome(){
   renderBrand();
-
-  // ── Đồng hồ hệ thống (System / Date) ──
   const clock = document.getElementById('sysClock');
   const tickClock = () => {
     const t = Date.now();
@@ -50,18 +57,21 @@ function buildChrome(){
   };
   tickClock(); setInterval(tickClock, 1000);
 
-  // ── Menu trái: sinh từ manifest module, không hardcode ──
+  // ── MENU v2: FIX [object] + phân nhóm theo manifest.group ──
   const nav = document.getElementById('sidenav');
   const item = m => el('button', {
     class: 'snav-item', 'data-path': m.manifest.routes[0],
     onclick: () => Router.go(m.manifest.routes[0]),
   }, icon(m.manifest.icon, 18), el('span', {}, m.manifest.name));
-  const ops = Kernel.modules.filter(m => m.manifest.id !== 'settings');
-  const sys = Kernel.modules.filter(m => m.manifest.id === 'settings');
-  nav.append(el('div', { class: 'snav-label' }, 'VẬN HÀNH'), ops.map(item),
-             el('div', { class: 'snav-label' }, 'HỆ THỐNG'), sys.map(item));
+  const GROUPS = ['VẬN HÀNH', 'NỘI DUNG', 'MỞ RỘNG', 'HỆ THỐNG'];
+  const by = {};
+  Kernel.modules.forEach(m => (by[m.manifest.group || 'MỞ RỘNG'] ||= []).push(m));
+  GROUPS.forEach(g => {
+    if (!by[g]?.length) return;
+    nav.append(el('div', { class: 'snav-label' }, g));
+    by[g].forEach(m => nav.append(item(m)));   // ← append từng node, KHÔNG truyền mảng
+  });
 
-  // ── Status bar ──
   const sb = document.getElementById('statusbar');
   sb.append(
     el('div', { class: 'st-left' },
@@ -70,7 +80,7 @@ function buildChrome(){
       el('span', { class: 'st-sep' }),
       el('span', { class: 'mono', id: 'stEv' }, '0 sự kiện')),
     el('div', { class: 'st-mid' },
-      `${Kernel.modules.length} module · ${Store.zones.size} vùng dữ liệu · v${Kernel.meta.version}`),
+      `${Kernel.modules.length} module · ${Store.zones.size} vùng · v${Kernel.meta.version} · dữ liệu thật`),
     el('div', { class: 'st-right' },
       el('a', { href: Kernel.meta.links.support }, 'Support'),
       el('a', { href: Kernel.meta.links.community }, 'Community'),
@@ -88,4 +98,4 @@ function updateNav({ path, manifest }){
   document.getElementById('pageTitle').textContent = manifest.name;
 }
 
-boot(); 
+boot();

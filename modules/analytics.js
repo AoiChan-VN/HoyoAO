@@ -3,7 +3,7 @@ import { Store } from '../core/store.js';
 import { el, fmt } from '../core/ui.js';
 
 const M = {
-  manifest: { id: 'analytics', name: 'Analytics', icon: 'analytics', routes: ['analytics'] },
+  manifest: { id: 'analytics', group: 'VẬN HÀNH', name: 'Analytics', icon: 'analytics', routes: ['analytics'] },
   state: { zone: 'all', days: 14 }, _off: null, chart: null,
 
   mount(root){

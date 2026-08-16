@@ -1,6 +1,6 @@
 import { Kernel } from './kernel.js';
 
-// v2: KHÔNG sinh dữ liệu giả. Buffer rỗng → tự lấp bằng mẫu THẬT.
+// KHÔNG sinh dữ liệu giả. Buffer rỗng → tự lấp bằng mẫu THẬT.
 const NS = 'hoyoao.webos.v1.';
 export const CAP = 600; // 10 phút mẫu @1s
 

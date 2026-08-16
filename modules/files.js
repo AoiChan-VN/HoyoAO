@@ -7,7 +7,7 @@ const TYPE_COLOR = { pdf:'#ff6b7a', zip:'#ffb454', json:'#7ae582', png:'#b48bf3'
 const TYPE_ICON  = { md:'content', txt:'content', png:'media', jpg:'media', svg:'media' };
 
 const M = {
-  manifest: { id: 'files', name: 'Files', icon: 'files', routes: ['files'] },
+  manifest: { id: 'files', group: 'NỘI DUNG', name: 'Files', icon: 'files', routes: ['files'] },
   state: { q: '', type: 'all' }, body: null,
 
   mount(root){

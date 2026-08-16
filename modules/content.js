@@ -5,7 +5,7 @@ import { el, icon, fmt, openModal, toast } from '../core/ui.js';
 
 // ══════ Trang content: danh sách bài viết chuẩn web chuyên content ══════
 const M = {
-  manifest: { id: 'content', group: 'NỘI DUNG', name: 'Content', icon: 'content', routes: ['content'] },
+  manifest: { id: 'content', name: 'Content', icon: 'content', routes: ['content'] },
   state: { q: '', cat: 'all', sort: 'new' }, grid: null, countLbl: null,
 
   mount(root){

@@ -6,7 +6,7 @@ import { el, icon, fmt, download, confirmDialog, toast } from '../core/ui.js';
 const SWATCHES = ['#4cc9f0', '#7ae582', '#ffb454', '#ff6b8b', '#b48bf3', '#e8e6a3'];
 
 const M = {
-  manifest: { id: 'settings', name: 'Settings', icon: 'settings', routes: ['settings'] },
+  manifest: { id: 'settings', group: 'HỆ THỐNG', name: 'Settings', icon: 'settings', routes: ['settings'] },
   _timer: null,
 
   mount(root){

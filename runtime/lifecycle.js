@@ -6,6 +6,10 @@
  *
  * Application failure is isolated (§33): a crash here does NOT
  * take down the Shell or other Applications.
+ *
+ * ServiceContext (§5, §91, §92):
+ *   Applications receive a frozen, permission-filtered view of
+ *   OS services. They NEVER get raw access to the ServiceRegistry.
  */
 
 const VALID_STATES = new Set([
@@ -17,13 +21,15 @@ export class ApplicationLifecycle {
   #registry;
   #logger;
   #eventBus;
+  #services;
   /** @type {Map<string, object>} loaded module references */
   #instances = new Map();
 
-  constructor(registry, logger, eventBus) {
+  constructor(registry, logger, eventBus, services) {
     this.#registry = registry;
     this.#logger = logger;
     this.#eventBus = eventBus;
+    this.#services = services;
   }
 
   /**
@@ -47,7 +53,10 @@ export class ApplicationLifecycle {
         throw new Error(`"${appId}" must export a mount() function`);
       }
 
-      mod.mount(mountPoint);
+      // Build permission-filtered service context (§91, §92)
+      const serviceContext = this.#buildServiceContext(entry.manifest);
+
+      mod.mount(mountPoint, serviceContext);
       this.#instances.set(appId, mod);
 
       this.#transition(appId, 'RUNNING');
@@ -100,10 +109,58 @@ export class ApplicationLifecycle {
     return this.#registry.get(appId)?.state ?? null;
   }
 
+  isRunning(appId) {
+    return this.getState(appId) === 'RUNNING';
+  }
+
+  getRunningApps() {
+    return Array.from(this.#instances.keys());
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE                                                            */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Build a frozen ServiceContext filtered by manifest permissions.
+   * Applications only receive services they are allowed to use (§92).
+   *
+   * @param {object} manifest
+   * @returns {Readonly<object>}
+   */
+  #buildServiceContext(manifest) {
+    const permissions = new Set(manifest.permissions || []);
+    const context = {};
+
+    // Core services every application receives
+    context.events = this.#services.get('events');
+    context.logger = this.#services.get('logger');
+    context.config = this.#services.get('config');
+
+    // Data access requires data.read permission
+    if (permissions.has('data.read')) {
+      context.data = this.#services.get('data');
+      context.indexer = this.#services.get('indexer');
+    }
+
+    // Storage access requires explicit permission
+    if (permissions.has('storage.read') || permissions.has('storage.write')) {
+      context.storage = this.#services.get('storage');
+    }
+
+    // System status access
+    if (permissions.has('system.status')) {
+      context.registry = this.#registry;
+    }
+
+    // Freeze to prevent mutation by Applications (§5)
+    return Object.freeze(context);
+  }
+
   #transition(appId, state) {
     if (!VALID_STATES.has(state)) {
       throw new Error(`Invalid lifecycle state: "${state}"`);
     }
     this.#registry.setState(appId, state);
   }
-} 
+}

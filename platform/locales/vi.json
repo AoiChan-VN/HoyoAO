@@ -1,0 +1,19 @@
+{
+  "locale": "vi",
+  "name": "Tiếng Việt",
+  "translations": {
+    "os.name": "HoyoAO-OS",
+    "os.settings": "Cài đặt",
+    "os.diagnostics": "Chẩn đoán",
+    "nav.os": "Hệ điều hành",
+    "nav.applications": "Ứng dụng",
+    "footer.status": "Trạng thái",
+    "footer.support": "Hỗ trợ & Cộng đồng",
+    "app.dashboard.name": "Bảng điều khiển",
+    "app.dashboard.description": "Giám sát hệ thống và trực quan hóa dữ liệu",
+    "state.loading": "Đang tải...",
+    "state.empty": "Không có dữ liệu",
+    "state.error": "Đã xảy ra lỗi",
+    "state.offline": "Ngoại tuyến"
+  }
+} 

@@ -8,6 +8,7 @@
  *   Footer  — status, support, copyright (§78)
  *
  * Contains ZERO application business logic.
+ * All UI text is localized via LocalizationService (§37).
  */
 
 import { ShellNavigation } from './navigation.js';
@@ -20,17 +21,21 @@ export class Shell {
   #eventBus;
   #logger;
   #brand;
+  #theme;
+  #localization;
   #contentArea = null;
   #navigation = null;
   #footer = null;
 
-  constructor({ container, config, registry, eventBus, logger, brand }) {
+  constructor({ container, config, registry, eventBus, logger, brand, theme, localization }) {
     this.#container = container;
     this.#config = config;
     this.#registry = registry;
     this.#eventBus = eventBus;
     this.#logger = logger;
     this.#brand = brand;
+    this.#theme = theme;
+    this.#localization = localization;
   }
 
   async mount() {
@@ -44,7 +49,11 @@ export class Shell {
     const body = document.createElement('div');
     body.className = 'os-shell__body';
 
-    this.#navigation = new ShellNavigation(this.#registry, this.#eventBus);
+    this.#navigation = new ShellNavigation(
+      this.#registry,
+      this.#eventBus,
+      this.#localization,
+    );
     const sidebar = this.#navigation.render();
 
     this.#contentArea = document.createElement('main');
@@ -54,7 +63,7 @@ export class Shell {
     body.append(sidebar, this.#contentArea);
 
     /* Footer */
-    this.#footer = new ShellFooter(this.#brand);
+    this.#footer = new ShellFooter(this.#brand, this.#localization);
     const footer = this.#footer.render();
 
     /* Assemble */
@@ -86,7 +95,7 @@ export class Shell {
       logoWrap.appendChild(img);
     }
 
-    // Title
+    // Title — from config (branding), not hardcoded (§79)
     const title = document.createElement('div');
     title.className = 'os-shell__title';
     title.textContent = this.#config.get('os.name', 'WEB ADMIN OS');
@@ -98,4 +107,4 @@ export class Shell {
     header.append(logoWrap, title, context);
     return header;
   }
-} 
+}

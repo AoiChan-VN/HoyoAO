@@ -1,0 +1,24 @@
+{
+  "name": "light",
+  "description": "Light theme — clean white palette with blue accent",
+  "tokens": {
+    "--color-bg-primary": "#f8fafc",
+    "--color-bg-secondary": "#ffffff",
+    "--color-bg-tertiary": "#f1f5f9",
+    "--color-bg-elevated": "#ffffff",
+    "--color-text-primary": "#0f172a",
+    "--color-text-secondary": "#475569",
+    "--color-text-muted": "#94a3b8",
+    "--color-accent": "#2563eb",
+    "--color-accent-hover": "#1d4ed8",
+    "--color-success": "#059669",
+    "--color-warning": "#d97706",
+    "--color-error": "#dc2626",
+    "--color-info": "#0891b2",
+    "--color-border": "#e2e8f0",
+    "--color-border-hover": "#cbd5e1",
+    "--shadow-sm": "0 1px 2px rgba(0, 0, 0, 0.05)",
+    "--shadow-md": "0 4px 6px rgba(0, 0, 0, 0.07)",
+    "--shadow-lg": "0 10px 15px rgba(0, 0, 0, 0.10)"
+  }
+} 

@@ -1,0 +1,78 @@
+/**
+ * Shell Navigation (§15)
+ *
+ * Generates menu items from the Application Registry.
+ * Clearly separates OS navigation from Application navigation.
+ * Does NOT duplicate menu definitions (§15).
+ */
+
+export class ShellNavigation {
+  #registry;
+  #eventBus;
+  #element = null;
+
+  constructor(registry, eventBus) {
+    this.#registry = registry;
+    this.#eventBus = eventBus;
+  }
+
+  render() {
+    this.#element = document.createElement('nav');
+    this.#element.className = 'os-shell__sidebar';
+    this.#element.setAttribute('aria-label', 'OS Navigation');
+
+    /* OS section */
+    const osSection = this.#buildSection('OS', [
+      { id: 'os-settings', label: 'Settings' },
+      { id: 'os-diagnostics', label: 'Diagnostics' },
+    ]);
+
+    /* Applications section — generated from registry */
+    const apps = this.#registry.getAll();
+    const appItems = apps.map((entry) => ({
+      id: entry.manifest.id,
+      label: entry.manifest.name,
+    }));
+    const appSection = this.#buildSection('Applications', appItems);
+
+    this.#element.append(osSection, appSection);
+    return this.#element;
+  }
+
+  /* ---- private ---- */
+
+  #buildSection(title, items) {
+    const section = document.createElement('div');
+    section.className = 'os-shell__nav-section';
+
+    const heading = document.createElement('div');
+    heading.className = 'os-shell__nav-section-title';
+    heading.textContent = title;
+    section.appendChild(heading);
+
+    for (const item of items) {
+      const btn = document.createElement('button');
+      btn.className = 'os-shell__nav-item';
+      btn.type = 'button';
+      btn.dataset.target = item.id;
+      btn.textContent = item.label;
+      btn.setAttribute('aria-label', item.label);
+
+      btn.addEventListener('click', () => {
+        this.#setActive(btn);
+        this.#eventBus.emit('navigation:selected', { target: item.id });
+      });
+
+      section.appendChild(btn);
+    }
+
+    return section;
+  }
+
+  #setActive(activeBtn) {
+    this.#element
+      .querySelectorAll('.os-shell__nav-item')
+      .forEach((el) => el.classList.remove('active'));
+    activeBtn.classList.add('active');
+  }
+} 

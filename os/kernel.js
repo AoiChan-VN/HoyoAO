@@ -44,7 +44,7 @@ export class Kernel {
   async boot() {
     try {
       this.#bootState = 'BOOTING';
-      this.#logger.info('boot', 'WEB ADMIN OS — boot sequence initiated');
+      this.#logger.info('boot', 'OS — boot sequence initiated');
 
       /* Phase 1 — Configuration */
       await this.#config.load('os.config.json');
@@ -85,7 +85,7 @@ export class Kernel {
 
       /* Phase 7 — Done */
       this.#bootState = 'RUNNING';
-      this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
+      this.#logger.info('boot', 'HoyoAO — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
 
     } catch (error) {
@@ -117,10 +117,10 @@ export class Kernel {
         error: err.message,
       });
       this.#brand = {
-        name: 'WEB ADMIN OS',
+        name: 'HoyoAO OS',
         owner: 'HoyoAO',
         copyright: '© 2026 HoyoAO. All Rights Reserved',
-        logo: { src: '', alt: 'WEB ADMIN OS' },
+        logo: { src: '', alt: 'HoyoAO OS' },
         links: { support: '#', community: '#', status: '#' },
       };
     }

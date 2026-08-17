@@ -5,13 +5,16 @@
  * Line 2: [Logo] © 2026 HoyoAO. All Rights Reserved
  *
  * All branding is configuration-driven (§79).
+ * All UI text is localized via LocalizationService (§37).
  */
 
 export class ShellFooter {
   #brand;
+  #localization;
 
-  constructor(brand) {
+  constructor(brand, localization) {
     this.#brand = brand;
+    this.#localization = localization;
   }
 
   render() {
@@ -24,7 +27,7 @@ export class ShellFooter {
 
     const status = document.createElement('span');
     status.className = 'os-shell__footer-status';
-    status.textContent = 'Status';
+    status.textContent = this.#localization.t('footer.status');
 
     const sep = document.createElement('span');
     sep.className = 'os-shell__footer-separator';
@@ -34,7 +37,7 @@ export class ShellFooter {
     const support = document.createElement('a');
     support.className = 'os-shell__footer-link';
     support.href = this.#brand.links?.support ?? '#';
-    support.textContent = 'Support & Community';
+    support.textContent = this.#localization.t('footer.support');
 
     line1.append(status, sep, support);
 
@@ -57,4 +60,4 @@ export class ShellFooter {
     footer.append(line1, line2);
     return footer;
   }
-} 
+}

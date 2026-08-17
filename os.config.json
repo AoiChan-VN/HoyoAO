@@ -1,0 +1,23 @@
+{
+  "os": {
+    "name": "HoyoAO OS",
+    "version": "1.0.0",
+    "mode": "development",
+    "logLevel": "debug"
+  },
+  "boot": {
+    "defaultApplication": "dashboard",
+    "timeout": 15000
+  },
+  "applications": {
+    "manifests": [
+      "applications/dashboard/manifest.json"
+    ]
+  },
+  "theme": {
+    "default": "dark"
+  },
+  "localization": {
+    "defaultLocale": "en"
+  }
+} 

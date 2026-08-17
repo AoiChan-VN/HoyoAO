@@ -1,0 +1,27 @@
+{
+  "id": "dashboard",
+  "name": "Dashboard",
+  "version": "1.0.0",
+  "description": "System monitoring, data visualization, and indexed data overview.",
+  "entry": "applications/dashboard/app.js",
+  "icon": "dashboard",
+  "permissions": [
+    "data.read",
+    "system.status"
+  ],
+  "dependencies": [],
+  "routes": [
+    { "path": "/apps/dashboard", "name": "Dashboard" },
+    { "path": "/apps/dashboard/overview", "name": "Overview" }
+  ],
+  "capabilities": [
+    "data.read",
+    "system.status"
+  ],
+  "compatibility": {
+    "osVersion": ">=1.0.0"
+  },
+  "lifecycle": {
+    "autoStart": false
+  }
+} 

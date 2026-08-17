@@ -1,5 +1,0 @@
-{
-  "build": { "distDir": "../../", "devPath": "http://localhost:8080" },
-  "package": { "productName": "HoyoAO" },
-  "tauri": { "windows": [{ "title": "HoyoAO", "width": 1280, "height": 800 }] }
-} 

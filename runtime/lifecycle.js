@@ -136,6 +136,8 @@ export class ApplicationLifecycle {
     context.events = this.#services.get('events');
     context.logger = this.#services.get('logger');
     context.config = this.#services.get('config');
+    context.theme = this.#services.get('theme');
+    context.localization = this.#services.get('localization');
 
     // Data access requires data.read permission
     if (permissions.has('data.read')) {

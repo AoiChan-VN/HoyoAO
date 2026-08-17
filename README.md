@@ -1,3 +1,4 @@
+```
 HoyoAO/
 ├─ index.html                      # [SHELL/BIOS] HTML duy nhất, bất biến
 │
@@ -65,3 +66,4 @@ HoyoAO/
 │
 └─ docs/
    └─ ARCHITECTURE.md              # hợp đồng tầng (bên dưới)
+```

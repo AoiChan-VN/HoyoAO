@@ -21,6 +21,8 @@ import { Shell } from '../shell/shell.js';
 import { StorageService } from './services/storage.js';
 import { Indexer } from './services/indexer.js';
 import { DataService } from './services/data.js';
+import { ThemeService } from './services/theme.js';
+import { LocalizationService } from './services/localization.js';
 
 export class Kernel {
   /** @type {'UNINITIALIZED'|'BOOTING'|'RUNNING'|'FAILED'} */
@@ -50,7 +52,7 @@ export class Kernel {
   async boot() {
     try {
       this.#bootState = 'BOOTING';
-      this.#logger.info('boot', 'WEB ADMIN OS — boot sequence initiated');
+      this.#logger.info('boot', 'HoyoAO-OS — boot sequence initiated');
 
       /* Phase 1 — Configuration */
       await this.#config.load('os.config.json');
@@ -60,10 +62,13 @@ export class Kernel {
       /* Phase 2 — Branding */
       await this.#loadBranding();
 
-      /* Phase 3 — Core Services */
+      /* Phase 3 — Core Data & Storage Services */
       this.#initCoreServices();
 
-      /* Phase 4 — Runtime */
+      /* Phase 4 — Theme & Localization Services */
+      await this.#initThemeAndLocalization();
+
+      /* Phase 5 — Runtime */
       this.#registry = new ApplicationRegistry(this.#logger);
       this.#lifecycle = new ApplicationLifecycle(
         this.#registry,
@@ -74,10 +79,10 @@ export class Kernel {
       this.#router = new Router(this.#logger, this.#eventBus);
       this.#logger.info('boot', 'Runtime initialised');
 
-      /* Phase 5 — Application discovery */
+      /* Phase 6 — Application discovery */
       await this.#discoverApplications();
 
-      /* Phase 6 — Mount Shell */
+      /* Phase 7 — Mount Shell */
       const root = document.getElementById('os-root');
       if (!root) throw new Error('Fatal: #os-root element not found');
 
@@ -88,14 +93,16 @@ export class Kernel {
         eventBus: this.#eventBus,
         logger: this.#logger,
         brand: this.#brand,
+        theme: this.#services.get('theme'),
+        localization: this.#services.get('localization'),
       });
       await this.#shell.mount();
       this.#logger.info('boot', 'Shell mounted');
 
-      /* Phase 7 — Start default Application */
+      /* Phase 8 — Start default Application */
       await this.#startDefaultApplication();
 
-      /* Phase 8 — Done */
+      /* Phase 9 — Done */
       this.#bootState = 'RUNNING';
       this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
@@ -115,7 +122,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Core Services Initialisation                             */
+  /*  PRIVATE — Core Services                                            */
   /* ------------------------------------------------------------------ */
 
   #initCoreServices() {
@@ -130,7 +137,23 @@ export class Kernel {
     this.#services.register('config', this.#config);
     this.#services.register('logger', this.#logger);
 
-    this.#logger.info('boot', 'Core services initialised');
+    this.#logger.info('boot', 'Core data & storage services initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Theme & Localization                                     */
+  /* ------------------------------------------------------------------ */
+
+  async #initThemeAndLocalization() {
+    const theme = new ThemeService(this.#config, this.#eventBus, this.#logger);
+    await theme.init();
+    this.#services.register('theme', theme);
+
+    const localization = new LocalizationService(this.#config, this.#eventBus, this.#logger);
+    await localization.init();
+    this.#services.register('localization', localization);
+
+    this.#logger.info('boot', 'Theme & Localization services initialised');
   }
 
   /* ------------------------------------------------------------------ */
@@ -148,10 +171,10 @@ export class Kernel {
         error: err.message,
       });
       this.#brand = {
-        name: 'HoyoAO OS',
+        name: 'HoyoAO-OS',
         owner: 'AoiChan-VN',
         copyright: '© 2026 HoyoAO. All Rights Reserved',
-        logo: { src: '', alt: 'Aoi-OS' },
+        logo: { src: '', alt: 'HoyoAO-OS' },
         links: { support: '#', community: '#', status: '#' },
       };
     }

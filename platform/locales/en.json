@@ -1,0 +1,19 @@
+{
+  "locale": "en",
+  "name": "English",
+  "translations": {
+    "os.name": "HoyoAO-OS",
+    "os.settings": "Settings",
+    "os.diagnostics": "Diagnostics",
+    "nav.os": "OS",
+    "nav.applications": "Applications",
+    "footer.status": "Status",
+    "footer.support": "Support & Community",
+    "app.dashboard.name": "Dashboard",
+    "app.dashboard.description": "System monitoring and data visualization",
+    "state.loading": "Loading...",
+    "state.empty": "No data available",
+    "state.error": "An error occurred",
+    "state.offline": "Offline"
+  }
+} 

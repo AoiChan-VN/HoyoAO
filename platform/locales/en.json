@@ -16,6 +16,15 @@
     "state.error": "An error occurred",
     "state.offline": "Offline",
     "notification.appError.title": "Application error: {app}",
-    "notification.dismiss": "Dismiss"
+    "notification.dismiss": "Dismiss",
+    "settings.title": "Settings",
+    "settings.section.appearance": "Appearance",
+    "settings.section.language": "Language",
+    "settings.appearance.theme": "Theme",
+    "settings.appearance.theme.dark": "Dark",
+    "settings.appearance.theme.light": "Light",
+    "settings.language.current": "Language",
+    "settings.dashboard.title": "Dashboard",
+    "settings.dashboard.showSourceBadge": "Show data source badge"
   }
 }

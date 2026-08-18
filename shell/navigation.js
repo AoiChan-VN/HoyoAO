@@ -2,7 +2,8 @@
  * Shell Navigation (§15, §20)
  *
  * Menu items generated from registry/config (§15).
- * Icons resolved BY NAME through IconRegistry — no hardcoded SVG (§20).
+ * Icons resolved BY NAME through IconRegistry (§20).
+ * Exposes setActive() so the Shell can sync highlight with actual state.
  */
 
 export class ShellNavigation {
@@ -49,6 +50,16 @@ export class ShellNavigation {
     return this.#element;
   }
 
+  /**
+   * Programmatically set the active item (used by Shell to sync state).
+   * @param {string} targetId
+   */
+  setActive(targetId) {
+    if (!this.#element) return;
+    const btn = this.#element.querySelector(`[data-target="${targetId}"]`);
+    if (btn) this.#setActive(btn);
+  }
+
   /* ---- private ---- */
 
   #buildSection(title, items) {
@@ -66,14 +77,12 @@ export class ShellNavigation {
       btn.type = 'button';
       btn.dataset.target = item.id;
 
-      // Icon resolved by name (§20).
       if (item.icon && this.#icons) {
         const iconEl = this.#icons.resolve(item.icon);
         iconEl.classList.add('ui-icon--sm');
         btn.appendChild(iconEl);
       }
 
-      // Localized label (§37).
       const label = item.labelKey
         ? this.#localization.t(item.labelKey)
         : item.label;
@@ -86,7 +95,6 @@ export class ShellNavigation {
       btn.setAttribute('aria-label', label);
 
       btn.addEventListener('click', () => {
-        this.#setActive(btn);
         this.#eventBus.emit('navigation:selected', { target: item.id });
       });
 

@@ -14,6 +14,8 @@
     "state.loading": "Loading...",
     "state.empty": "No data available",
     "state.error": "An error occurred",
-    "state.offline": "Offline"
+    "state.offline": "Offline",
+    "notification.appError.title": "Application error: {app}",
+    "notification.dismiss": "Dismiss"
   }
-} 
+}

@@ -2,10 +2,10 @@
  * OS Kernel — Boot Orchestrator
  *
  * Boot order (§7, §42):
- *   Config → Branding → Core Services → Cache → Theme/Localization
- *   → Notification → Network → Icons (uses cache) → Assets → Settings
- *   → Runtime (Registry → Diagnostics → Lifecycle)
- *   → Routing → Discovery → Shell → Initial navigation → Dev Telemetry
+ *   Config → Branding → Core → Cache → Theme/Localization → Notification
+ *   → Network → Icons → Assets → Settings
+ *   → Runtime (Registry → Installer → Diagnostics → Lifecycle)
+ *   → Routing → Discovery (via Installer) → Shell → Initial nav → Dev Telemetry
  */
 
 import { ConfigService } from './config.js';
@@ -15,6 +15,8 @@ import { ServiceRegistry } from '../runtime/services.js';
 import { ApplicationRegistry } from '../runtime/registry.js';
 import { ApplicationLifecycle } from '../runtime/lifecycle.js';
 import { RouteRegistry } from '../runtime/route-registry.js';
+import { ManifestValidator } from '../runtime/manifest-validator.js';
+import { ApplicationInstaller } from '../runtime/application-installer.js';
 import { Shell } from '../shell/shell.js';
 import { StorageService } from './services/storage.js';
 import { Indexer } from './services/indexer.js';
@@ -43,6 +45,7 @@ export class Kernel {
   #logger;
   #services;
   #registry;
+  #installer;
   #routeRegistry;
   #lifecycle;
   #shell;
@@ -71,7 +74,7 @@ export class Kernel {
       /* Phase 3 — Core Data & Storage Services */
       this.#initCoreServices();
 
-      /* Phase 4 — Cache Service (§25, §41) */
+      /* Phase 4 — Cache Service */
       this.#initCacheService();
 
       /* Phase 5 — Theme & Localization */
@@ -80,18 +83,19 @@ export class Kernel {
       /* Phase 6 — Notification Service */
       this.#initNotificationService();
 
-      /* Phase 7 — Network Service (§24) */
+      /* Phase 7 — Network Service */
       this.#initNetworkService();
 
-      /* Phase 8 — Icon & Asset Registries (icons use cache) */
+      /* Phase 8 — Icon & Asset Registries */
       this.#initIconRegistry();
       await this.#initAssetRegistry();
 
-      /* Phase 9 — Settings Framework (§49) */
+      /* Phase 9 — Settings Framework */
       await this.#initSettings();
 
-      /* Phase 10 — Runtime */
+      /* Phase 10 — Runtime: Registry → Installer → Diagnostics → Lifecycle */
       this.#registry = new ApplicationRegistry(this.#logger);
+      this.#initInstaller();
       this.#initDiagnosticsService();
       this.#lifecycle = new ApplicationLifecycle(
         this.#registry,
@@ -101,10 +105,10 @@ export class Kernel {
       );
       this.#logger.info('boot', 'Runtime initialised');
 
-      /* Phase 11 — Routing (§30) */
+      /* Phase 11 — Routing */
       this.#initRouting();
 
-      /* Phase 12 — Application discovery + register app routes */
+      /* Phase 12 — Discovery via Installer (§40) */
       await this.#discoverApplications();
       this.#registerApplicationRoutes();
 
@@ -178,7 +182,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Cache Service (§25, §41)                                 */
+  /*  PRIVATE — Cache                                                    */
   /* ------------------------------------------------------------------ */
 
   #initCacheService() {
@@ -216,7 +220,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Network Service (§24)                                    */
+  /*  PRIVATE — Network                                                  */
   /* ------------------------------------------------------------------ */
 
   #initNetworkService() {
@@ -227,7 +231,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Icon Registry (uses cache §41, §95)                      */
+  /*  PRIVATE — Icon Registry                                            */
   /* ------------------------------------------------------------------ */
 
   #initIconRegistry() {
@@ -264,7 +268,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Settings Framework (§49)                                 */
+  /*  PRIVATE — Settings                                                 */
   /* ------------------------------------------------------------------ */
 
   async #initSettings() {
@@ -297,6 +301,25 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Installer (§40, §84)                                     */
+  /* ------------------------------------------------------------------ */
+
+  #initInstaller() {
+    const validator = new ManifestValidator(this.#logger);
+    const installer = new ApplicationInstaller({
+      registry: this.#registry,
+      validator,
+      config: this.#config,
+      eventBus: this.#eventBus,
+      logger: this.#logger,
+    });
+
+    this.#installer = installer;
+    this.#services.register('installer', installer);
+    this.#logger.info('boot', 'Application installer initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
   /*  PRIVATE — Diagnostics (§48)                                        */
   /* ------------------------------------------------------------------ */
 
@@ -314,7 +337,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Routing (§30, §64)                                       */
+  /*  PRIVATE — Routing                                                  */
   /* ------------------------------------------------------------------ */
 
   #initRouting() {
@@ -357,6 +380,44 @@ export class Kernel {
       'boot',
       `Registered application routes (total routes: ${this.#routeRegistry.getAll().length})`,
     );
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Discovery via Installer (§40, §75)                       */
+  /* ------------------------------------------------------------------ */
+
+  async #discoverApplications() {
+    const paths = this.#config.get('applications.manifests', []);
+    let installed = 0;
+    let failed = 0;
+
+    for (const path of paths) {
+      try {
+        const res = await fetch(path);
+        if (!res.ok) {
+          this.#logger.warn('boot', `Manifest not found: ${path}`);
+          failed++;
+          continue;
+        }
+
+        const manifest = await res.json();
+        const result = await this.#installer.install(manifest);
+
+        if (result.success) {
+          installed++;
+        } else {
+          failed++;
+          this.#logger.warn('boot', `Install skipped for "${manifest?.id}" (${result.reason})`);
+        }
+      } catch (err) {
+        failed++;
+        this.#logger.warn('boot', `Manifest load error: ${path}`, {
+          error: err.message,
+        });
+      }
+    }
+
+    this.#logger.info('boot', `Discovery complete — ${installed} installed, ${failed} skipped/failed`);
   }
 
   /* ------------------------------------------------------------------ */
@@ -420,34 +481,6 @@ export class Kernel {
         links: { support: '#', community: '#', status: '#' },
       };
     }
-  }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Application discovery                                    */
-  /* ------------------------------------------------------------------ */
-
-  async #discoverApplications() {
-    const paths = this.#config.get('applications.manifests', []);
-    let count = 0;
-
-    for (const path of paths) {
-      try {
-        const res = await fetch(path);
-        if (!res.ok) {
-          this.#logger.warn('boot', `Manifest not found: ${path}`);
-          continue;
-        }
-        const manifest = await res.json();
-        this.#registry.register(manifest);
-        count++;
-      } catch (err) {
-        this.#logger.warn('boot', `Manifest load error: ${path}`, {
-          error: err.message,
-        });
-      }
-    }
-
-    this.#logger.info('boot', `Discovery complete — ${count} app(s) registered`);
   }
 
   /* ------------------------------------------------------------------ */

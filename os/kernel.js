@@ -3,14 +3,11 @@
  *
  * Boot order (§7, §42):
  *   Config → Branding → Core Services → Theme/Localization
- *   → Notification → Icons → Assets → Settings
+ *   → Notification → Network → Icons → Assets → Settings
  *   → Runtime (Registry → Diagnostics → Lifecycle)
  *   → RouteRegistry + OS routes → NavigationService
  *   → Discovery (+ register app routes)
  *   → Shell → Initial navigation → Dev Telemetry
- *
- * NOTE: The legacy `runtime/router.js` Router is superseded by
- * RouteRegistry + NavigationService and is no longer imported here (§71).
  */
 
 import { ConfigService } from './config.js';
@@ -32,6 +29,7 @@ import { IconRegistry } from './services/icon-registry.js';
 import { AssetRegistry } from './services/asset-registry.js';
 import { SettingsService } from './services/settings.js';
 import { NavigationService } from './services/navigation.js';
+import { NetworkService } from './services/network.js';
 import { DevelopmentTelemetryService } from './services/dev-telemetry.js';
 import { DEFAULT_ICONS } from '../platform/icons/default-icons.js';
 import { OS_SETTINGS_SECTIONS, createOSSettingsDefaults } from './settings/os-settings.js';
@@ -80,14 +78,17 @@ export class Kernel {
       /* Phase 5 — Notification Service */
       this.#initNotificationService();
 
-      /* Phase 6 — Icon & Asset Registries */
+      /* Phase 6 — Network Service (§24) */
+      this.#initNetworkService();
+
+      /* Phase 7 — Icon & Asset Registries */
       this.#initIconRegistry();
       await this.#initAssetRegistry();
 
-      /* Phase 7 — Settings Framework (§49) */
+      /* Phase 8 — Settings Framework (§49) */
       await this.#initSettings();
 
-      /* Phase 8 — Runtime: App Registry, Diagnostics, Lifecycle */
+      /* Phase 9 — Runtime: App Registry, Diagnostics, Lifecycle */
       this.#registry = new ApplicationRegistry(this.#logger);
       this.#initDiagnosticsService();
       this.#lifecycle = new ApplicationLifecycle(
@@ -98,14 +99,14 @@ export class Kernel {
       );
       this.#logger.info('boot', 'Runtime initialised');
 
-      /* Phase 9 — Routing: RouteRegistry + OS routes + NavigationService (§30) */
+      /* Phase 10 — Routing (§30) */
       this.#initRouting();
 
-      /* Phase 10 — Application discovery + register app routes */
+      /* Phase 11 — Application discovery + register app routes */
       await this.#discoverApplications();
       this.#registerApplicationRoutes();
 
-      /* Phase 11 — Mount Shell */
+      /* Phase 12 — Mount Shell */
       const root = document.getElementById('os-root');
       if (!root) throw new Error('Fatal: #os-root element not found');
 
@@ -124,18 +125,19 @@ export class Kernel {
         assets: this.#services.get('assets'),
         settings: this.#services.get('settings'),
         navigation: this.#services.get('navigation'),
+        network: this.#services.get('network'),
         lifecycle: this.#lifecycle,
       });
       await this.#shell.mount();
       this.#logger.info('boot', 'Shell mounted');
 
-      /* Phase 12 — Initial navigation (deep-link or default app) */
+      /* Phase 13 — Initial navigation (deep-link or default app) */
       this.#navigateInitial();
 
-      /* Phase 13 — Development telemetry (SIMULATED, dev-mode only) */
+      /* Phase 14 — Development telemetry (SIMULATED, dev-mode only) */
       this.#startDevTelemetryIfEnabled();
 
-      /* Phase 14 — Done */
+      /* Phase 15 — Done */
       this.#bootState = 'RUNNING';
       this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
@@ -197,6 +199,17 @@ export class Kernel {
     const notifications = new NotificationService(this.#eventBus, this.#logger);
     this.#services.register('notifications', notifications);
     this.#logger.info('boot', 'Notification service initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Network Service (§24)                                    */
+  /* ------------------------------------------------------------------ */
+
+  #initNetworkService() {
+    const network = new NetworkService(this.#eventBus, this.#logger);
+    network.init();
+    this.#services.register('network', network);
+    this.#logger.info('boot', 'Network service initialised');
   }
 
   /* ------------------------------------------------------------------ */
@@ -290,13 +303,9 @@ export class Kernel {
   /* ------------------------------------------------------------------ */
 
   #initRouting() {
-    // Route registry is the source of truth for all routes (§64).
     this.#routeRegistry = new RouteRegistry(this.#logger);
-
-    // Register OS-owned routes.
     this.#routeRegistry.registerMany(OS_ROUTES);
 
-    // Navigation service orchestrates navigation + URL sync + events.
     const navigation = new NavigationService({
       routeRegistry: this.#routeRegistry,
       eventBus: this.#eventBus,
@@ -349,7 +358,6 @@ export class Kernel {
     const ok = navigation.navigate(initialPath);
 
     if (!ok) {
-      // Fallback if the deep-link/default route is somehow missing.
       this.#logger.warn('boot', `Initial navigation to "${initialPath}" failed`);
     }
   }

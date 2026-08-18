@@ -93,7 +93,7 @@ export class Kernel {
       /* Phase 9 — Settings Framework */
       await this.#initSettings();
 
-      /* Phase 10 — Runtime: Registry → Installer → Diagnostics → Lifecycle */
+      /* Phase 10 — Runtime */
       this.#registry = new ApplicationRegistry(this.#logger);
       this.#initInstaller();
       this.#initDiagnosticsService();
@@ -108,7 +108,7 @@ export class Kernel {
       /* Phase 11 — Routing */
       this.#initRouting();
 
-      /* Phase 12 — Discovery via Installer (§40) */
+      /* Phase 12 — Discovery via Installer */
       await this.#discoverApplications();
       this.#registerApplicationRoutes();
 
@@ -132,6 +132,7 @@ export class Kernel {
         settings: this.#services.get('settings'),
         navigation: this.#services.get('navigation'),
         network: this.#services.get('network'),
+        installer: this.#installer,
         lifecycle: this.#lifecycle,
       });
       await this.#shell.mount();

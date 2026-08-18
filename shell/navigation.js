@@ -1,22 +1,22 @@
 /**
- * Shell Navigation (§15)
+ * Shell Navigation (§15, §20)
  *
- * Generates menu items from the Application Registry.
- * Clearly separates OS navigation from Application navigation.
- * Does NOT duplicate menu definitions (§15).
- * All UI text is localized via LocalizationService (§37).
+ * Menu items generated from registry/config (§15).
+ * Icons resolved BY NAME through IconRegistry — no hardcoded SVG (§20).
  */
 
 export class ShellNavigation {
   #registry;
   #eventBus;
   #localization;
+  #icons;
   #element = null;
 
-  constructor(registry, eventBus, localization) {
+  constructor(registry, eventBus, localization, icons) {
     this.#registry = registry;
     this.#eventBus = eventBus;
     this.#localization = localization;
+    this.#icons = icons;
   }
 
   render() {
@@ -28,8 +28,8 @@ export class ShellNavigation {
     const osSection = this.#buildSection(
       this.#localization.t('nav.os'),
       [
-        { id: 'os-settings', labelKey: 'os.settings' },
-        { id: 'os-diagnostics', labelKey: 'os.diagnostics' },
+        { id: 'os-settings', labelKey: 'os.settings', icon: 'settings' },
+        { id: 'os-diagnostics', labelKey: 'os.diagnostics', icon: 'diagnostics' },
       ],
     );
 
@@ -38,6 +38,7 @@ export class ShellNavigation {
     const appItems = apps.map((entry) => ({
       id: entry.manifest.id,
       label: entry.manifest.name,
+      icon: entry.manifest.icon || 'app',
     }));
     const appSection = this.#buildSection(
       this.#localization.t('nav.applications'),
@@ -65,11 +66,23 @@ export class ShellNavigation {
       btn.type = 'button';
       btn.dataset.target = item.id;
 
-      // Localized label: use labelKey if available, else direct label (§37)
+      // Icon resolved by name (§20).
+      if (item.icon && this.#icons) {
+        const iconEl = this.#icons.resolve(item.icon);
+        iconEl.classList.add('ui-icon--sm');
+        btn.appendChild(iconEl);
+      }
+
+      // Localized label (§37).
       const label = item.labelKey
         ? this.#localization.t(item.labelKey)
         : item.label;
-      btn.textContent = label;
+
+      const labelSpan = document.createElement('span');
+      labelSpan.className = 'os-shell__nav-item-label';
+      labelSpan.textContent = label;
+      btn.appendChild(labelSpan);
+
       btn.setAttribute('aria-label', label);
 
       btn.addEventListener('click', () => {

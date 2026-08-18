@@ -3,7 +3,7 @@
  *
  * Boot order (§7, §42):
  *   Config → Branding → Core Services → Theme/Localization
- *   → Notification → Icons → Assets
+ *   → Notification → Icons → Assets → Settings
  *   → Runtime (Registry → Diagnostics → Lifecycle → Router)
  *   → Discovery → Shell → Default App → Dev Telemetry
  */
@@ -25,8 +25,10 @@ import { NotificationService } from './services/notification.js';
 import { DiagnosticsService } from './services/diagnostics.js';
 import { IconRegistry } from './services/icon-registry.js';
 import { AssetRegistry } from './services/asset-registry.js';
+import { SettingsService } from './services/settings.js';
 import { DevelopmentTelemetryService } from './services/dev-telemetry.js';
 import { DEFAULT_ICONS } from '../platform/icons/default-icons.js';
+import { OS_SETTINGS_SECTIONS, createOSSettingsDefaults } from './settings/os-settings.js';
 
 export class Kernel {
   /** @type {'UNINITIALIZED'|'BOOTING'|'RUNNING'|'FAILED'} */
@@ -71,11 +73,14 @@ export class Kernel {
       /* Phase 5 — Notification Service */
       this.#initNotificationService();
 
-      /* Phase 6 — Icon & Asset Registries (§20, §35) */
+      /* Phase 6 — Icon & Asset Registries */
       this.#initIconRegistry();
       await this.#initAssetRegistry();
 
-      /* Phase 7 — Runtime: Registry → Diagnostics → Lifecycle → Router */
+      /* Phase 7 — Settings Framework (§49) */
+      await this.#initSettings();
+
+      /* Phase 8 — Runtime */
       this.#registry = new ApplicationRegistry(this.#logger);
       this.#initDiagnosticsService();
 
@@ -88,10 +93,10 @@ export class Kernel {
       this.#router = new Router(this.#logger, this.#eventBus);
       this.#logger.info('boot', 'Runtime initialised');
 
-      /* Phase 8 — Application discovery */
+      /* Phase 9 — Application discovery */
       await this.#discoverApplications();
 
-      /* Phase 9 — Mount Shell */
+      /* Phase 10 — Mount Shell */
       const root = document.getElementById('os-root');
       if (!root) throw new Error('Fatal: #os-root element not found');
 
@@ -107,17 +112,19 @@ export class Kernel {
         notifications: this.#services.get('notifications'),
         icons: this.#services.get('icons'),
         assets: this.#services.get('assets'),
+        settings: this.#services.get('settings'),
+        lifecycle: this.#lifecycle,
       });
       await this.#shell.mount();
       this.#logger.info('boot', 'Shell mounted');
 
-      /* Phase 10 — Start default Application */
+      /* Phase 11 — Start default Application */
       await this.#startDefaultApplication();
 
-      /* Phase 11 — Development telemetry (SIMULATED, dev-mode only) */
+      /* Phase 12 — Development telemetry (SIMULATED, dev-mode only) */
       this.#startDevTelemetryIfEnabled();
 
-      /* Phase 12 — Done */
+      /* Phase 13 — Done */
       this.#bootState = 'RUNNING';
       this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
@@ -182,7 +189,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Icon Registry (§20)                                      */
+  /*  PRIVATE — Icon Registry                                            */
   /* ------------------------------------------------------------------ */
 
   #initIconRegistry() {
@@ -193,7 +200,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Asset Registry (§35)                                     */
+  /*  PRIVATE — Asset Registry                                           */
   /* ------------------------------------------------------------------ */
 
   async #initAssetRegistry() {
@@ -215,6 +222,43 @@ export class Kernel {
 
     this.#services.register('assets', assets);
     this.#logger.info('boot', 'Asset registry initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Settings Framework (§49)                                 */
+  /* ------------------------------------------------------------------ */
+
+  async #initSettings() {
+    const settings = new SettingsService(
+      this.#services.get('storage'),
+      this.#eventBus,
+      this.#logger,
+    );
+
+    // Effects context available to apply() callbacks.
+    settings.setApplyContext({
+      theme: this.#services.get('theme'),
+      localization: this.#services.get('localization'),
+      notifications: this.#services.get('notifications'),
+    });
+
+    // Register OS settings (§49).
+    for (const section of OS_SETTINGS_SECTIONS) {
+      settings.registerSection(section);
+    }
+    settings.registerMany(createOSSettingsDefaults(this.#config));
+
+    // Ensure selectable themes are loaded before applying persisted choice.
+    const theme = this.#services.get('theme');
+    await theme.loadTheme('dark');
+    await theme.loadTheme('light');
+
+    // Load user preferences and apply them (overrides config defaults).
+    await settings.loadPersisted();
+    await settings.applyAll();
+
+    this.#services.register('settings', settings);
+    this.#logger.info('boot', 'Settings framework initialised');
   }
 
   /* ------------------------------------------------------------------ */
@@ -366,4 +410,4 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => kernel.boot());
 } else {
   kernel.boot();
-} 
+}

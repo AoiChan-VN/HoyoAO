@@ -3,8 +3,9 @@
  *
  * Boot order (§7, §42):
  *   Config → Branding → Core Services → Theme/Localization
- *   → Notification → Runtime (Registry → Diagnostics → Lifecycle → Router)
- *   → Discovery → Shell (+NotificationHost) → Default App → Dev Telemetry
+ *   → Notification → Icons → Assets
+ *   → Runtime (Registry → Diagnostics → Lifecycle → Router)
+ *   → Discovery → Shell → Default App → Dev Telemetry
  */
 
 import { ConfigService } from './config.js';
@@ -22,7 +23,10 @@ import { ThemeService } from './services/theme.js';
 import { LocalizationService } from './services/localization.js';
 import { NotificationService } from './services/notification.js';
 import { DiagnosticsService } from './services/diagnostics.js';
+import { IconRegistry } from './services/icon-registry.js';
+import { AssetRegistry } from './services/asset-registry.js';
 import { DevelopmentTelemetryService } from './services/dev-telemetry.js';
+import { DEFAULT_ICONS } from '../platform/icons/default-icons.js';
 
 export class Kernel {
   /** @type {'UNINITIALIZED'|'BOOTING'|'RUNNING'|'FAILED'} */
@@ -67,7 +71,11 @@ export class Kernel {
       /* Phase 5 — Notification Service */
       this.#initNotificationService();
 
-      /* Phase 6 — Runtime: Registry → Diagnostics → Lifecycle → Router */
+      /* Phase 6 — Icon & Asset Registries (§20, §35) */
+      this.#initIconRegistry();
+      await this.#initAssetRegistry();
+
+      /* Phase 7 — Runtime: Registry → Diagnostics → Lifecycle → Router */
       this.#registry = new ApplicationRegistry(this.#logger);
       this.#initDiagnosticsService();
 
@@ -80,10 +88,10 @@ export class Kernel {
       this.#router = new Router(this.#logger, this.#eventBus);
       this.#logger.info('boot', 'Runtime initialised');
 
-      /* Phase 7 — Application discovery */
+      /* Phase 8 — Application discovery */
       await this.#discoverApplications();
 
-      /* Phase 8 — Mount Shell (with NotificationHost) */
+      /* Phase 9 — Mount Shell */
       const root = document.getElementById('os-root');
       if (!root) throw new Error('Fatal: #os-root element not found');
 
@@ -97,17 +105,19 @@ export class Kernel {
         theme: this.#services.get('theme'),
         localization: this.#services.get('localization'),
         notifications: this.#services.get('notifications'),
+        icons: this.#services.get('icons'),
+        assets: this.#services.get('assets'),
       });
       await this.#shell.mount();
       this.#logger.info('boot', 'Shell mounted');
 
-      /* Phase 9 — Start default Application */
+      /* Phase 10 — Start default Application */
       await this.#startDefaultApplication();
 
-      /* Phase 10 — Development telemetry (SIMULATED, dev-mode only) */
+      /* Phase 11 — Development telemetry (SIMULATED, dev-mode only) */
       this.#startDevTelemetryIfEnabled();
 
-      /* Phase 11 — Done */
+      /* Phase 12 — Done */
       this.#bootState = 'RUNNING';
       this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
@@ -162,7 +172,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Notification Service                                     */
+  /*  PRIVATE — Notification                                             */
   /* ------------------------------------------------------------------ */
 
   #initNotificationService() {
@@ -172,7 +182,43 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Diagnostics Service (§48)                                */
+  /*  PRIVATE — Icon Registry (§20)                                      */
+  /* ------------------------------------------------------------------ */
+
+  #initIconRegistry() {
+    const icons = new IconRegistry(this.#logger);
+    icons.registerMany(DEFAULT_ICONS);
+    this.#services.register('icons', icons);
+    this.#logger.info('boot', 'Icon registry initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Asset Registry (§35)                                     */
+  /* ------------------------------------------------------------------ */
+
+  async #initAssetRegistry() {
+    const assets = new AssetRegistry(this.#logger);
+
+    try {
+      const res = await fetch('platform/assets/asset-manifest.json');
+      if (res.ok) {
+        const manifest = await res.json();
+        assets.registerMany(manifest);
+      } else {
+        this.#logger.warn('boot', `Asset manifest not found (HTTP ${res.status})`);
+      }
+    } catch (err) {
+      this.#logger.warn('boot', 'Failed to load asset manifest', {
+        error: err.message,
+      });
+    }
+
+    this.#services.register('assets', assets);
+    this.#logger.info('boot', 'Asset registry initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Diagnostics (§48)                                        */
   /* ------------------------------------------------------------------ */
 
   #initDiagnosticsService() {
@@ -227,7 +273,8 @@ export class Kernel {
         name: 'WEB ADMIN OS',
         owner: 'HoyoAO',
         copyright: '© 2026 HoyoAO. All Rights Reserved',
-        logo: { src: '', alt: 'WEB ADMIN OS' },
+        logoAsset: 'brand.logo',
+        faviconAsset: 'brand.favicon',
         links: { support: '#', community: '#', status: '#' },
       };
     }
@@ -319,4 +366,4 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => kernel.boot());
 } else {
   kernel.boot();
-}
+} 

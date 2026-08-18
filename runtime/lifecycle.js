@@ -2,7 +2,7 @@
  * Application Lifecycle Manager (§32, §33)
  *
  * ServiceContext (§5, §91, §92):
- *   - network: granted ONLY to apps declaring the "network" permission (§92).
+ *   - cache: granted to all apps as basic performance infrastructure (§41).
  */
 
 const VALID_STATES = new Set([
@@ -117,6 +117,7 @@ export class ApplicationLifecycle {
     context.assets = this.#services.get('assets');
     context.settings = this.#services.get('settings');
     context.navigation = this.#services.get('navigation');
+    context.cache = this.#services.get('cache');
 
     // Data access requires data.read permission.
     if (permissions.has('data.read')) {

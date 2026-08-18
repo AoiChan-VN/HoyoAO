@@ -1,20 +1,19 @@
 /**
- * Shell Footer (§78)
+ * Shell Footer (§78, §20)
  *
- * Line 1: Status | Support & Community
- * Line 2: [Logo] © 2026 HoyoAO. All Rights Reserved
- *
- * All branding is configuration-driven (§79).
- * All UI text is localized via LocalizationService (§37).
+ * Branding is configuration-driven (§79). Logo resolved through
+ * AssetRegistry by name — never hardcoded (§20, §35).
  */
 
 export class ShellFooter {
   #brand;
   #localization;
+  #assets;
 
-  constructor(brand, localization) {
+  constructor(brand, localization, assets) {
     this.#brand = brand;
     this.#localization = localization;
+    this.#assets = assets;
   }
 
   render() {
@@ -45,9 +44,13 @@ export class ShellFooter {
     const line2 = document.createElement('div');
     line2.className = 'os-shell__footer-line os-shell__footer-copyright';
 
-    if (this.#brand.logo?.src) {
+    const logoUrl = this.#brand.logoAsset
+      ? this.#assets.resolve(this.#brand.logoAsset)
+      : null;
+
+    if (logoUrl) {
       const logo = document.createElement('img');
-      logo.src = this.#brand.logo.src;
+      logo.src = logoUrl;
       logo.alt = '';
       logo.className = 'os-shell__footer-logo';
       line2.appendChild(logo);

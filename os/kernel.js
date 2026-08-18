@@ -2,12 +2,10 @@
  * OS Kernel — Boot Orchestrator
  *
  * Boot order (§7, §42):
- *   Config → Branding → Core Services → Theme/Localization
- *   → Notification → Network → Icons → Assets → Settings
+ *   Config → Branding → Core Services → Cache → Theme/Localization
+ *   → Notification → Network → Icons (uses cache) → Assets → Settings
  *   → Runtime (Registry → Diagnostics → Lifecycle)
- *   → RouteRegistry + OS routes → NavigationService
- *   → Discovery (+ register app routes)
- *   → Shell → Initial navigation → Dev Telemetry
+ *   → Routing → Discovery → Shell → Initial navigation → Dev Telemetry
  */
 
 import { ConfigService } from './config.js';
@@ -21,6 +19,7 @@ import { Shell } from '../shell/shell.js';
 import { StorageService } from './services/storage.js';
 import { Indexer } from './services/indexer.js';
 import { DataService } from './services/data.js';
+import { CacheService } from './services/cache.js';
 import { ThemeService } from './services/theme.js';
 import { LocalizationService } from './services/localization.js';
 import { NotificationService } from './services/notification.js';
@@ -72,23 +71,26 @@ export class Kernel {
       /* Phase 3 — Core Data & Storage Services */
       this.#initCoreServices();
 
-      /* Phase 4 — Theme & Localization */
+      /* Phase 4 — Cache Service (§25, §41) */
+      this.#initCacheService();
+
+      /* Phase 5 — Theme & Localization */
       await this.#initThemeAndLocalization();
 
-      /* Phase 5 — Notification Service */
+      /* Phase 6 — Notification Service */
       this.#initNotificationService();
 
-      /* Phase 6 — Network Service (§24) */
+      /* Phase 7 — Network Service (§24) */
       this.#initNetworkService();
 
-      /* Phase 7 — Icon & Asset Registries */
+      /* Phase 8 — Icon & Asset Registries (icons use cache) */
       this.#initIconRegistry();
       await this.#initAssetRegistry();
 
-      /* Phase 8 — Settings Framework (§49) */
+      /* Phase 9 — Settings Framework (§49) */
       await this.#initSettings();
 
-      /* Phase 9 — Runtime: App Registry, Diagnostics, Lifecycle */
+      /* Phase 10 — Runtime */
       this.#registry = new ApplicationRegistry(this.#logger);
       this.#initDiagnosticsService();
       this.#lifecycle = new ApplicationLifecycle(
@@ -99,14 +101,14 @@ export class Kernel {
       );
       this.#logger.info('boot', 'Runtime initialised');
 
-      /* Phase 10 — Routing (§30) */
+      /* Phase 11 — Routing (§30) */
       this.#initRouting();
 
-      /* Phase 11 — Application discovery + register app routes */
+      /* Phase 12 — Application discovery + register app routes */
       await this.#discoverApplications();
       this.#registerApplicationRoutes();
 
-      /* Phase 12 — Mount Shell */
+      /* Phase 13 — Mount Shell */
       const root = document.getElementById('os-root');
       if (!root) throw new Error('Fatal: #os-root element not found');
 
@@ -131,13 +133,13 @@ export class Kernel {
       await this.#shell.mount();
       this.#logger.info('boot', 'Shell mounted');
 
-      /* Phase 13 — Initial navigation (deep-link or default app) */
+      /* Phase 14 — Initial navigation */
       this.#navigateInitial();
 
-      /* Phase 14 — Development telemetry (SIMULATED, dev-mode only) */
+      /* Phase 15 — Development telemetry (SIMULATED, dev-mode only) */
       this.#startDevTelemetryIfEnabled();
 
-      /* Phase 15 — Done */
+      /* Phase 16 — Done */
       this.#bootState = 'RUNNING';
       this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
@@ -173,6 +175,18 @@ export class Kernel {
     this.#services.register('logger', this.#logger);
 
     this.#logger.info('boot', 'Core data & storage services initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Cache Service (§25, §41)                                 */
+  /* ------------------------------------------------------------------ */
+
+  #initCacheService() {
+    const cache = new CacheService(this.#eventBus, this.#logger, {
+      maxEntries: this.#config.get('cache.maxEntries', 200),
+    });
+    this.#services.register('cache', cache);
+    this.#logger.info('boot', 'Cache service initialised');
   }
 
   /* ------------------------------------------------------------------ */
@@ -213,14 +227,15 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Icon Registry                                            */
+  /*  PRIVATE — Icon Registry (uses cache §41, §95)                      */
   /* ------------------------------------------------------------------ */
 
   #initIconRegistry() {
-    const icons = new IconRegistry(this.#logger);
+    const iconsCache = this.#services.get('cache').getPartition('icons');
+    const icons = new IconRegistry(this.#logger, iconsCache);
     icons.registerMany(DEFAULT_ICONS);
     this.#services.register('icons', icons);
-    this.#logger.info('boot', 'Icon registry initialised');
+    this.#logger.info('boot', 'Icon registry initialised (cache-backed)');
   }
 
   /* ------------------------------------------------------------------ */
@@ -319,7 +334,6 @@ export class Kernel {
     this.#logger.info('boot', 'Routing initialised');
   }
 
-  /** Register application routes from manifests (§30, §31). */
   #registerApplicationRoutes() {
     for (const entry of this.#registry.getAll()) {
       const manifest = entry.manifest;

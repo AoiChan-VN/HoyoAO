@@ -1,0 +1,62 @@
+/* ================================================================== */
+/*  SETTINGS VIEW (§52, §21 tokens)                                    */
+/* ================================================================== */
+
+.settings-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  max-width: 720px;
+}
+
+.settings-view__title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.settings-view__group-heading {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin: var(--space-md) 0 0 0;
+}
+
+.settings-view__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.settings-view__section {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.settings-view__section-title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.settings-view__row {
+  padding: var(--space-sm) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.settings-view__row:first-of-type {
+  border-top: none;
+}
+
+@media (max-width: 600px) {
+  .settings-view {
+    max-width: none;
+  }
+} 

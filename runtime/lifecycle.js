@@ -2,8 +2,8 @@
  * Application Lifecycle Manager (§32, §33)
  *
  * ServiceContext (§5, §91, §92):
- *   - settings: granted to all apps so they can register their own
- *     settings definitions (§49).
+ *   - navigation: granted to all apps so they can participate in
+ *     application-aware routing (§30).
  */
 
 const VALID_STATES = new Set([
@@ -117,6 +117,7 @@ export class ApplicationLifecycle {
     context.icons = this.#services.get('icons');
     context.assets = this.#services.get('assets');
     context.settings = this.#services.get('settings');
+    context.navigation = this.#services.get('navigation');
 
     // Data access requires data.read permission.
     if (permissions.has('data.read')) {

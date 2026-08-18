@@ -2,7 +2,7 @@
   "id": "dashboard",
   "name": "Dashboard",
   "version": "1.0.0",
-  "description": "System monitoring, data visualization, and indexed data overview.",
+  "description": "Indexed data overview, system monitoring, and data inspection.",
   "entry": "applications/dashboard/app.js",
   "icon": "dashboard",
   "permissions": [
@@ -24,4 +24,4 @@
   "lifecycle": {
     "autoStart": false
   }
-} 
+}

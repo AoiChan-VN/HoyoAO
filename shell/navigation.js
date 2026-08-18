@@ -1,20 +1,22 @@
 /**
- * Shell Navigation (§15, §20)
+ * Shell Navigation (§15, §20, §64)
  *
- * Menu items generated from registry/config (§15).
+ * Menu items are GENERATED from the RouteRegistry (§15, §64).
+ *   - OS section: routes with kind 'os'
+ *   - Applications section: routes with kind 'application' (one per app)
  * Icons resolved BY NAME through IconRegistry (§20).
- * Exposes setActive() so the Shell can sync highlight with actual state.
+ * Items emit "navigation:selected" with a path; the Shell navigates.
  */
 
 export class ShellNavigation {
-  #registry;
+  #routeRegistry;
   #eventBus;
   #localization;
   #icons;
   #element = null;
 
-  constructor(registry, eventBus, localization, icons) {
-    this.#registry = registry;
+  constructor(routeRegistry, eventBus, localization, icons) {
+    this.#routeRegistry = routeRegistry;
     this.#eventBus = eventBus;
     this.#localization = localization;
     this.#icons = icons;
@@ -25,25 +27,18 @@ export class ShellNavigation {
     this.#element.className = 'os-shell__sidebar';
     this.#element.setAttribute('aria-label', this.#localization.t('nav.os'));
 
-    /* OS section */
+    /* OS section — from RouteRegistry */
+    const osRoutes = this.#routeRegistry.getOSRoutes();
     const osSection = this.#buildSection(
       this.#localization.t('nav.os'),
-      [
-        { id: 'os-settings', labelKey: 'os.settings', icon: 'settings' },
-        { id: 'os-diagnostics', labelKey: 'os.diagnostics', icon: 'diagnostics' },
-      ],
+      osRoutes,
     );
 
-    /* Applications section — generated from registry (§15) */
-    const apps = this.#registry.getAll();
-    const appItems = apps.map((entry) => ({
-      id: entry.manifest.id,
-      label: entry.manifest.name,
-      icon: entry.manifest.icon || 'app',
-    }));
+    /* Applications section — one entry per application */
+    const appRoutes = this.#primaryAppRoutes();
     const appSection = this.#buildSection(
       this.#localization.t('nav.applications'),
-      appItems,
+      appRoutes,
     );
 
     this.#element.append(osSection, appSection);
@@ -51,18 +46,41 @@ export class ShellNavigation {
   }
 
   /**
-   * Programmatically set the active item (used by Shell to sync state).
-   * @param {string} targetId
+   * Highlight the item matching a path (called by Shell after navigation).
+   * @param {string} path
    */
-  setActive(targetId) {
+  setActivePath(path) {
     if (!this.#element) return;
-    const btn = this.#element.querySelector(`[data-target="${targetId}"]`);
-    if (btn) this.#setActive(btn);
+    const btn = this.#element.querySelector(`[data-path="${path}"]`);
+    if (!btn) return;
+
+    this.#element
+      .querySelectorAll('.os-shell__nav-item')
+      .forEach((el) => el.classList.remove('active'));
+    btn.classList.add('active');
   }
 
   /* ---- private ---- */
 
-  #buildSection(title, items) {
+  /** One primary route per application (the "/apps/{id}" route). */
+  #primaryAppRoutes() {
+    const appRoutes = this.#routeRegistry.getApplicationRoutes();
+    const byApp = new Map();
+
+    for (const route of appRoutes) {
+      const appId = route.scope;
+      const preferred = `/apps/${appId}`;
+      if (!byApp.has(appId)) {
+        byApp.set(appId, route);
+      } else if (route.path === preferred) {
+        byApp.set(appId, route);
+      }
+    }
+
+    return Array.from(byApp.values());
+  }
+
+  #buildSection(title, routes) {
     const section = document.createElement('div');
     section.className = 'os-shell__nav-section';
 
@@ -71,43 +89,40 @@ export class ShellNavigation {
     heading.textContent = title;
     section.appendChild(heading);
 
-    for (const item of items) {
-      const btn = document.createElement('button');
-      btn.className = 'os-shell__nav-item';
-      btn.type = 'button';
-      btn.dataset.target = item.id;
-
-      if (item.icon && this.#icons) {
-        const iconEl = this.#icons.resolve(item.icon);
-        iconEl.classList.add('ui-icon--sm');
-        btn.appendChild(iconEl);
-      }
-
-      const label = item.labelKey
-        ? this.#localization.t(item.labelKey)
-        : item.label;
-
-      const labelSpan = document.createElement('span');
-      labelSpan.className = 'os-shell__nav-item-label';
-      labelSpan.textContent = label;
-      btn.appendChild(labelSpan);
-
-      btn.setAttribute('aria-label', label);
-
-      btn.addEventListener('click', () => {
-        this.#eventBus.emit('navigation:selected', { target: item.id });
-      });
-
-      section.appendChild(btn);
+    for (const route of routes) {
+      section.appendChild(this.#buildItem(route));
     }
 
     return section;
   }
 
-  #setActive(activeBtn) {
-    this.#element
-      .querySelectorAll('.os-shell__nav-item')
-      .forEach((el) => el.classList.remove('active'));
-    activeBtn.classList.add('active');
+  #buildItem(route) {
+    const btn = document.createElement('button');
+    btn.className = 'os-shell__nav-item';
+    btn.type = 'button';
+    btn.dataset.path = route.path;
+
+    if (route.icon && this.#icons) {
+      const iconEl = this.#icons.resolve(route.icon);
+      iconEl.classList.add('ui-icon--sm');
+      btn.appendChild(iconEl);
+    }
+
+    const label = route.titleKey
+      ? this.#localization.t(route.titleKey)
+      : (route.title || route.path);
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'os-shell__nav-item-label';
+    labelSpan.textContent = label;
+    btn.appendChild(labelSpan);
+
+    btn.setAttribute('aria-label', label);
+
+    btn.addEventListener('click', () => {
+      this.#eventBus.emit('navigation:selected', { path: route.path });
+    });
+
+    return btn;
   }
 }

@@ -4,10 +4,8 @@
  * Responsibilities (§7):
  *   Boot → Load config → Init Core → Init Services
  *   → Init Runtime → Discover Apps → Mount Shell
- *   → Start requested App → Handle fatal boot errors
- *
- * This module is the SINGLE entry point of the Web OS.
- * It does NOT contain application business logic.
+ *   → Start requested App → Start dev telemetry (if enabled)
+ *   → Handle fatal boot errors
  */
 
 import { ConfigService } from './config.js';
@@ -23,6 +21,7 @@ import { Indexer } from './services/indexer.js';
 import { DataService } from './services/data.js';
 import { ThemeService } from './services/theme.js';
 import { LocalizationService } from './services/localization.js';
+import { DevelopmentTelemetryService } from './services/dev-telemetry.js';
 
 export class Kernel {
   /** @type {'UNINITIALIZED'|'BOOTING'|'RUNNING'|'FAILED'} */
@@ -45,14 +44,10 @@ export class Kernel {
     this.#services = new ServiceRegistry(this.#logger);
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  PUBLIC API                                                         */
-  /* ------------------------------------------------------------------ */
-
   async boot() {
     try {
       this.#bootState = 'BOOTING';
-      this.#logger.info('boot', 'HoyoAO-OS — boot sequence initiated');
+      this.#logger.info('boot', 'WEB ADMIN OS — boot sequence initiated');
 
       /* Phase 1 — Configuration */
       await this.#config.load('os.config.json');
@@ -102,7 +97,10 @@ export class Kernel {
       /* Phase 8 — Start default Application */
       await this.#startDefaultApplication();
 
-      /* Phase 9 — Done */
+      /* Phase 9 — Development telemetry (SIMULATED, dev-mode only) */
+      this.#startDevTelemetryIfEnabled();
+
+      /* Phase 10 — Done */
       this.#bootState = 'RUNNING';
       this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
@@ -157,6 +155,27 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Development Telemetry (§45)                              */
+  /* ------------------------------------------------------------------ */
+
+  #startDevTelemetryIfEnabled() {
+    const mode = this.#config.get('os.mode', 'production');
+    if (mode !== 'development') {
+      this.#logger.info('boot', 'Development telemetry skipped (not development mode)');
+      return;
+    }
+
+    const telemetry = new DevelopmentTelemetryService(
+      this.#services.get('data'),
+      this.#logger,
+      { intervalMs: this.#config.get('devTelemetry.intervalMs', 2000) },
+    );
+    telemetry.start();
+    this.#services.register('devTelemetry', telemetry);
+    this.#logger.warn('boot', 'Development telemetry ACTIVE — data is SIMULATED (§45)');
+  }
+
+  /* ------------------------------------------------------------------ */
   /*  PRIVATE — Branding                                                 */
   /* ------------------------------------------------------------------ */
 
@@ -171,10 +190,10 @@ export class Kernel {
         error: err.message,
       });
       this.#brand = {
-        name: 'HoyoAO-OS',
-        owner: 'AoiChan-VN',
+        name: 'WEB ADMIN OS',
+        owner: 'HoyoAO',
         copyright: '© 2026 HoyoAO. All Rights Reserved',
-        logo: { src: '', alt: 'HoyoAO-OS' },
+        logo: { src: '', alt: 'WEB ADMIN OS' },
         links: { support: '#', community: '#', status: '#' },
       };
     }
@@ -266,4 +285,4 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => kernel.boot());
 } else {
   kernel.boot();
-} 
+}

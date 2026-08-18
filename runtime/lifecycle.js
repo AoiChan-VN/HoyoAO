@@ -2,8 +2,7 @@
  * Application Lifecycle Manager (§32, §33)
  *
  * ServiceContext (§5, §91, §92):
- *   - navigation: granted to all apps so they can participate in
- *     application-aware routing (§30).
+ *   - network: granted ONLY to apps declaring the "network" permission (§92).
  */
 
 const VALID_STATES = new Set([
@@ -128,6 +127,11 @@ export class ApplicationLifecycle {
     // Storage access requires explicit permission.
     if (permissions.has('storage.read') || permissions.has('storage.write')) {
       context.storage = this.#services.get('storage');
+    }
+
+    // Network access requires explicit permission (§92 least privilege).
+    if (permissions.has('network')) {
+      context.network = this.#services.get('network');
     }
 
     // System status + diagnostics access (§92 least privilege).

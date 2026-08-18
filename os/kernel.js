@@ -1,11 +1,10 @@
 /**
  * OS Kernel — Boot Orchestrator
  *
- * Responsibilities (§7):
- *   Boot → Load config → Init Core → Init Services
- *   → Init Runtime → Discover Apps → Mount Shell
- *   → Start requested App → Start dev telemetry (if enabled)
- *   → Handle fatal boot errors
+ * Boot order (§7, §42):
+ *   Config → Branding → Core Services → Theme/Localization
+ *   → Notification → Runtime (Registry → Diagnostics → Lifecycle → Router)
+ *   → Discovery → Shell (+NotificationHost) → Default App → Dev Telemetry
  */
 
 import { ConfigService } from './config.js';
@@ -21,6 +20,8 @@ import { Indexer } from './services/indexer.js';
 import { DataService } from './services/data.js';
 import { ThemeService } from './services/theme.js';
 import { LocalizationService } from './services/localization.js';
+import { NotificationService } from './services/notification.js';
+import { DiagnosticsService } from './services/diagnostics.js';
 import { DevelopmentTelemetryService } from './services/dev-telemetry.js';
 
 export class Kernel {
@@ -60,11 +61,16 @@ export class Kernel {
       /* Phase 3 — Core Data & Storage Services */
       this.#initCoreServices();
 
-      /* Phase 4 — Theme & Localization Services */
+      /* Phase 4 — Theme & Localization */
       await this.#initThemeAndLocalization();
 
-      /* Phase 5 — Runtime */
+      /* Phase 5 — Notification Service */
+      this.#initNotificationService();
+
+      /* Phase 6 — Runtime: Registry → Diagnostics → Lifecycle → Router */
       this.#registry = new ApplicationRegistry(this.#logger);
+      this.#initDiagnosticsService();
+
       this.#lifecycle = new ApplicationLifecycle(
         this.#registry,
         this.#logger,
@@ -74,10 +80,10 @@ export class Kernel {
       this.#router = new Router(this.#logger, this.#eventBus);
       this.#logger.info('boot', 'Runtime initialised');
 
-      /* Phase 6 — Application discovery */
+      /* Phase 7 — Application discovery */
       await this.#discoverApplications();
 
-      /* Phase 7 — Mount Shell */
+      /* Phase 8 — Mount Shell (with NotificationHost) */
       const root = document.getElementById('os-root');
       if (!root) throw new Error('Fatal: #os-root element not found');
 
@@ -90,17 +96,18 @@ export class Kernel {
         brand: this.#brand,
         theme: this.#services.get('theme'),
         localization: this.#services.get('localization'),
+        notifications: this.#services.get('notifications'),
       });
       await this.#shell.mount();
       this.#logger.info('boot', 'Shell mounted');
 
-      /* Phase 8 — Start default Application */
+      /* Phase 9 — Start default Application */
       await this.#startDefaultApplication();
 
-      /* Phase 9 — Development telemetry (SIMULATED, dev-mode only) */
+      /* Phase 10 — Development telemetry (SIMULATED, dev-mode only) */
       this.#startDevTelemetryIfEnabled();
 
-      /* Phase 10 — Done */
+      /* Phase 11 — Done */
       this.#bootState = 'RUNNING';
       this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
@@ -152,6 +159,33 @@ export class Kernel {
     this.#services.register('localization', localization);
 
     this.#logger.info('boot', 'Theme & Localization services initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Notification Service                                     */
+  /* ------------------------------------------------------------------ */
+
+  #initNotificationService() {
+    const notifications = new NotificationService(this.#eventBus, this.#logger);
+    this.#services.register('notifications', notifications);
+    this.#logger.info('boot', 'Notification service initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Diagnostics Service (§48)                                */
+  /* ------------------------------------------------------------------ */
+
+  #initDiagnosticsService() {
+    const diagnostics = new DiagnosticsService({
+      registry: this.#registry,
+      services: this.#services,
+      eventBus: this.#eventBus,
+      logger: this.#logger,
+      storage: this.#services.get('storage'),
+      config: this.#config,
+    });
+    this.#services.register('diagnostics', diagnostics);
+    this.#logger.info('boot', 'Diagnostics service initialised');
   }
 
   /* ------------------------------------------------------------------ */

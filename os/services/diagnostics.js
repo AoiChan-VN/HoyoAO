@@ -2,11 +2,10 @@
  * Diagnostics Service (§25, §48)
  *
  * OS observability infrastructure. Collects and exposes information about:
- *   active applications, loaded services, events, errors, boot, memory.
+ *   active applications, loaded services, events, errors, boot, memory,
+ *   and cache usage (§48).
  *
  * This service COLLECTS and EXPOSES data only. It contains NO UI (§48).
- * The monitoring/diagnostics UI is a future Application that consumes
- * this service through the ServiceContext.
  */
 export class DiagnosticsService {
   #registry;
@@ -51,20 +50,18 @@ export class DiagnosticsService {
         ? this.#eventBus.metrics()
         : {},
       memory: this.#getMemory(),
+      cache: this.#getCacheStats(),
     };
   }
 
-  /** @returns {Array<object>} recent errors (copy) */
   getErrors() {
     return [...this.#errors];
   }
 
-  /** @returns {Array<object>} registered applications + state */
   getApplications() {
     return this.#getApplications();
   }
 
-  /** @returns {Array<string>} registered service names */
   getServices() {
     return this.#getServices();
   }
@@ -79,7 +76,6 @@ export class DiagnosticsService {
     return () => this.#listeners.delete(fn);
   }
 
-  /** Full cleanup (§74). */
   destroy() {
     for (const unsub of this.#unsubscribers) unsub();
     this.#unsubscribers = [];
@@ -92,7 +88,6 @@ export class DiagnosticsService {
   #startCollecting() {
     if (!this.#eventBus) return;
 
-    // Capture errors/fatals from the log stream (§47 categories).
     const onLogEntry = (entry) => {
       if (entry && (entry.level === 'error' || entry.level === 'fatal')) {
         this.#recordError(entry);
@@ -131,7 +126,6 @@ export class DiagnosticsService {
   }
 
   #getMemory() {
-    // performance.memory is Chromium-only; return null elsewhere (§23).
     if (typeof performance !== 'undefined' && performance.memory) {
       return {
         usedJSHeapSize: performance.memory.usedJSHeapSize,
@@ -141,15 +135,25 @@ export class DiagnosticsService {
     return null;
   }
 
+  /** Cache metrics for observability (§48). */
+  #getCacheStats() {
+    if (!this.#services || !this.#services.has('cache')) return null;
+    try {
+      return this.#services.get('cache').getGlobalStats();
+    } catch (err) {
+      this.#logger?.warn('diagnostics', 'Failed to read cache stats', { error: err.message });
+      return null;
+    }
+  }
+
   #notifyListeners() {
     const snapshot = this.getSnapshot();
     for (const fn of this.#listeners) {
       try {
         fn(snapshot);
       } catch (err) {
-        // Avoid recursion into the log stream; use console as last resort.
         console.error('[Diagnostics] subscriber error', err);
       }
     }
   }
-} 
+}

@@ -55,8 +55,74 @@
   border-top: none;
 }
 
+.settings-view__empty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ---- Applications management (§84) ---- */
+
+.settings-view__app-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.settings-view__app-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.settings-view__app-row:first-child {
+  border-top: none;
+}
+
+.settings-view__app-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-view__app-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.settings-view__app-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.settings-view__app-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-shrink: 0;
+}
+
+/* Hide empty toggle label in management rows (label provided via aria). */
+.settings-view__app-row .ui-toggle__label:empty {
+  display: none;
+}
+
 @media (max-width: 600px) {
   .settings-view {
     max-width: none;
   }
-} 
+
+  .settings-view__app-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-view__app-actions {
+    justify-content: space-between;
+  }
+}

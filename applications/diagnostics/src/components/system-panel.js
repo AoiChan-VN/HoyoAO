@@ -90,4 +90,4 @@ export function createSystemPanel(options = {}) {
   }
 
   return { element: panel, update, updateUptime, destroy };
-  } 
+} 

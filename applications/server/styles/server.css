@@ -1,0 +1,189 @@
+/* ================================================================== */
+/*  SERVER APPLICATION STYLES (§4 — app owns its styles)              */
+/*  All values reference design tokens (§21)                           */
+/* ================================================================== */
+
+.server {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ---- Header ---- */
+.server__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.server__title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.server__subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ---- State container ---- */
+.server__state {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- Main ---- */
+.server__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ---- Summary bar ---- */
+.server__summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+}
+
+.server__summary-stats {
+  display: flex;
+  gap: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+.server__summary-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.server__summary-stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.server__summary-stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* ---- List ---- */
+.server__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.server__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  font-family: var(--font-family);
+  text-align: left;
+  transition: border-color var(--transition-fast);
+}
+
+.server__row:hover {
+  border-color: var(--color-accent);
+}
+
+.server__row:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.server__row-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.server__row-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.server__row-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.server__row-load {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.server__row-metric {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-family: monospace;
+}
+
+/* ---- Detail drawer ---- */
+.server__detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.server__detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  font-size: var(--font-size-xs);
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.server__detail-row:last-child {
+  border-bottom: none;
+}
+
+.server__detail-label {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.server__detail-value {
+  color: var(--color-text-primary);
+  text-align: right;
+  word-break: break-all;
+}
+
+/* ---- Responsive (§22) ---- */
+@media (max-width: 700px) {
+  .server__summary-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .server__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .server__row-load {
+    justify-content: flex-start;
+  }
+} 

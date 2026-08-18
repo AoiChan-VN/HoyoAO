@@ -1,6 +1,6 @@
 {
   "os": {
-    "name": "HoyoAO OS",
+    "name": "HoyoAO-OS",
     "version": "1.0.0",
     "mode": "development",
     "logLevel": "debug"
@@ -11,7 +11,8 @@
   },
   "applications": {
     "manifests": [
-      "applications/dashboard/manifest.json"
+      "applications/dashboard/manifest.json",
+      "applications/diagnostics/manifest.json"
     ]
   },
   "theme": {
@@ -20,4 +21,4 @@
   "localization": {
     "defaultLocale": "en"
   }
-} 
+}

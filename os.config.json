@@ -12,7 +12,8 @@
   "applications": {
     "manifests": [
       "applications/dashboard/manifest.json",
-      "applications/diagnostics/manifest.json"
+      "applications/diagnostics/manifest.json",
+      "applications/server/manifest.json"
     ]
   },
   "theme": {

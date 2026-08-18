@@ -25,6 +25,10 @@
     "settings.appearance.theme.light": "Sáng",
     "settings.language.current": "Ngôn ngữ",
     "settings.dashboard.title": "Bảng điều khiển",
-    "settings.dashboard.showSourceBadge": "Hiện nhãn nguồn dữ liệu"
+    "settings.dashboard.showSourceBadge": "Hiện nhãn nguồn dữ liệu",
+    "network.online": "Trực tuyến",
+    "network.offline": "Ngoại tuyến",
+    "network.offlineNotification": "Bạn đang ngoại tuyến. Các tính năng cần mạng có thể không khả dụng.",
+    "network.onlineNotification": "Đã khôi phục kết nối."
   }
 }

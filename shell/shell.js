@@ -1,18 +1,14 @@
 /**
  * OS Shell (§87)
  *
- * Renders the common environment:
- *   Header  — logo, OS name, context
- *   Sidebar — OS nav + Application nav (§15)
- *   Content — mount point for Applications
- *   Footer  — status, support, copyright (§78)
- *
+ * Common environment: navigation, application switching, global header/footer,
+ * global notifications, global error presentation, theme, localization.
  * Contains ZERO application business logic.
- * All UI text is localized via LocalizationService (§37).
  */
 
 import { ShellNavigation } from './navigation.js';
 import { ShellFooter } from './footer.js';
+import { NotificationHost } from './notification-host.js';
 
 export class Shell {
   #container;
@@ -23,11 +19,17 @@ export class Shell {
   #brand;
   #theme;
   #localization;
+  #notifications;
+
   #contentArea = null;
   #navigation = null;
   #footer = null;
+  #notificationHost = null;
 
-  constructor({ container, config, registry, eventBus, logger, brand, theme, localization }) {
+  constructor({
+    container, config, registry, eventBus, logger, brand,
+    theme, localization, notifications,
+  }) {
     this.#container = container;
     this.#config = config;
     this.#registry = registry;
@@ -36,6 +38,7 @@ export class Shell {
     this.#brand = brand;
     this.#theme = theme;
     this.#localization = localization;
+    this.#notifications = notifications;
   }
 
   async mount() {
@@ -69,10 +72,18 @@ export class Shell {
     /* Assemble */
     this.#container.append(header, body, footer);
 
+    /* Global notifications (§87) */
+    this.#notificationHost = new NotificationHost({
+      container: this.#container,
+      notifications: this.#notifications,
+      eventBus: this.#eventBus,
+      localization: this.#localization,
+    });
+    this.#notificationHost.mount();
+
     this.#logger.info('shell', 'Shell DOM assembled');
   }
 
-  /** The DOM node where Applications mount their UI. */
   getContentArea() {
     return this.#contentArea;
   }
@@ -83,7 +94,6 @@ export class Shell {
     const header = document.createElement('header');
     header.className = 'os-shell__header';
 
-    // Logo
     const logoWrap = document.createElement('div');
     logoWrap.className = 'os-shell__logo';
 
@@ -95,12 +105,10 @@ export class Shell {
       logoWrap.appendChild(img);
     }
 
-    // Title — from config (branding), not hardcoded (§79)
     const title = document.createElement('div');
     title.className = 'os-shell__title';
     title.textContent = this.#config.get('os.name', 'WEB ADMIN OS');
 
-    // Context area (right side)
     const context = document.createElement('div');
     context.className = 'os-shell__context';
 
@@ -108,3 +116,4 @@ export class Shell {
     return header;
   }
 }
+

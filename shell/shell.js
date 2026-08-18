@@ -1,18 +1,16 @@
 /**
  * OS Shell (§87, §88)
  *
- * Common environment + rendering side of navigation.
- * The Shell does NOT define routes (routes live in RouteRegistry §64)
- * and does NOT hardcode application names (§89). It reacts to
- * "navigation:changed" events and renders based on route.kind:
- *   - kind 'os'          → render an OS view (e.g. Settings)
- *   - kind 'application' → start/stop the Application via Lifecycle
+ * Common environment + system status.
+ * Shows a persistent NetworkIndicator (system status §87) and announces
+ * connectivity changes through the NotificationService.
  */
 
 import { ShellNavigation } from './navigation.js';
 import { ShellFooter } from './footer.js';
 import { NotificationHost } from './notification-host.js';
 import { SettingsView } from './settings-view.js';
+import { createNetworkIndicator } from './network-indicator.js';
 
 export class Shell {
   #container;
@@ -29,6 +27,7 @@ export class Shell {
   #assets;
   #settings;
   #navigation;
+  #network;
   #lifecycle;
 
   #contentArea = null;
@@ -36,14 +35,16 @@ export class Shell {
   #footer = null;
   #notificationHost = null;
   #settingsView = null;
+  #networkIndicator = null;
 
   #currentAppId = null;
   #currentOSView = null;
   #abortController;
+  #networkHandlers = [];
 
   constructor({
     container, config, registry, routeRegistry, eventBus, logger, brand,
-    theme, localization, notifications, icons, assets, settings, navigation, lifecycle,
+    theme, localization, notifications, icons, assets, settings, navigation, network, lifecycle,
   }) {
     this.#container = container;
     this.#config = config;
@@ -59,6 +60,7 @@ export class Shell {
     this.#assets = assets;
     this.#settings = settings;
     this.#navigation = navigation;
+    this.#network = network;
     this.#lifecycle = lifecycle;
     this.#abortController = new AbortController();
   }
@@ -107,6 +109,9 @@ export class Shell {
     /* Navigation wiring (§30, §88) */
     this.#subscribeNavigation();
 
+    /* Network status announcements (§24, §87) */
+    this.#subscribeNetwork();
+
     this.#logger.info('shell', 'Shell DOM assembled');
   }
 
@@ -116,6 +121,16 @@ export class Shell {
 
   destroy() {
     this.#abortController.abort();
+
+    for (const { event, handler } of this.#networkHandlers) {
+      this.#eventBus.off(event, handler);
+    }
+    this.#networkHandlers = [];
+
+    if (this.#networkIndicator) {
+      this.#networkIndicator.destroy();
+      this.#networkIndicator = null;
+    }
     if (this.#settingsView) {
       this.#settingsView.destroy();
       this.#settingsView = null;
@@ -129,23 +144,17 @@ export class Shell {
   /* ---- private ---- */
 
   #subscribeNavigation() {
-    // Nav items announce intent; Shell forwards to NavigationService.
     this.#eventBus.on('navigation:selected', (payload) => {
       if (payload?.path) {
         this.#navigation.navigate(payload.path);
       }
     });
 
-    // React to resolved navigation by rendering the target.
     this.#eventBus.on('navigation:changed', (payload) => {
       this.#onNavigationChanged(payload?.route);
     });
   }
 
-  /**
-   * Render based on route kind — NO application-specific branching (§89).
-   * @param {object} route
-   */
   #onNavigationChanged(route) {
     if (!route) return;
 
@@ -160,8 +169,36 @@ export class Shell {
     }
   }
 
+  #subscribeNetwork() {
+    const onOffline = () => {
+      this.#notifications.notify({
+        type: 'warning',
+        title: this.#localization.t('network.offline'),
+        message: this.#localization.t('network.offlineNotification'),
+        source: 'network',
+      });
+    };
+
+    const onOnline = () => {
+      this.#notifications.notify({
+        type: 'success',
+        title: this.#localization.t('network.online'),
+        message: this.#localization.t('network.onlineNotification'),
+        source: 'network',
+        duration: 3000,
+      });
+    };
+
+    this.#eventBus.on('network:offline', onOffline);
+    this.#eventBus.on('network:online', onOnline);
+
+    this.#networkHandlers.push(
+      { event: 'network:offline', handler: onOffline },
+      { event: 'network:online', handler: onOnline },
+    );
+  }
+
   #showOSView(viewId) {
-    // Currently only Settings has an OS view; others are future work.
     if (viewId === 'settings') {
       if (this.#currentOSView === 'settings') return;
       this.#clearCurrentView();
@@ -236,8 +273,15 @@ export class Shell {
     title.className = 'os-shell__title';
     title.textContent = this.#config.get('os.name', 'WEB ADMIN OS');
 
+    // Context area — includes system status (§87).
     const context = document.createElement('div');
     context.className = 'os-shell__context';
+
+    this.#networkIndicator = createNetworkIndicator({
+      network: this.#network,
+      localization: this.#localization,
+    });
+    context.appendChild(this.#networkIndicator.element);
 
     header.append(logoWrap, title, context);
     return header;

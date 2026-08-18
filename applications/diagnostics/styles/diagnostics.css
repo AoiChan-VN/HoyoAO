@@ -1,0 +1,188 @@
+/* ================================================================== */
+/*  DIAGNOSTICS APPLICATION STYLES (§4 — app owns its styles)         */
+/*  All values reference design tokens (§21)                           */
+/* ================================================================== */
+
+.diagnostics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ---- Header ---- */
+.diagnostics__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.diagnostics__title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.diagnostics__subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ---- Grid ---- */
+.diagnostics__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-md);
+}
+
+/* ---- Panel ---- */
+.diagnostics__panel {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.diagnostics__panel--wide {
+  grid-column: 1 / -1;
+}
+
+.diagnostics__panel-title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.diagnostics__panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* ---- Rows ---- */
+.diagnostics__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.diagnostics__row:last-child {
+  border-bottom: none;
+}
+
+.diagnostics__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.diagnostics__label--mono {
+  font-family: monospace;
+  font-size: var(--font-size-xs);
+  word-break: break-all;
+}
+
+.diagnostics__value {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* ---- Applications ---- */
+.diagnostics__row--app {
+  justify-content: space-between;
+}
+
+.diagnostics__app-name {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.diagnostics__app-version {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* ---- Services chips ---- */
+.diagnostics__chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.diagnostics__chip {
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-family: monospace;
+}
+
+/* ---- Errors ---- */
+.diagnostics__error-item {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.diagnostics__error-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-xs);
+}
+
+.diagnostics__error-level {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.diagnostics__error-level--error { color: var(--color-error); }
+.diagnostics__error-level--fatal { color: var(--color-error); }
+.diagnostics__error-level--warn  { color: var(--color-warning); }
+
+.diagnostics__error-category {
+  color: var(--color-text-muted);
+}
+
+.diagnostics__error-time {
+  margin-left: auto;
+  color: var(--color-text-muted);
+}
+
+.diagnostics__error-message {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  word-break: break-word;
+}
+
+/* ---- Empty ---- */
+.diagnostics__empty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ---- Responsive (§22) ---- */
+@media (max-width: 700px) {
+  .diagnostics__grid {
+    grid-template-columns: 1fr;
+  }
+} 

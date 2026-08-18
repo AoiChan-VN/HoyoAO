@@ -1,0 +1,24 @@
+{
+  "id": "diagnostics",
+  "name": "Diagnostics",
+  "version": "1.0.0",
+  "description": "System observability: applications, services, events, errors, and resource usage.",
+  "entry": "applications/diagnostics/app.js",
+  "icon": "diagnostics",
+  "permissions": [
+    "system.status"
+  ],
+  "dependencies": [],
+  "routes": [
+    { "path": "/apps/diagnostics", "name": "Diagnostics" }
+  ],
+  "capabilities": [
+    "system.status"
+  ],
+  "compatibility": {
+    "osVersion": ">=1.0.0"
+  },
+  "lifecycle": {
+    "autoStart": false
+  }
+} 

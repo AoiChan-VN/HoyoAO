@@ -4,8 +4,13 @@
  * Boot order (§7, §42):
  *   Config → Branding → Core Services → Theme/Localization
  *   → Notification → Icons → Assets → Settings
- *   → Runtime (Registry → Diagnostics → Lifecycle → Router)
- *   → Discovery → Shell → Default App → Dev Telemetry
+ *   → Runtime (Registry → Diagnostics → Lifecycle)
+ *   → RouteRegistry + OS routes → NavigationService
+ *   → Discovery (+ register app routes)
+ *   → Shell → Initial navigation → Dev Telemetry
+ *
+ * NOTE: The legacy `runtime/router.js` Router is superseded by
+ * RouteRegistry + NavigationService and is no longer imported here (§71).
  */
 
 import { ConfigService } from './config.js';
@@ -14,7 +19,7 @@ import { Logger } from './logger.js';
 import { ServiceRegistry } from '../runtime/services.js';
 import { ApplicationRegistry } from '../runtime/registry.js';
 import { ApplicationLifecycle } from '../runtime/lifecycle.js';
-import { Router } from '../runtime/router.js';
+import { RouteRegistry } from '../runtime/route-registry.js';
 import { Shell } from '../shell/shell.js';
 import { StorageService } from './services/storage.js';
 import { Indexer } from './services/indexer.js';
@@ -26,9 +31,11 @@ import { DiagnosticsService } from './services/diagnostics.js';
 import { IconRegistry } from './services/icon-registry.js';
 import { AssetRegistry } from './services/asset-registry.js';
 import { SettingsService } from './services/settings.js';
+import { NavigationService } from './services/navigation.js';
 import { DevelopmentTelemetryService } from './services/dev-telemetry.js';
 import { DEFAULT_ICONS } from '../platform/icons/default-icons.js';
 import { OS_SETTINGS_SECTIONS, createOSSettingsDefaults } from './settings/os-settings.js';
+import { OS_ROUTES } from './routes/os-routes.js';
 
 export class Kernel {
   /** @type {'UNINITIALIZED'|'BOOTING'|'RUNNING'|'FAILED'} */
@@ -39,8 +46,8 @@ export class Kernel {
   #logger;
   #services;
   #registry;
+  #routeRegistry;
   #lifecycle;
-  #router;
   #shell;
   #brand;
 
@@ -80,23 +87,25 @@ export class Kernel {
       /* Phase 7 — Settings Framework (§49) */
       await this.#initSettings();
 
-      /* Phase 8 — Runtime */
+      /* Phase 8 — Runtime: App Registry, Diagnostics, Lifecycle */
       this.#registry = new ApplicationRegistry(this.#logger);
       this.#initDiagnosticsService();
-
       this.#lifecycle = new ApplicationLifecycle(
         this.#registry,
         this.#logger,
         this.#eventBus,
         this.#services,
       );
-      this.#router = new Router(this.#logger, this.#eventBus);
       this.#logger.info('boot', 'Runtime initialised');
 
-      /* Phase 9 — Application discovery */
-      await this.#discoverApplications();
+      /* Phase 9 — Routing: RouteRegistry + OS routes + NavigationService (§30) */
+      this.#initRouting();
 
-      /* Phase 10 — Mount Shell */
+      /* Phase 10 — Application discovery + register app routes */
+      await this.#discoverApplications();
+      this.#registerApplicationRoutes();
+
+      /* Phase 11 — Mount Shell */
       const root = document.getElementById('os-root');
       if (!root) throw new Error('Fatal: #os-root element not found');
 
@@ -104,6 +113,7 @@ export class Kernel {
         container: root,
         config: this.#config,
         registry: this.#registry,
+        routeRegistry: this.#routeRegistry,
         eventBus: this.#eventBus,
         logger: this.#logger,
         brand: this.#brand,
@@ -113,18 +123,19 @@ export class Kernel {
         icons: this.#services.get('icons'),
         assets: this.#services.get('assets'),
         settings: this.#services.get('settings'),
+        navigation: this.#services.get('navigation'),
         lifecycle: this.#lifecycle,
       });
       await this.#shell.mount();
       this.#logger.info('boot', 'Shell mounted');
 
-      /* Phase 11 — Start default Application */
-      await this.#startDefaultApplication();
+      /* Phase 12 — Initial navigation (deep-link or default app) */
+      this.#navigateInitial();
 
-      /* Phase 12 — Development telemetry (SIMULATED, dev-mode only) */
+      /* Phase 13 — Development telemetry (SIMULATED, dev-mode only) */
       this.#startDevTelemetryIfEnabled();
 
-      /* Phase 13 — Done */
+      /* Phase 14 — Done */
       this.#bootState = 'RUNNING';
       this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
@@ -235,25 +246,21 @@ export class Kernel {
       this.#logger,
     );
 
-    // Effects context available to apply() callbacks.
     settings.setApplyContext({
       theme: this.#services.get('theme'),
       localization: this.#services.get('localization'),
       notifications: this.#services.get('notifications'),
     });
 
-    // Register OS settings (§49).
     for (const section of OS_SETTINGS_SECTIONS) {
       settings.registerSection(section);
     }
     settings.registerMany(createOSSettingsDefaults(this.#config));
 
-    // Ensure selectable themes are loaded before applying persisted choice.
     const theme = this.#services.get('theme');
     await theme.loadTheme('dark');
     await theme.loadTheme('light');
 
-    // Load user preferences and apply them (overrides config defaults).
     await settings.loadPersisted();
     await settings.applyAll();
 
@@ -276,6 +283,75 @@ export class Kernel {
     });
     this.#services.register('diagnostics', diagnostics);
     this.#logger.info('boot', 'Diagnostics service initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Routing (§30, §64)                                       */
+  /* ------------------------------------------------------------------ */
+
+  #initRouting() {
+    // Route registry is the source of truth for all routes (§64).
+    this.#routeRegistry = new RouteRegistry(this.#logger);
+
+    // Register OS-owned routes.
+    this.#routeRegistry.registerMany(OS_ROUTES);
+
+    // Navigation service orchestrates navigation + URL sync + events.
+    const navigation = new NavigationService({
+      routeRegistry: this.#routeRegistry,
+      eventBus: this.#eventBus,
+      logger: this.#logger,
+    });
+    navigation.init();
+
+    this.#services.register('routes', this.#routeRegistry);
+    this.#services.register('navigation', navigation);
+
+    this.#logger.info('boot', 'Routing initialised');
+  }
+
+  /** Register application routes from manifests (§30, §31). */
+  #registerApplicationRoutes() {
+    for (const entry of this.#registry.getAll()) {
+      const manifest = entry.manifest;
+      const appId = manifest.id;
+      const routes = Array.isArray(manifest.routes) ? manifest.routes : [];
+
+      for (const r of routes) {
+        this.#routeRegistry.register({
+          path: r.path,
+          scope: appId,
+          kind: 'application',
+          title: r.name,
+          titleKey: r.nameKey,
+          icon: manifest.icon || 'app',
+          appId,
+        });
+      }
+    }
+
+    this.#logger.info(
+      'boot',
+      `Registered application routes (total routes: ${this.#routeRegistry.getAll().length})`,
+    );
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Initial navigation                                       */
+  /* ------------------------------------------------------------------ */
+
+  #navigateInitial() {
+    const navigation = this.#services.get('navigation');
+    const defaultApp = this.#config.get('boot.defaultApplication', '');
+    const defaultPath = defaultApp ? `/apps/${defaultApp}` : '/os/settings';
+
+    const initialPath = navigation.getInitialPath(defaultPath);
+    const ok = navigation.navigate(initialPath);
+
+    if (!ok) {
+      // Fallback if the deep-link/default route is somehow missing.
+      this.#logger.warn('boot', `Initial navigation to "${initialPath}" failed`);
+    }
   }
 
   /* ------------------------------------------------------------------ */
@@ -350,27 +426,6 @@ export class Kernel {
     }
 
     this.#logger.info('boot', `Discovery complete — ${count} app(s) registered`);
-  }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Start default Application                                */
-  /* ------------------------------------------------------------------ */
-
-  async #startDefaultApplication() {
-    const appId = this.#config.get('boot.defaultApplication', '');
-    if (!appId || !this.#registry.has(appId)) {
-      this.#logger.info('boot', 'No default application to start');
-      return;
-    }
-
-    try {
-      await this.#lifecycle.start(appId, this.#shell.getContentArea());
-      this.#logger.info('boot', `Default application "${appId}" started`);
-    } catch (err) {
-      this.#logger.warn('boot', `Default app "${appId}" failed to start`, {
-        error: err.message,
-      });
-    }
   }
 
   /* ------------------------------------------------------------------ */

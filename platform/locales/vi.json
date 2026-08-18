@@ -16,6 +16,15 @@
     "state.error": "Đã xảy ra lỗi",
     "state.offline": "Ngoại tuyến",
     "notification.appError.title": "Lỗi ứng dụng: {app}",
-    "notification.dismiss": "Đóng"
+    "notification.dismiss": "Đóng",
+    "settings.title": "Cài đặt",
+    "settings.section.appearance": "Giao diện",
+    "settings.section.language": "Ngôn ngữ",
+    "settings.appearance.theme": "Chủ đề",
+    "settings.appearance.theme.dark": "Tối",
+    "settings.appearance.theme.light": "Sáng",
+    "settings.language.current": "Ngôn ngữ",
+    "settings.dashboard.title": "Bảng điều khiển",
+    "settings.dashboard.showSourceBadge": "Hiện nhãn nguồn dữ liệu"
   }
 }

@@ -1,13 +1,14 @@
 /**
- * Application Registry (§31)
+ * Application Registry (§31, §64)
  *
- * Stores validated Application manifests.
- * The OS discovers Applications through this registry.
- * No application business logic lives here.
+ * Source of truth for installed applications. Stores validated manifests
+ * plus installation/activation metadata (§84) and runtime lifecycle state (§32).
+ *
+ * register(manifest, meta) is backward compatible: meta is optional,
+ * so existing direct registrations still work (§60).
  */
-
 export class ApplicationRegistry {
-  /** @type {Map<string, {manifest:object, state:string, registeredAt:number}>} */
+  /** @type {Map<string, object>} appId → entry */
   #apps = new Map();
   #logger;
 
@@ -18,8 +19,9 @@ export class ApplicationRegistry {
   /**
    * Validate and register a manifest.
    * @param {object} manifest
+   * @param {{installedAt?:number, installation?:string, activation?:string, validationWarnings?:Array}} [meta]
    */
-  register(manifest) {
+  register(manifest, meta = {}) {
     const result = this.validate(manifest);
     if (!result.valid) {
       const msg = `Invalid manifest "${manifest?.id ?? 'unknown'}": ${result.errors.join('; ')}`;
@@ -35,13 +37,19 @@ export class ApplicationRegistry {
       manifest,
       state: 'DISCOVERED',
       registeredAt: Date.now(),
+      // Installation metadata (§84) — defaults keep backward compat (§60).
+      installedAt: meta.installedAt ?? Date.now(),
+      installation: meta.installation ?? 'installed',
+      activation: meta.activation ?? 'enabled',
+      validationWarnings: meta.validationWarnings ?? [],
     });
 
     this.#logger.info('registry', `Registered "${manifest.id}" v${manifest.version}`);
   }
 
   /**
-   * Validate manifest shape (§31).
+   * Basic shape validation — a safety net. The ManifestValidator performs
+   * the full schema + security validation before installation (§40).
    * @param {object} m
    * @returns {{valid:boolean, errors:string[]}}
    */
@@ -63,18 +71,32 @@ export class ApplicationRegistry {
     return { valid: errors.length === 0, errors };
   }
 
-  get(appId) { return this.#apps.get(appId) ?? null; }
-  has(appId) { return this.#apps.has(appId); }
-  getAll()   { return Array.from(this.#apps.values()); }
+  get(appId) {
+    return this.#apps.get(appId) ?? null;
+  }
+
+  has(appId) {
+    return this.#apps.has(appId);
+  }
+
+  getAll() {
+    return Array.from(this.#apps.values());
+  }
 
   unregister(appId) {
     this.#apps.delete(appId);
     this.#logger.info('registry', `Unregistered "${appId}"`);
   }
 
-  /** Update lifecycle state (called by Lifecycle Manager). */
+  /** Update runtime lifecycle state (called by Lifecycle Manager). */
   setState(appId, state) {
     const entry = this.#apps.get(appId);
     if (entry) entry.state = state;
   }
-} 
+
+  /** Update activation state (§84). */
+  setActivation(appId, activation) {
+    const entry = this.#apps.get(appId);
+    if (entry) entry.activation = activation;
+  }
+}

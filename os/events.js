@@ -3,18 +3,16 @@
  *
  * Explicit, named, scoped pub/sub for decoupled communication.
  * NOT an invisible global dependency — injected where needed.
+ *
+ * metrics() supports observability (§48): counts of emitted events.
  */
 
 export class EventBus {
   /** @type {Map<string, Set<Function>>} */
   #listeners = new Map();
+  /** @type {Map<string, number>} event name → emit count (§48) */
+  #emitCounts = new Map();
 
-  /**
-   * Subscribe to an event.
-   * @param {string} event
-   * @param {Function} handler
-   * @returns {Function} unsubscribe
-   */
   on(event, handler) {
     if (!this.#listeners.has(event)) {
       this.#listeners.set(event, new Set());
@@ -23,11 +21,6 @@ export class EventBus {
     return () => this.off(event, handler);
   }
 
-  /**
-   * Subscribe once.
-   * @param {string} event
-   * @param {Function} handler
-   */
   once(event, handler) {
     const wrapper = (...args) => {
       this.off(event, wrapper);
@@ -36,11 +29,6 @@ export class EventBus {
     return this.on(event, wrapper);
   }
 
-  /**
-   * Unsubscribe.
-   * @param {string} event
-   * @param {Function} handler
-   */
   off(event, handler) {
     const set = this.#listeners.get(event);
     if (set) {
@@ -49,27 +37,25 @@ export class EventBus {
     }
   }
 
-  /**
-   * Emit an event.
-   * @param {string} event
-   * @param {*} data
-   */
   emit(event, data) {
+    // Count every emission for observability (§48).
+    this.#emitCounts.set(event, (this.#emitCounts.get(event) || 0) + 1);
+
     const set = this.#listeners.get(event);
     if (!set) return;
     for (const handler of set) {
       try {
         handler(data);
       } catch (err) {
-        // §46 — errors are explicit, never silently swallowed
         console.error(`[EventBus] Handler error on "${event}":`, err);
       }
     }
   }
 
-  /** Remove all listeners (cleanup §74). */
+  /** Remove all listeners + reset metrics (§74). */
   clear() {
     this.#listeners.clear();
+    this.#emitCounts.clear();
   }
 
   /** Diagnostic: number of listeners per event. */
@@ -80,4 +66,16 @@ export class EventBus {
     }
     return report;
   }
-} 
+
+  /**
+   * Observability (§48): emit counts per event name.
+   * @returns {object} copy of { event: count }
+   */
+  metrics() {
+    const out = {};
+    for (const [event, count] of this.#emitCounts) {
+      out[event] = count;
+    }
+    return out;
+  }
+}

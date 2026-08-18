@@ -1,15 +1,8 @@
 /**
  * DashboardController — orchestrates the Dashboard Application.
  *
- * Responsibilities:
- *   - Subscribe to OS EventBus "data:indexed" (§9, §10)
- *   - Maintain application-scoped DataStreamStore (§28)
- *   - Manage UI states: LOADING / EMPTY / READY (§76)
- *   - Render visualization, stats, category cards (§13, §16)
- *   - Open detail drawer on category click (§16)
- *   - Full cleanup on unmount (§74)
- *
- * The Dashboard CONSUMES indexed data. It never fabricates data (§45).
+ * Registers Dashboard-specific settings with the OS Settings framework (§49)
+ * and wires one setting (show data-source badge) to actual behavior.
  */
 
 import { DataStreamStore } from './data-stream-store.js';
@@ -61,11 +54,12 @@ export class DashboardController {
   start() {
     this.#loadStyles();
     this.#registerLocalization();
+    this.#registerSettings();
     this.#buildDOM();
     this.#subscribeToData();
+    this.#subscribeToSettings();
     this.#showLoading();
 
-    // §98 — if no data arrives, explain the empty state.
     this.#emptyTimeout = setTimeout(() => {
       if (this.#store.getTotal() === 0) {
         this.#showEmpty();
@@ -109,7 +103,6 @@ export class DashboardController {
   /* ------------------------------------------------------------------ */
 
   #loadStyles() {
-    // Application owns its own styles (§4). Loaded on demand, not by OS.
     if (document.querySelector(`link[href="${STYLE_URL}"]`)) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -122,13 +115,45 @@ export class DashboardController {
     if (loc) loc.register('en', dashboardStrings);
   }
 
+  /** Register Dashboard settings with the OS framework (§49). */
+  #registerSettings() {
+    const settings = this.#services.settings;
+    if (!settings) return;
+
+    settings.registerSection({
+      id: 'dashboard',
+      titleKey: 'settings.dashboard.title',
+      scope: 'dashboard',
+      order: 10,
+    });
+
+    settings.register({
+      key: 'dashboard.showSourceBadge',
+      section: 'dashboard',
+      type: 'toggle',
+      labelKey: 'settings.dashboard.showSourceBadge',
+      defaultValue: true,
+    });
+  }
+
+  #subscribeToSettings() {
+    const settings = this.#services.settings;
+    if (!settings) return;
+
+    const unsub = settings.subscribe((key) => {
+      if (key === 'dashboard.showSourceBadge') {
+        this.#updateSourceBadge();
+      }
+    });
+    this.#unsubscribers.push(unsub);
+  }
+
   #buildDOM() {
     const loc = this.#services.localization;
 
     this.#root = document.createElement('div');
     this.#root.className = 'dashboard';
 
-    // Context bar
     const contextBar = document.createElement('div');
     contextBar.className = 'dashboard__context-bar';
 
@@ -146,16 +171,13 @@ export class DashboardController {
 
     contextBar.append(titleWrap, this.#sourceBadgeEl);
 
-    // State container (loading / empty)
     this.#stateEl = document.createElement('div');
     this.#stateEl.className = 'dashboard__state';
 
-    // Main (visualization + stats) — hidden until READY
     this.#mainEl = document.createElement('div');
     this.#mainEl.className = 'dashboard__main';
     this.#mainEl.hidden = true;
 
-    // Categories — hidden until READY
     this.#categoriesSection = document.createElement('section');
     this.#categoriesSection.className = 'dashboard__categories-section';
     this.#categoriesSection.hidden = true;
@@ -214,7 +236,6 @@ export class DashboardController {
   }
 
   #onDataIndexed(event) {
-    // Store lightweight summary; payload fetched on demand via Indexer (§93).
     this.#store.add({ id: event.id, metadata: event.metadata });
 
     if (this.#emptyTimeout) {
@@ -281,7 +302,6 @@ export class DashboardController {
   #updateCategories() {
     const groups = this.#store.getByCategory();
 
-    // Remove cards for categories that disappeared.
     for (const [domain, card] of this.#categoryCards) {
       if (!groups[domain]) {
         card.destroy();
@@ -290,7 +310,6 @@ export class DashboardController {
       }
     }
 
-    // Add or update cards.
     for (const [domain, packets] of Object.entries(groups)) {
       const lastActivity = Math.max(
         ...packets.map((p) => p.metadata.timestamp),
@@ -315,7 +334,6 @@ export class DashboardController {
     const summaries = this.#store.getByCategory()[domain] || [];
     const indexer = this.#services.indexer;
 
-    // Retrieve full packets (with payload) on demand (§93).
     const fullPackets = summaries
       .map((s) => (indexer ? indexer.getPacket(s.id) : null))
       .filter(Boolean);
@@ -336,13 +354,19 @@ export class DashboardController {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — source badge (§45)                                       */
+  /*  PRIVATE — source badge (§45) — controlled by a Dashboard setting   */
   /* ------------------------------------------------------------------ */
 
   #updateSourceBadge() {
-    const loc = this.#services.localization;
-    this.#sourceBadgeEl.innerHTML = '';
+    const settings = this.#services.settings;
+    const show = settings
+      ? Boolean(settings.get('dashboard.showSourceBadge'))
+      : true;
 
+    this.#sourceBadgeEl.innerHTML = '';
+    if (!show) return;
+
+    const loc = this.#services.localization;
     const isSimulated = this.#store.hasSimulatedData();
     const badge = createBadge({
       label: isSimulated

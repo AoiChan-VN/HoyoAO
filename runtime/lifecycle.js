@@ -1,8 +1,8 @@
 /**
  * Application Lifecycle Manager (§32, §33)
  *
- * ServiceContext (§5, §91, §92):
- *   - cache: granted to all apps as basic performance infrastructure (§41).
+ * Runtime lifecycle only. Installation/activation are controlled by the
+ * ApplicationInstaller (§84). start() refuses disabled applications.
  */
 
 const VALID_STATES = new Set([
@@ -28,6 +28,13 @@ export class ApplicationLifecycle {
   async start(appId, mountPoint) {
     const entry = this.#registry.get(appId);
     if (!entry) throw new Error(`Application "${appId}" not in registry`);
+
+    // §84 — installation/usage separately controlled.
+    if (entry.activation === 'disabled') {
+      const err = new Error(`Application "${appId}" is disabled`);
+      this.#eventBus.emit('application:error', { appId, error: err.message });
+      throw err;
+    }
 
     try {
       this.#transition(appId, 'STARTING');
@@ -119,23 +126,19 @@ export class ApplicationLifecycle {
     context.navigation = this.#services.get('navigation');
     context.cache = this.#services.get('cache');
 
-    // Data access requires data.read permission.
     if (permissions.has('data.read')) {
       context.data = this.#services.get('data');
       context.indexer = this.#services.get('indexer');
     }
 
-    // Storage access requires explicit permission.
     if (permissions.has('storage.read') || permissions.has('storage.write')) {
       context.storage = this.#services.get('storage');
     }
 
-    // Network access requires explicit permission (§92 least privilege).
     if (permissions.has('network')) {
       context.network = this.#services.get('network');
     }
 
-    // System status + diagnostics access (§92 least privilege).
     if (permissions.has('system.status')) {
       context.registry = this.#registry;
       context.diagnostics = this.#services.get('diagnostics');

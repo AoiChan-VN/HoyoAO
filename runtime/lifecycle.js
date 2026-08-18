@@ -4,12 +4,10 @@
  * States: DISCOVERED → VALIDATING → READY → STARTING → RUNNING
  *         → SUSPENDED → STOPPING → STOPPED | FAILED | DISABLED
  *
- * Application failure is isolated (§33): a crash here does NOT
- * take down the Shell or other Applications.
- *
  * ServiceContext (§5, §91, §92):
- *   Applications receive a frozen, permission-filtered view of
- *   OS services. They NEVER get raw access to the ServiceRegistry.
+ *   Applications receive a frozen, permission-filtered view of OS services.
+ *   - notifications: granted to all apps (basic user-facing UI infra).
+ *   - diagnostics:   granted only with "system.status" (least privilege §92).
  */
 
 const VALID_STATES = new Set([
@@ -32,12 +30,6 @@ export class ApplicationLifecycle {
     this.#services = services;
   }
 
-  /**
-   * Start an Application.
-   * @param {string} appId
-   * @param {HTMLElement} mountPoint — DOM node provided by Shell
-   * @returns {object} the loaded app module
-   */
   async start(appId, mountPoint) {
     const entry = this.#registry.get(appId);
     if (!entry) throw new Error(`Application "${appId}" not in registry`);
@@ -46,14 +38,12 @@ export class ApplicationLifecycle {
       this.#transition(appId, 'STARTING');
       this.#eventBus.emit('application:starting', { appId });
 
-      // Dynamic import — controlled loading (§40)
       const mod = await import(entry.manifest.entry);
 
       if (typeof mod.mount !== 'function') {
         throw new Error(`"${appId}" must export a mount() function`);
       }
 
-      // Build permission-filtered service context (§91, §92)
       const serviceContext = this.#buildServiceContext(entry.manifest);
 
       mod.mount(mountPoint, serviceContext);
@@ -75,10 +65,6 @@ export class ApplicationLifecycle {
     }
   }
 
-  /**
-   * Stop an Application.
-   * @param {string} appId
-   */
   async stop(appId) {
     const mod = this.#instances.get(appId);
     if (!mod) return;
@@ -121,41 +107,35 @@ export class ApplicationLifecycle {
   /*  PRIVATE                                                            */
   /* ------------------------------------------------------------------ */
 
-  /**
-   * Build a frozen ServiceContext filtered by manifest permissions.
-   * Applications only receive services they are allowed to use (§92).
-   *
-   * @param {object} manifest
-   * @returns {Readonly<object>}
-   */
   #buildServiceContext(manifest) {
     const permissions = new Set(manifest.permissions || []);
     const context = {};
 
-    // Core services every application receives
+    // Core services every application receives.
     context.events = this.#services.get('events');
     context.logger = this.#services.get('logger');
     context.config = this.#services.get('config');
     context.theme = this.#services.get('theme');
     context.localization = this.#services.get('localization');
+    context.notifications = this.#services.get('notifications');
 
-    // Data access requires data.read permission
+    // Data access requires data.read permission.
     if (permissions.has('data.read')) {
       context.data = this.#services.get('data');
       context.indexer = this.#services.get('indexer');
     }
 
-    // Storage access requires explicit permission
+    // Storage access requires explicit permission.
     if (permissions.has('storage.read') || permissions.has('storage.write')) {
       context.storage = this.#services.get('storage');
     }
 
-    // System status access
+    // System status + diagnostics access (§92 least privilege).
     if (permissions.has('system.status')) {
       context.registry = this.#registry;
+      context.diagnostics = this.#services.get('diagnostics');
     }
 
-    // Freeze to prevent mutation by Applications (§5)
     return Object.freeze(context);
   }
 

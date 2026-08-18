@@ -1,18 +1,24 @@
 /**
- * OS Shell (§87)
+ * OS Shell (§87, §88)
  *
- * Common environment. Visual identity (logo) is resolved through the
- * AssetRegistry BY NAME — never hardcoded (§20, §35).
+ * Common environment + rendering side of navigation.
+ * The Shell does NOT define routes (routes live in RouteRegistry §64)
+ * and does NOT hardcode application names (§89). It reacts to
+ * "navigation:changed" events and renders based on route.kind:
+ *   - kind 'os'          → render an OS view (e.g. Settings)
+ *   - kind 'application' → start/stop the Application via Lifecycle
  */
 
 import { ShellNavigation } from './navigation.js';
 import { ShellFooter } from './footer.js';
 import { NotificationHost } from './notification-host.js';
+import { SettingsView } from './settings-view.js';
 
 export class Shell {
   #container;
   #config;
   #registry;
+  #routeRegistry;
   #eventBus;
   #logger;
   #brand;
@@ -21,19 +27,28 @@ export class Shell {
   #notifications;
   #icons;
   #assets;
+  #settings;
+  #navigation;
+  #lifecycle;
 
   #contentArea = null;
-  #navigation = null;
+  #navigationUI = null;
   #footer = null;
   #notificationHost = null;
+  #settingsView = null;
+
+  #currentAppId = null;
+  #currentOSView = null;
+  #abortController;
 
   constructor({
-    container, config, registry, eventBus, logger, brand,
-    theme, localization, notifications, icons, assets,
+    container, config, registry, routeRegistry, eventBus, logger, brand,
+    theme, localization, notifications, icons, assets, settings, navigation, lifecycle,
   }) {
     this.#container = container;
     this.#config = config;
     this.#registry = registry;
+    this.#routeRegistry = routeRegistry;
     this.#eventBus = eventBus;
     this.#logger = logger;
     this.#brand = brand;
@@ -42,6 +57,10 @@ export class Shell {
     this.#notifications = notifications;
     this.#icons = icons;
     this.#assets = assets;
+    this.#settings = settings;
+    this.#navigation = navigation;
+    this.#lifecycle = lifecycle;
+    this.#abortController = new AbortController();
   }
 
   async mount() {
@@ -55,13 +74,13 @@ export class Shell {
     const body = document.createElement('div');
     body.className = 'os-shell__body';
 
-    this.#navigation = new ShellNavigation(
-      this.#registry,
+    this.#navigationUI = new ShellNavigation(
+      this.#routeRegistry,
       this.#eventBus,
       this.#localization,
       this.#icons,
     );
-    const sidebar = this.#navigation.render();
+    const sidebar = this.#navigationUI.render();
 
     this.#contentArea = document.createElement('main');
     this.#contentArea.className = 'os-shell__content';
@@ -85,6 +104,9 @@ export class Shell {
     });
     this.#notificationHost.mount();
 
+    /* Navigation wiring (§30, §88) */
+    this.#subscribeNavigation();
+
     this.#logger.info('shell', 'Shell DOM assembled');
   }
 
@@ -92,13 +114,109 @@ export class Shell {
     return this.#contentArea;
   }
 
+  destroy() {
+    this.#abortController.abort();
+    if (this.#settingsView) {
+      this.#settingsView.destroy();
+      this.#settingsView = null;
+    }
+    if (this.#notificationHost) {
+      this.#notificationHost.destroy();
+      this.#notificationHost = null;
+    }
+  }
+
   /* ---- private ---- */
+
+  #subscribeNavigation() {
+    // Nav items announce intent; Shell forwards to NavigationService.
+    this.#eventBus.on('navigation:selected', (payload) => {
+      if (payload?.path) {
+        this.#navigation.navigate(payload.path);
+      }
+    });
+
+    // React to resolved navigation by rendering the target.
+    this.#eventBus.on('navigation:changed', (payload) => {
+      this.#onNavigationChanged(payload?.route);
+    });
+  }
+
+  /**
+   * Render based on route kind — NO application-specific branching (§89).
+   * @param {object} route
+   */
+  #onNavigationChanged(route) {
+    if (!route) return;
+
+    if (route.kind === 'os') {
+      this.#showOSView(route.viewId);
+      return;
+    }
+
+    if (route.kind === 'application') {
+      this.#switchApplication(route.scope);
+      return;
+    }
+  }
+
+  #showOSView(viewId) {
+    // Currently only Settings has an OS view; others are future work.
+    if (viewId === 'settings') {
+      if (this.#currentOSView === 'settings') return;
+      this.#clearCurrentView();
+      this.#currentOSView = 'settings';
+      this.#currentAppId = null;
+
+      this.#settingsView = new SettingsView({
+        container: this.#contentArea,
+        settings: this.#settings,
+        localization: this.#localization,
+      });
+      this.#settingsView.mount();
+
+      this.#navigationUI.setActivePath('/os/settings');
+      return;
+    }
+
+    this.#logger.info('shell', `OS view "${viewId}" not available yet`);
+  }
+
+  async #switchApplication(appId) {
+    if (this.#currentAppId === appId) return;
+
+    this.#clearCurrentView();
+
+    try {
+      await this.#lifecycle.start(appId, this.#contentArea);
+      this.#currentAppId = appId;
+      this.#navigationUI.setActivePath(`/apps/${appId}`);
+    } catch (err) {
+      this.#logger.error('shell', `Failed to start "${appId}"`, {
+        error: err.message,
+      });
+    }
+  }
+
+  #clearCurrentView() {
+    if (this.#currentAppId && this.#lifecycle.isRunning(this.#currentAppId)) {
+      this.#lifecycle.stop(this.#currentAppId);
+    }
+    this.#currentAppId = null;
+
+    if (this.#settingsView) {
+      this.#settingsView.destroy();
+      this.#settingsView = null;
+    }
+    this.#currentOSView = null;
+
+    this.#contentArea.innerHTML = '';
+  }
 
   #buildHeader() {
     const header = document.createElement('header');
     header.className = 'os-shell__header';
 
-    // Logo resolved through AssetRegistry by name (§20, §35).
     const logoWrap = document.createElement('div');
     logoWrap.className = 'os-shell__logo';
 

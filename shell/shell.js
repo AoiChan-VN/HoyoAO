@@ -1,9 +1,8 @@
 /**
  * OS Shell (§87)
  *
- * Common environment: navigation, application switching, global header/footer,
- * global notifications, global error presentation, theme, localization.
- * Contains ZERO application business logic.
+ * Common environment. Visual identity (logo) is resolved through the
+ * AssetRegistry BY NAME — never hardcoded (§20, §35).
  */
 
 import { ShellNavigation } from './navigation.js';
@@ -20,6 +19,8 @@ export class Shell {
   #theme;
   #localization;
   #notifications;
+  #icons;
+  #assets;
 
   #contentArea = null;
   #navigation = null;
@@ -28,7 +29,7 @@ export class Shell {
 
   constructor({
     container, config, registry, eventBus, logger, brand,
-    theme, localization, notifications,
+    theme, localization, notifications, icons, assets,
   }) {
     this.#container = container;
     this.#config = config;
@@ -39,6 +40,8 @@ export class Shell {
     this.#theme = theme;
     this.#localization = localization;
     this.#notifications = notifications;
+    this.#icons = icons;
+    this.#assets = assets;
   }
 
   async mount() {
@@ -56,6 +59,7 @@ export class Shell {
       this.#registry,
       this.#eventBus,
       this.#localization,
+      this.#icons,
     );
     const sidebar = this.#navigation.render();
 
@@ -66,7 +70,7 @@ export class Shell {
     body.append(sidebar, this.#contentArea);
 
     /* Footer */
-    this.#footer = new ShellFooter(this.#brand, this.#localization);
+    this.#footer = new ShellFooter(this.#brand, this.#localization, this.#assets);
     const footer = this.#footer.render();
 
     /* Assemble */
@@ -94,13 +98,18 @@ export class Shell {
     const header = document.createElement('header');
     header.className = 'os-shell__header';
 
+    // Logo resolved through AssetRegistry by name (§20, §35).
     const logoWrap = document.createElement('div');
     logoWrap.className = 'os-shell__logo';
 
-    if (this.#brand.logo?.src) {
+    const logoUrl = this.#brand.logoAsset
+      ? this.#assets.resolve(this.#brand.logoAsset)
+      : null;
+
+    if (logoUrl) {
       const img = document.createElement('img');
-      img.src = this.#brand.logo.src;
-      img.alt = this.#brand.logo.alt || this.#brand.name;
+      img.src = logoUrl;
+      img.alt = this.#brand.name || 'OS';
       img.className = 'os-shell__logo-img';
       logoWrap.appendChild(img);
     }
@@ -116,4 +125,3 @@ export class Shell {
     return header;
   }
 }
-

@@ -2,8 +2,8 @@
  * Application Lifecycle Manager (§32, §33)
  *
  * ServiceContext (§5, §91, §92):
- *   - icons / assets: granted to all apps (visual infrastructure §20, §35).
- *   - diagnostics:    granted only with "system.status" (least privilege §92).
+ *   - settings: granted to all apps so they can register their own
+ *     settings definitions (§49).
  */
 
 const VALID_STATES = new Set([
@@ -116,6 +116,7 @@ export class ApplicationLifecycle {
     context.notifications = this.#services.get('notifications');
     context.icons = this.#services.get('icons');
     context.assets = this.#services.get('assets');
+    context.settings = this.#services.get('settings');
 
     // Data access requires data.read permission.
     if (permissions.has('data.read')) {
@@ -143,4 +144,4 @@ export class ApplicationLifecycle {
     }
     this.#registry.setState(appId, state);
   }
-} 
+}

@@ -1,9 +1,9 @@
 /**
  * OS Shell (§87, §88)
  *
- * Common environment + system status.
- * Shows a persistent NetworkIndicator (system status §87) and announces
- * connectivity changes through the NotificationService.
+ * Common environment + rendering side of navigation.
+ * Provides the Settings OS view with access to Settings, Installer,
+ * Lifecycle, and EventBus so it can manage application activation (§84).
  */
 
 import { ShellNavigation } from './navigation.js';
@@ -28,6 +28,7 @@ export class Shell {
   #settings;
   #navigation;
   #network;
+  #installer;
   #lifecycle;
 
   #contentArea = null;
@@ -44,7 +45,8 @@ export class Shell {
 
   constructor({
     container, config, registry, routeRegistry, eventBus, logger, brand,
-    theme, localization, notifications, icons, assets, settings, navigation, network, lifecycle,
+    theme, localization, notifications, icons, assets, settings, navigation,
+    network, installer, lifecycle,
   }) {
     this.#container = container;
     this.#config = config;
@@ -61,6 +63,7 @@ export class Shell {
     this.#settings = settings;
     this.#navigation = navigation;
     this.#network = network;
+    this.#installer = installer;
     this.#lifecycle = lifecycle;
     this.#abortController = new AbortController();
   }
@@ -209,6 +212,9 @@ export class Shell {
         container: this.#contentArea,
         settings: this.#settings,
         localization: this.#localization,
+        installer: this.#installer,
+        lifecycle: this.#lifecycle,
+        eventBus: this.#eventBus,
       });
       this.#settingsView.mount();
 
@@ -273,7 +279,6 @@ export class Shell {
     title.className = 'os-shell__title';
     title.textContent = this.#config.get('os.name', 'WEB ADMIN OS');
 
-    // Context area — includes system status (§87).
     const context = document.createElement('div');
     context.className = 'os-shell__context';
 

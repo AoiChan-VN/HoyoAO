@@ -1,0 +1,24 @@
+{
+  "id": "server",
+  "name": "Server",
+  "version": "1.0.0",
+  "description": "Server fleet monitoring: status, load, and detailed inspection.",
+  "entry": "applications/server/app.js",
+  "icon": "app",
+  "permissions": [
+    "network"
+  ],
+  "dependencies": [],
+  "routes": [
+    { "path": "/apps/server", "name": "Server" }
+  ],
+  "capabilities": [
+    "network"
+  ],
+  "compatibility": {
+    "osVersion": ">=1.0.0"
+  },
+  "lifecycle": {
+    "autoStart": false
+  }
+} 

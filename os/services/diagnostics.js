@@ -1,9 +1,9 @@
 /**
  * Diagnostics Service (§25, §48)
  *
- * OS observability infrastructure. Collects and exposes information about:
- *   active applications, loaded services, events, errors, boot, memory,
- *   and cache usage (§48).
+ * OS observability infrastructure. Exposes applications (including
+ * installation + activation state §84), services, events, errors,
+ * boot, memory, and cache usage.
  *
  * This service COLLECTS and EXPOSES data only. It contains NO UI (§48).
  */
@@ -33,10 +33,6 @@ export class DiagnosticsService {
     this.#startCollecting();
   }
 
-  /**
-   * Aggregate snapshot of the running OS (§48).
-   * @returns {object}
-   */
   getSnapshot() {
     return {
       boot: {
@@ -66,11 +62,6 @@ export class DiagnosticsService {
     return this.#getServices();
   }
 
-  /**
-   * Subscribe to diagnostics updates (fired when a new error is captured).
-   * @param {Function} fn - receives the snapshot
-   * @returns {Function} unsubscribe
-   */
   subscribe(fn) {
     this.#listeners.add(fn);
     return () => this.#listeners.delete(fn);
@@ -110,6 +101,7 @@ export class DiagnosticsService {
     this.#notifyListeners();
   }
 
+  /** Applications with installation + activation state (§84). */
   #getApplications() {
     if (!this.#registry) return [];
     return this.#registry.getAll().map((entry) => ({
@@ -117,6 +109,9 @@ export class DiagnosticsService {
       name: entry.manifest.name,
       version: entry.manifest.version,
       state: entry.state,
+      installation: entry.installation ?? 'installed',
+      activation: entry.activation ?? 'enabled',
+      validationWarnings: entry.validationWarnings ?? [],
     }));
   }
 
@@ -135,7 +130,6 @@ export class DiagnosticsService {
     return null;
   }
 
-  /** Cache metrics for observability (§48). */
   #getCacheStats() {
     if (!this.#services || !this.#services.has('cache')) return null;
     try {

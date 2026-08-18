@@ -1,13 +1,9 @@
 /**
  * Application Lifecycle Manager (§32, §33)
  *
- * States: DISCOVERED → VALIDATING → READY → STARTING → RUNNING
- *         → SUSPENDED → STOPPING → STOPPED | FAILED | DISABLED
- *
  * ServiceContext (§5, §91, §92):
- *   Applications receive a frozen, permission-filtered view of OS services.
- *   - notifications: granted to all apps (basic user-facing UI infra).
- *   - diagnostics:   granted only with "system.status" (least privilege §92).
+ *   - icons / assets: granted to all apps (visual infrastructure §20, §35).
+ *   - diagnostics:    granted only with "system.status" (least privilege §92).
  */
 
 const VALID_STATES = new Set([
@@ -118,6 +114,8 @@ export class ApplicationLifecycle {
     context.theme = this.#services.get('theme');
     context.localization = this.#services.get('localization');
     context.notifications = this.#services.get('notifications');
+    context.icons = this.#services.get('icons');
+    context.assets = this.#services.get('assets');
 
     // Data access requires data.read permission.
     if (permissions.has('data.read')) {
@@ -145,4 +143,4 @@ export class ApplicationLifecycle {
     }
     this.#registry.setState(appId, state);
   }
-}
+} 

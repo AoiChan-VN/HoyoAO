@@ -25,6 +25,10 @@
     "settings.appearance.theme.light": "Light",
     "settings.language.current": "Language",
     "settings.dashboard.title": "Dashboard",
-    "settings.dashboard.showSourceBadge": "Show data source badge"
+    "settings.dashboard.showSourceBadge": "Show data source badge",
+    "network.online": "Online",
+    "network.offline": "Offline",
+    "network.offlineNotification": "You are offline. Network-dependent features may be unavailable.",
+    "network.onlineNotification": "Connection restored."
   }
 }

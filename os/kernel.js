@@ -1,10 +1,10 @@
 /**
  * OS Kernel — Boot Orchestrator
  *
- * Adds the Resource System (§35) and Extension System foundation (§61, §62).
- * Core OS resources (themes, locales) are registered with ResourceService;
- * a real resource-pack extension is registered and activated to demonstrate
- * the Extension System end-to-end.
+ * Adds the complete Persistence Layer: StorageService now receives
+ * configuration-driven backend options, registers memory/local/indexeddb
+ * adapters by capability (§23), and a MigrationManager runs versioned OS
+ * storage migrations at boot (§59).
  */
 
 import { ConfigService } from './config.js';
@@ -18,6 +18,7 @@ import { ManifestValidator } from '../runtime/manifest-validator.js';
 import { ApplicationInstaller } from '../runtime/application-installer.js';
 import { ResourceRegistry } from '../runtime/resource-registry.js';
 import { ExtensionRegistry } from '../runtime/extension-registry.js';
+import { MigrationManager } from '../runtime/migration-manager.js';
 import { Shell } from '../shell/shell.js';
 import { StorageService } from './services/storage.js';
 import { Indexer } from './services/indexer.js';
@@ -40,6 +41,7 @@ import { DEFAULT_ICONS } from '../platform/icons/default-icons.js';
 import { OS_SETTINGS_SECTIONS, createOSSettingsDefaults } from './settings/os-settings.js';
 import { OS_ROUTES } from './routes/os-routes.js';
 import { documentTemplatesPack } from './extensions/document-templates-pack.js';
+import { OS_STORAGE_VERSION, OS_STORAGE_MIGRATIONS } from './services/storage/os-migrations.js';
 
 export class Kernel {
   /** @type {'UNINITIALIZED'|'BOOTING'|'RUNNING'|'FAILED'} */
@@ -78,6 +80,9 @@ export class Kernel {
 
       /* Phase 3 — Core Data & Storage Services */
       this.#initCoreServices();
+
+      /* Phase 3b — OS storage migrations (§59) */
+      await this.#runOSMigrations();
 
       /* Phase 4 — Cache Service */
       this.#initCacheService();
@@ -180,11 +185,15 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Core Services                                            */
+  /*  PRIVATE — Core Services (storage + migrations)                     */
   /* ------------------------------------------------------------------ */
 
   #initCoreServices() {
-    const storage = new StorageService(this.#logger);
+    const storage = new StorageService(this.#logger, {
+      databaseName: this.#config.get('storage.databaseName', 'web-admin-os'),
+      localPrefix: this.#config.get('storage.localPrefix', 'webos:'),
+      storeName: this.#config.get('storage.storeName', 'kv'),
+    });
     const indexer = new Indexer(storage, this.#eventBus, this.#logger);
     const data = new DataService(indexer, this.#eventBus, this.#logger);
 
@@ -195,7 +204,41 @@ export class Kernel {
     this.#services.register('config', this.#config);
     this.#services.register('logger', this.#logger);
 
+    // Migration manager (§59) — versioned data migrations.
+    const migrations = new MigrationManager(storage, this.#logger);
+    this.#services.register('migrations', migrations);
+
     this.#logger.info('boot', 'Core data & storage services initialised');
+  }
+
+  /**
+   * Run OS-scoped storage migrations (§59). Selects the best available
+   * adapter (indexeddb > local > memory) and applies pending migrations.
+   */
+  async #runOSMigrations() {
+    const storage = this.#services.get('storage');
+    const migrations = this.#services.get('migrations');
+
+    const adapter = storage.hasAdapter('indexeddb')
+      ? 'indexeddb'
+      : storage.hasAdapter('local')
+        ? 'local'
+        : 'memory';
+
+    const result = await migrations.migrate(
+      'os:storage',
+      OS_STORAGE_VERSION,
+      OS_STORAGE_MIGRATIONS,
+      adapter,
+    );
+
+    if (result.applied.length > 0) {
+      this.#logger.info('boot', `OS storage migrated v${result.from} → v${result.to} (${adapter})`, {
+        applied: result.applied,
+      });
+    } else {
+      this.#logger.info('boot', `OS storage already at v${result.to} (${adapter})`);
+    }
   }
 
   /* ------------------------------------------------------------------ */
@@ -228,10 +271,6 @@ export class Kernel {
     this.#logger.info('boot', 'Resource service initialised');
   }
 
-  /**
-   * Register core OS resources (real files) with the Resource System.
-   * Icons stay in IconRegistry and brand assets in AssetRegistry (§64).
-   */
   #registerCoreResources() {
     const resources = this.#services.get('resources');
 
@@ -477,11 +516,6 @@ export class Kernel {
     this.#logger.info('boot', 'Extension service initialised');
   }
 
-  /**
-   * Register and activate OS-provided extensions. Registration happens at
-   * boot (trusted source §40); runtime registration of arbitrary external
-   * code is not enabled in this foundation.
-   */
   async #activateCoreExtensions() {
     const extensions = this.#services.get('extensions');
 
@@ -614,8 +648,8 @@ export class Kernel {
     } catch (err) {
       this.#logger.warn('boot', 'Branding unavailable — using defaults', { error: err.message });
       this.#brand = {
-        name: 'HoyoAO-OS',
-        owner: 'AoiChan-VN',
+        name: 'WEB ADMIN OS',
+        owner: 'HoyoAO',
         copyright: '© 2026 HoyoAO. All Rights Reserved',
         logoAsset: 'brand.logo',
         faviconAsset: 'brand.favicon',

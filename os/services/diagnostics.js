@@ -1,9 +1,8 @@
 /**
  * Diagnostics Service (§25, §48)
  *
- * OS observability. Now also exposes Resource System and Extension System
- * statistics so monitoring Applications can see registered resources and
- * active extensions.
+ * OS observability. Now also exposes Offline Sync status and registered
+ * schemas so monitoring Applications can observe them.
  */
 export class DiagnosticsService {
   #registry;
@@ -47,6 +46,8 @@ export class DiagnosticsService {
       permissions: this.#getPermissionStats(),
       resources: this.#getResourceStats(),
       extensions: this.#getExtensionStats(),
+      sync: this.#getSyncStats(),
+      schemas: this.#getSchemaStats(),
     };
   }
 
@@ -154,7 +155,6 @@ export class DiagnosticsService {
     }
   }
 
-  /** Resource System statistics (§48). */
   #getResourceStats() {
     if (!this.#services || !this.#services.has('resources')) return null;
     try {
@@ -174,7 +174,6 @@ export class DiagnosticsService {
     }
   }
 
-  /** Extension System statistics (§48). */
   #getExtensionStats() {
     if (!this.#services || !this.#services.has('extensions')) return null;
     try {
@@ -185,6 +184,30 @@ export class DiagnosticsService {
       };
     } catch (err) {
       this.#logger?.warn('diagnostics', 'Failed to read extension stats', { error: err.message });
+      return null;
+    }
+  }
+
+  /** Offline Sync status (§48). */
+  #getSyncStats() {
+    if (!this.#services || !this.#services.has('sync')) return null;
+    try {
+      return this.#services.get('sync').getStatus();
+    } catch (err) {
+      this.#logger?.warn('diagnostics', 'Failed to read sync stats', { error: err.message });
+      return null;
+    }
+  }
+
+  /** Registered schemas (§48, §64). */
+  #getSchemaStats() {
+    if (!this.#services || !this.#services.has('schemas')) return null;
+    try {
+      const schemas = this.#services.get('schemas');
+      const list = schemas.listSchemas();
+      return { total: list.length, list };
+    } catch (err) {
+      this.#logger?.warn('diagnostics', 'Failed to read schema stats', { error: err.message });
       return null;
     }
   }

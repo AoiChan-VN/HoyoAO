@@ -15,7 +15,7 @@ import {
   IndexedDBAdapter,
 } from './storage/adapters.js';
 
-const DEFAULT_DB_NAME = 'web-admin-os';
+const DEFAULT_DB_NAME = 'hoyo-db';
 const DEFAULT_LOCAL_PREFIX = 'webos:';
 
 export class StorageService {

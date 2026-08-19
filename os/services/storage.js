@@ -1,130 +1,137 @@
 /**
- * Storage Service (§34, §85)
- * 
- * Provides partitioned, isolated storage.
- * Decouples physical storage (Memory, LocalStorage) from logical operations.
- * Applications must use partitions to ensure storage isolation.
+ * Storage Service (§25, §34, §23, §85)
+ *
+ * Central storage orchestration. Registers available adapters via
+ * capability detection (§23), exposes namespaced partitions (§34), and
+ * falls back gracefully when a preferred backend is unavailable (§75).
+ *
+ * Adapters live in ./storage/adapters.js. The external contract
+ * (StorageService exported from this module) is unchanged (§60, §71).
  */
 
-/* ------------------------------------------------------------------ */
-/*  ADAPTERS                                                           */
-/* ------------------------------------------------------------------ */
+import {
+  MemoryStorageAdapter,
+  LocalStorageAdapter,
+  IndexedDBAdapter,
+} from './storage/adapters.js';
 
-class StorageAdapter {
-  async get(key) { throw new Error('Not implemented'); }
-  async set(key, value) { throw new Error('Not implemented'); }
-  async delete(key) { throw new Error('Not implemented'); }
-  async keys() { throw new Error('Not implemented'); }
-  async clear() { throw new Error('Not implemented'); }
-}
-
-export class MemoryStorageAdapter extends StorageAdapter {
-  #store = new Map();
-
-  async get(key) { 
-    const val = this.#store.get(key);
-    return val !== undefined ? structuredClone(val) : undefined;
-  }
-  
-  async set(key, value) { 
-    this.#store.set(key, structuredClone(value)); 
-  }
-  
-  async delete(key) { 
-    this.#store.delete(key); 
-  }
-  
-  async keys() { 
-    return Array.from(this.#store.keys()); 
-  }
-  
-  async clear() { 
-    this.#store.clear(); 
-  }
-}
-
-export class LocalStorageAdapter extends StorageAdapter {
-  async get(key) {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : undefined;
-    } catch { return undefined; }
-  }
-
-  async set(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-  }
-
-  async delete(key) {
-    localStorage.removeItem(key);
-  }
-
-  async keys() {
-    return Object.keys(localStorage);
-  }
-
-  async clear() {
-    localStorage.clear();
-  }
-}
-
-/* ------------------------------------------------------------------ */
-/*  STORAGE SERVICE                                                    */
-/* ------------------------------------------------------------------ */
+const DEFAULT_DB_NAME = 'web-admin-os';
+const DEFAULT_LOCAL_PREFIX = 'webos:';
 
 export class StorageService {
-  /** @type {Map<string, StorageAdapter>} */
+  /** @type {Map<string, object>} adapterName → adapter */
   #adapters = new Map();
   #logger;
 
-  constructor(logger) {
+  constructor(logger, options = {}) {
     this.#logger = logger;
-    // Register default adapters
+    this.#registerDefaultAdapters(options);
+  }
+
+  #registerDefaultAdapters(options) {
+    // Memory is always available — the guaranteed fallback (§75).
     this.registerAdapter('memory', new MemoryStorageAdapter());
-    
-    // Only register LocalStorage if available (Cross-platform §23)
-    if (typeof localStorage !== 'undefined') {
-      this.registerAdapter('local', new LocalStorageAdapter());
+
+    if (LocalStorageAdapter.isAvailable()) {
+      this.registerAdapter(
+        'local',
+        new LocalStorageAdapter({ prefix: options.localPrefix || DEFAULT_LOCAL_PREFIX }),
+      );
     }
+
+    if (IndexedDBAdapter.isAvailable()) {
+      this.registerAdapter(
+        'indexeddb',
+        new IndexedDBAdapter(options.databaseName || DEFAULT_DB_NAME, {
+          storeName: options.storeName || 'kv',
+        }),
+      );
+    }
+
+    this.#logger.info(
+      'storage',
+      `Storage adapters available: ${this.getAvailableAdapters().join(', ')}`,
+    );
   }
 
   registerAdapter(name, adapter) {
     this.#adapters.set(name, adapter);
   }
 
+  hasAdapter(name) {
+    return this.#adapters.has(name);
+  }
+
+  getAvailableAdapters() {
+    return Array.from(this.#adapters.keys());
+  }
+
   /**
-   * Get an isolated storage partition for a specific namespace.
-   * @param {string} namespace e.g. "os:config", "app:dashboard:metrics"
-   * @param {string} adapterName e.g. "memory", "local"
-   * @returns {object} Scoped storage interface
+   * Resolve an adapter from a preference (or preference list), falling
+   * back to memory when none are available (§75 fail gracefully).
+   * @param {string|string[]} preferred
+   * @returns {{name:string, adapter:object}}
+   */
+  resolveAdapter(preferred) {
+    const prefs = Array.isArray(preferred) ? preferred : [preferred];
+    for (const name of prefs) {
+      if (this.#adapters.has(name)) {
+        return { name, adapter: this.#adapters.get(name) };
+      }
+    }
+    return { name: 'memory', adapter: this.#adapters.get('memory') };
+  }
+
+  /**
+   * Get a namespaced partition (§34 isolation). The partition prefixes all
+   * keys, so applications cannot silently access another namespace.
+   * @param {string} namespace
+   * @param {string|string[]} adapterName
    */
   getPartition(namespace, adapterName = 'memory') {
-    const adapter = this.#adapters.get(adapterName);
-    if (!adapter) {
-      throw new Error(`Storage adapter "${adapterName}" not registered.`);
+    const resolved = this.resolveAdapter(adapterName);
+
+    const requested = Array.isArray(adapterName) ? adapterName : [adapterName];
+    if (!requested.includes(resolved.name)) {
+      this.#logger.warn(
+        'storage',
+        `Adapter "${requested.join('/')}" unavailable for "${namespace}"; fell back to "${resolved.name}"`,
+      );
     }
 
+    const adapter = resolved.adapter;
     const prefix = `${namespace}:`;
 
     return {
-      get: async (key) => adapter.get(`${prefix}${key}`),
-      set: async (key, value) => adapter.set(`${prefix}${key}`, value),
-      delete: async (key) => adapter.delete(`${prefix}${key}`),
-      
+      get: (key) => adapter.get(`${prefix}${key}`),
+      set: (key, value) => adapter.set(`${prefix}${key}`, value),
+      delete: (key) => adapter.delete(`${prefix}${key}`),
       keys: async () => {
         const allKeys = await adapter.keys();
         return allKeys
-          .filter(k => k.startsWith(prefix))
-          .map(k => k.slice(prefix.length));
+          .filter((k) => k.startsWith(prefix))
+          .map((k) => k.slice(prefix.length));
       },
-      
       clear: async () => {
         const allKeys = await adapter.keys();
-        const targetKeys = allKeys.filter(k => k.startsWith(prefix));
-        for (const k of targetKeys) {
-          await adapter.delete(k);
+        for (const k of allKeys) {
+          if (k.startsWith(prefix)) await adapter.delete(k);
         }
-      }
+      },
     };
   }
-} 
+
+  /** Close backend connections (§74). */
+  async dispose() {
+    for (const adapter of this.#adapters.values()) {
+      if (typeof adapter.close === 'function') {
+        try {
+          await adapter.close();
+        } catch {
+          // best-effort close during teardown
+        }
+      }
+    }
+    this.#adapters.clear();
+  }
+}

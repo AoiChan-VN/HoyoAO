@@ -1,8 +1,8 @@
 /**
  * OS Kernel — Boot Orchestrator
  *
- * Adds the Schema Service (source of truth for data schemas §64) and the
- * Offline Sync Service (queue-and-sync for offline-first operation §24).
+ * Updates: NotificationService now receives storage for persistent history,
+ * and the Shell receives PermissionService for the Applications view.
  */
 
 import { ConfigService } from './config.js';
@@ -45,7 +45,6 @@ import { OS_STORAGE_VERSION, OS_STORAGE_MIGRATIONS } from './services/storage/os
 import { CORE_SCHEMAS } from './schemas/core-schemas.js';
 
 export class Kernel {
-  /** @type {'UNINITIALIZED'|'BOOTING'|'RUNNING'|'FAILED'} */
   #bootState = 'UNINITIALIZED';
 
   #config;
@@ -101,8 +100,8 @@ export class Kernel {
       /* Phase 7 — Theme & Localization */
       await this.#initThemeAndLocalization();
 
-      /* Phase 8 — Notification Service */
-      this.#initNotificationService();
+      /* Phase 8 — Notification Service (persistent history §34) */
+      await this.#initNotificationService();
 
       /* Phase 9 — Network Service */
       this.#initNetworkService();
@@ -162,6 +161,7 @@ export class Kernel {
         network: this.#services.get('network'),
         installer: this.#installer,
         lifecycle: this.#lifecycle,
+        permissions: this.#services.get('permissions'),
       });
       await this.#shell.mount();
       this.#logger.info('boot', 'Shell mounted');
@@ -243,20 +243,12 @@ export class Kernel {
     }
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Schema Service (§64, §83)                                */
-  /* ------------------------------------------------------------------ */
-
   #initSchemaService() {
     const schemas = new SchemaService(this.#logger, this.#eventBus);
     schemas.registerMany(CORE_SCHEMAS);
     this.#services.register('schemas', schemas);
     this.#logger.info('boot', `Schema service initialised (${CORE_SCHEMAS.length} core schemas)`);
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Cache                                                    */
-  /* ------------------------------------------------------------------ */
 
   #initCacheService() {
     const cache = new CacheService(this.#eventBus, this.#logger, {
@@ -265,10 +257,6 @@ export class Kernel {
     this.#services.register('cache', cache);
     this.#logger.info('boot', 'Cache service initialised');
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Resource System (§35, §84)                               */
-  /* ------------------------------------------------------------------ */
 
   #initResourceService() {
     const resourceRegistry = new ResourceRegistry(this.#logger);
@@ -288,46 +276,10 @@ export class Kernel {
     const resources = this.#services.get('resources');
 
     const coreResources = [
-      {
-        id: 'res-theme-dark',
-        name: 'Dark Theme',
-        type: 'theme',
-        version: '1.0.0',
-        url: 'platform/themes/dark.json',
-        mimeType: 'application/json',
-        owner: 'os',
-        tags: ['theme', 'dark'],
-      },
-      {
-        id: 'res-theme-light',
-        name: 'Light Theme',
-        type: 'theme',
-        version: '1.0.0',
-        url: 'platform/themes/light.json',
-        mimeType: 'application/json',
-        owner: 'os',
-        tags: ['theme', 'light'],
-      },
-      {
-        id: 'res-locale-en',
-        name: 'English Locale',
-        type: 'data',
-        version: '1.0.0',
-        url: 'platform/locales/en.json',
-        mimeType: 'application/json',
-        owner: 'os',
-        tags: ['locale', 'en'],
-      },
-      {
-        id: 'res-locale-vi',
-        name: 'Vietnamese Locale',
-        type: 'data',
-        version: '1.0.0',
-        url: 'platform/locales/vi.json',
-        mimeType: 'application/json',
-        owner: 'os',
-        tags: ['locale', 'vi'],
-      },
+      { id: 'res-theme-dark', name: 'Dark Theme', type: 'theme', version: '1.0.0', url: 'platform/themes/dark.json', mimeType: 'application/json', owner: 'os', tags: ['theme', 'dark'] },
+      { id: 'res-theme-light', name: 'Light Theme', type: 'theme', version: '1.0.0', url: 'platform/themes/light.json', mimeType: 'application/json', owner: 'os', tags: ['theme', 'light'] },
+      { id: 'res-locale-en', name: 'English Locale', type: 'data', version: '1.0.0', url: 'platform/locales/en.json', mimeType: 'application/json', owner: 'os', tags: ['locale', 'en'] },
+      { id: 'res-locale-vi', name: 'Vietnamese Locale', type: 'data', version: '1.0.0', url: 'platform/locales/vi.json', mimeType: 'application/json', owner: 'os', tags: ['locale', 'vi'] },
     ];
 
     for (const res of coreResources) {
@@ -337,19 +289,11 @@ export class Kernel {
     this.#logger.info('boot', `Registered ${coreResources.length} core OS resources`);
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Permission Service (§91, §92)                            */
-  /* ------------------------------------------------------------------ */
-
   #initPermissionService() {
     const permissions = new PermissionService(this.#eventBus, this.#logger);
     this.#services.register('permissions', permissions);
     this.#logger.info('boot', 'Permission service initialised');
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Theme & Localization                                     */
-  /* ------------------------------------------------------------------ */
 
   async #initThemeAndLocalization() {
     const theme = new ThemeService(this.#config, this.#eventBus, this.#logger);
@@ -364,18 +308,18 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Notification                                             */
+  /*  PRIVATE — Notification Service (persistent history §34)            */
   /* ------------------------------------------------------------------ */
 
-  #initNotificationService() {
-    const notifications = new NotificationService(this.#eventBus, this.#logger);
+  async #initNotificationService() {
+    const notifications = new NotificationService(this.#eventBus, this.#logger, {
+      storage: this.#services.get('storage'),
+      maxHistory: this.#config.get('notifications.maxHistory', 100),
+    });
+    await notifications.init();
     this.#services.register('notifications', notifications);
-    this.#logger.info('boot', 'Notification service initialised');
+    this.#logger.info('boot', 'Notification service initialised (persistent history)');
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Network                                                  */
-  /* ------------------------------------------------------------------ */
 
   #initNetworkService() {
     const network = new NetworkService(this.#eventBus, this.#logger);
@@ -383,10 +327,6 @@ export class Kernel {
     this.#services.register('network', network);
     this.#logger.info('boot', 'Network service initialised');
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Offline Sync Service (§24)                               */
-  /* ------------------------------------------------------------------ */
 
   async #initOfflineSyncService() {
     const sync = new OfflineSyncService({
@@ -401,10 +341,6 @@ export class Kernel {
     this.#logger.info('boot', 'Offline sync service initialised');
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Icon Registry                                            */
-  /* ------------------------------------------------------------------ */
-
   #initIconRegistry() {
     const iconsCache = this.#services.get('cache').getPartition('icons');
     const icons = new IconRegistry(this.#logger, iconsCache);
@@ -412,10 +348,6 @@ export class Kernel {
     this.#services.register('icons', icons);
     this.#logger.info('boot', 'Icon registry initialised (cache-backed)');
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Asset Registry                                           */
-  /* ------------------------------------------------------------------ */
 
   async #initAssetRegistry() {
     const assets = new AssetRegistry(this.#logger);
@@ -435,10 +367,6 @@ export class Kernel {
     this.#services.register('assets', assets);
     this.#logger.info('boot', 'Asset registry initialised');
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Settings                                                 */
-  /* ------------------------------------------------------------------ */
 
   async #initSettings() {
     const settings = new SettingsService(
@@ -469,10 +397,6 @@ export class Kernel {
     this.#logger.info('boot', 'Settings framework initialised');
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Installer (§40, §84)                                     */
-  /* ------------------------------------------------------------------ */
-
   #initInstaller() {
     const validator = new ManifestValidator(this.#logger);
     const installer = new ApplicationInstaller({
@@ -489,10 +413,6 @@ export class Kernel {
     this.#logger.info('boot', 'Application installer initialised');
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Diagnostics (§48)                                        */
-  /* ------------------------------------------------------------------ */
-
   #initDiagnosticsService() {
     const diagnostics = new DiagnosticsService({
       registry: this.#registry,
@@ -505,10 +425,6 @@ export class Kernel {
     this.#services.register('diagnostics', diagnostics);
     this.#logger.info('boot', 'Diagnostics service initialised');
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Routing                                                  */
-  /* ------------------------------------------------------------------ */
 
   #initRouting() {
     this.#routeRegistry = new RouteRegistry(this.#logger);
@@ -526,10 +442,6 @@ export class Kernel {
 
     this.#logger.info('boot', 'Routing initialised');
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Extension System foundation (§61, §62)                   */
-  /* ------------------------------------------------------------------ */
 
   #initExtensionService() {
     const extensionRegistry = new ExtensionRegistry(this.#logger);
@@ -565,10 +477,6 @@ export class Kernel {
 
     this.#logger.info('boot', `Core extensions processed (${coreExtensions.length})`);
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Discovery via Installer (§40, §75)                       */
-  /* ------------------------------------------------------------------ */
 
   async #discoverApplications() {
     const paths = this.#config.get('applications.manifests', []);
@@ -627,10 +535,6 @@ export class Kernel {
     );
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Initial navigation                                       */
-  /* ------------------------------------------------------------------ */
-
   #navigateInitial() {
     const navigation = this.#services.get('navigation');
     const defaultApp = this.#config.get('boot.defaultApplication', '');
@@ -643,10 +547,6 @@ export class Kernel {
       this.#logger.warn('boot', `Initial navigation to "${initialPath}" failed`);
     }
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Development Telemetry (§45)                              */
-  /* ------------------------------------------------------------------ */
 
   #startDevTelemetryIfEnabled() {
     const mode = this.#config.get('os.mode', 'production');
@@ -665,10 +565,6 @@ export class Kernel {
     this.#logger.warn('boot', 'Development telemetry ACTIVE — data is SIMULATED (§45)');
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Branding                                                 */
-  /* ------------------------------------------------------------------ */
-
   async #loadBranding() {
     try {
       const res = await fetch('platform/brand.json');
@@ -678,8 +574,8 @@ export class Kernel {
     } catch (err) {
       this.#logger.warn('boot', 'Branding unavailable — using defaults', { error: err.message });
       this.#brand = {
-        name: 'HoyoAO-OS',
-        owner: 'AoiChan-VN',
+        name: 'WEB ADMIN OS',
+        owner: 'HoyoAO',
         copyright: '© 2026 HoyoAO. All Rights Reserved',
         logoAsset: 'brand.logo',
         faviconAsset: 'brand.favicon',
@@ -687,10 +583,6 @@ export class Kernel {
       };
     }
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Fatal error rendering                                    */
-  /* ------------------------------------------------------------------ */
 
   #renderFatalError(error) {
     const root = document.getElementById('os-root');

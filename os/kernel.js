@@ -614,8 +614,8 @@ export class Kernel {
     } catch (err) {
       this.#logger.warn('boot', 'Branding unavailable — using defaults', { error: err.message });
       this.#brand = {
-        name: 'WEB ADMIN OS',
-        owner: 'HoyoAO',
+        name: 'HoyoAO-OS',
+        owner: 'AoiChan-VN',
         copyright: '© 2026 HoyoAO. All Rights Reserved',
         logoAsset: 'brand.logo',
         faviconAsset: 'brand.favicon',

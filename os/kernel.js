@@ -1,10 +1,8 @@
 /**
  * OS Kernel — Boot Orchestrator
  *
- * Adds the complete Persistence Layer: StorageService now receives
- * configuration-driven backend options, registers memory/local/indexeddb
- * adapters by capability (§23), and a MigrationManager runs versioned OS
- * storage migrations at boot (§59).
+ * Adds the Schema Service (source of truth for data schemas §64) and the
+ * Offline Sync Service (queue-and-sync for offline-first operation §24).
  */
 
 import { ConfigService } from './config.js';
@@ -36,12 +34,15 @@ import { NetworkService } from './services/network.js';
 import { PermissionService } from './services/permission.js';
 import { ResourceService } from './services/resource.js';
 import { ExtensionService } from './services/extension.js';
+import { SchemaService } from './services/schema.js';
+import { OfflineSyncService } from './services/offline-sync.js';
 import { DevelopmentTelemetryService } from './services/dev-telemetry.js';
 import { DEFAULT_ICONS } from '../platform/icons/default-icons.js';
 import { OS_SETTINGS_SECTIONS, createOSSettingsDefaults } from './settings/os-settings.js';
 import { OS_ROUTES } from './routes/os-routes.js';
 import { documentTemplatesPack } from './extensions/document-templates-pack.js';
 import { OS_STORAGE_VERSION, OS_STORAGE_MIGRATIONS } from './services/storage/os-migrations.js';
+import { CORE_SCHEMAS } from './schemas/core-schemas.js';
 
 export class Kernel {
   /** @type {'UNINITIALIZED'|'BOOTING'|'RUNNING'|'FAILED'} */
@@ -84,6 +85,9 @@ export class Kernel {
       /* Phase 3b — OS storage migrations (§59) */
       await this.#runOSMigrations();
 
+      /* Phase 3c — Schema Service (§64, §83) */
+      this.#initSchemaService();
+
       /* Phase 4 — Cache Service */
       this.#initCacheService();
 
@@ -102,6 +106,9 @@ export class Kernel {
 
       /* Phase 9 — Network Service */
       this.#initNetworkService();
+
+      /* Phase 9b — Offline Sync Service (§24) */
+      await this.#initOfflineSyncService();
 
       /* Phase 10 — Icon & Asset Registries */
       this.#initIconRegistry();
@@ -185,7 +192,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Core Services (storage + migrations)                     */
+  /*  PRIVATE — Core Services                                            */
   /* ------------------------------------------------------------------ */
 
   #initCoreServices() {
@@ -204,17 +211,12 @@ export class Kernel {
     this.#services.register('config', this.#config);
     this.#services.register('logger', this.#logger);
 
-    // Migration manager (§59) — versioned data migrations.
     const migrations = new MigrationManager(storage, this.#logger);
     this.#services.register('migrations', migrations);
 
     this.#logger.info('boot', 'Core data & storage services initialised');
   }
 
-  /**
-   * Run OS-scoped storage migrations (§59). Selects the best available
-   * adapter (indexeddb > local > memory) and applies pending migrations.
-   */
   async #runOSMigrations() {
     const storage = this.#services.get('storage');
     const migrations = this.#services.get('migrations');
@@ -239,6 +241,17 @@ export class Kernel {
     } else {
       this.#logger.info('boot', `OS storage already at v${result.to} (${adapter})`);
     }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Schema Service (§64, §83)                                */
+  /* ------------------------------------------------------------------ */
+
+  #initSchemaService() {
+    const schemas = new SchemaService(this.#logger, this.#eventBus);
+    schemas.registerMany(CORE_SCHEMAS);
+    this.#services.register('schemas', schemas);
+    this.#logger.info('boot', `Schema service initialised (${CORE_SCHEMAS.length} core schemas)`);
   }
 
   /* ------------------------------------------------------------------ */
@@ -369,6 +382,23 @@ export class Kernel {
     network.init();
     this.#services.register('network', network);
     this.#logger.info('boot', 'Network service initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Offline Sync Service (§24)                               */
+  /* ------------------------------------------------------------------ */
+
+  async #initOfflineSyncService() {
+    const sync = new OfflineSyncService({
+      storage: this.#services.get('storage'),
+      network: this.#services.get('network'),
+      eventBus: this.#eventBus,
+      logger: this.#logger,
+      options: { maxAttempts: this.#config.get('sync.maxAttempts', 5) },
+    });
+    await sync.init();
+    this.#services.register('sync', sync);
+    this.#logger.info('boot', 'Offline sync service initialised');
   }
 
   /* ------------------------------------------------------------------ */
@@ -648,8 +678,8 @@ export class Kernel {
     } catch (err) {
       this.#logger.warn('boot', 'Branding unavailable — using defaults', { error: err.message });
       this.#brand = {
-        name: 'WEB ADMIN OS',
-        owner: 'HoyoAO',
+        name: 'HoyoAO-OS',
+        owner: 'AoiChan-VN',
         copyright: '© 2026 HoyoAO. All Rights Reserved',
         logoAsset: 'brand.logo',
         faviconAsset: 'brand.favicon',

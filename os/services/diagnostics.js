@@ -1,10 +1,9 @@
 /**
  * Diagnostics Service (§25, §48)
  *
- * OS observability infrastructure. Exposes applications, services, events,
- * errors, boot, memory, cache, and permission grants/audit (§48, §92).
- *
- * This service COLLECTS and EXPOSES data only. It contains NO UI (§48).
+ * OS observability. Now also exposes Resource System and Extension System
+ * statistics so monitoring Applications can see registered resources and
+ * active extensions.
  */
 export class DiagnosticsService {
   #registry;
@@ -14,7 +13,6 @@ export class DiagnosticsService {
   #storage;
   #config;
 
-  /** @type {Array<object>} circular buffer of recent errors */
   #errors = [];
   #maxErrors = 100;
   #bootTimestamp = Date.now();
@@ -47,6 +45,8 @@ export class DiagnosticsService {
       memory: this.#getMemory(),
       cache: this.#getCacheStats(),
       permissions: this.#getPermissionStats(),
+      resources: this.#getResourceStats(),
+      extensions: this.#getExtensionStats(),
     };
   }
 
@@ -139,7 +139,6 @@ export class DiagnosticsService {
     }
   }
 
-  /** Permission grants + recent audit (§48, §92). */
   #getPermissionStats() {
     if (!this.#services || !this.#services.has('permissions')) return null;
     try {
@@ -151,6 +150,41 @@ export class DiagnosticsService {
       };
     } catch (err) {
       this.#logger?.warn('diagnostics', 'Failed to read permission stats', { error: err.message });
+      return null;
+    }
+  }
+
+  /** Resource System statistics (§48). */
+  #getResourceStats() {
+    if (!this.#services || !this.#services.has('resources')) return null;
+    try {
+      const resources = this.#services.get('resources');
+      return {
+        ...resources.getStats(),
+        recent: resources.getResources().slice(0, 20).map((r) => ({
+          id: r.id,
+          type: r.type,
+          owner: r.owner,
+          activation: r.activation,
+        })),
+      };
+    } catch (err) {
+      this.#logger?.warn('diagnostics', 'Failed to read resource stats', { error: err.message });
+      return null;
+    }
+  }
+
+  /** Extension System statistics (§48). */
+  #getExtensionStats() {
+    if (!this.#services || !this.#services.has('extensions')) return null;
+    try {
+      const extensions = this.#services.get('extensions');
+      return {
+        ...extensions.getStats(),
+        list: extensions.getExtensions(),
+      };
+    } catch (err) {
+      this.#logger?.warn('diagnostics', 'Failed to read extension stats', { error: err.message });
       return null;
     }
   }

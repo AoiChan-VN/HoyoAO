@@ -31,10 +31,7 @@ export class DiagnosticsService {
 
   getSnapshot() {
     return {
-      boot: {
-        timestamp: this.#bootTimestamp,
-        uptimeMs: Date.now() - this.#bootTimestamp,
-      },
+      boot: { timestamp: this.#bootTimestamp, uptimeMs: Date.now() - this.#bootTimestamp },
       applications: this.#getApplications(),
       services: this.#getServices(),
       errors: [...this.#errors],
@@ -48,9 +45,33 @@ export class DiagnosticsService {
       extensions: this.#getExtensionStats(),
       sync: this.#getSyncStats(),
       schemas: this.#getSchemaStats(),
+      search: this.#getSearchStats(),
+      scheduler: this.#getSchedulerStats(),
     };
   }
 
+  #getSearchStats() {
+    if (!this.#services || !this.#services.has('search')) return null;
+    try {
+      return this.#services.get('search').getStats();
+    } catch (err) {
+      this.#logger?.warn('diagnostics', 'Failed to read search stats', { error: err.message });
+      return null;
+    }
+  }
+
+  #getSchedulerStats() {
+    if (!this.#services || !this.#services.has('scheduler')) return null;
+    try {
+      const scheduler = this.#services.get('scheduler');
+      const jobs = scheduler.getJobs();
+      return { total: jobs.length, jobs };
+    } catch (err) {
+      this.#logger?.warn('diagnostics', 'Failed to read scheduler stats', { error: err.message });
+      return null;
+    }
+  }
+  
   getErrors() {
     return [...this.#errors];
   }

@@ -4,22 +4,13 @@
  * Pure schema + security validation for Application manifests.
  * No side effects. All manifest input is treated as untrusted (§83).
  *
- * Returns a structured result (§46):
- *   { valid, errors: [{field, message}], warnings: [{field, message}] }
+ * Permission names are sourced from the Permission Service registry (§64, §65)
+ * so there is a single source of truth for capabilities.
  */
 
-/** Capabilities the OS currently understands (§91). */
-export const KNOWN_PERMISSIONS = new Set([
-  'data.read',
-  'data.write',
-  'storage.read',
-  'storage.write',
-  'network',
-  'notifications',
-  'resources',
-  'system.status',
-  'file.import',
-]);
+import { KNOWN_PERMISSION_NAMES } from '../os/services/permission.js';
+
+const KNOWN_PERMISSION_SET = new Set(KNOWN_PERMISSION_NAMES);
 
 const ID_PATTERN = /^[a-z][a-z0-9-]*$/;
 const SEMVER_PATTERN = /^\d+\.\d+\.\d+([-+][0-9A-Za-z.-]+)?$/;
@@ -31,21 +22,12 @@ const MAX_DESCRIPTION_LENGTH = 1024;
 /*  Semver helpers                                                     */
 /* ------------------------------------------------------------------ */
 
-/**
- * Parse "1.2.3" (with optional pre-release/build suffix) into [1,2,3].
- * @param {string} version
- * @returns {number[]|null}
- */
 export function parseVersion(version) {
   const m = String(version).trim().match(/^(\d+)\.(\d+)\.(\d+)/);
   if (!m) return null;
   return [Number(m[1]), Number(m[2]), Number(m[3])];
 }
 
-/**
- * Compare two versions.
- * @returns {-1|0|1}
- */
 export function compareVersions(a, b) {
   const pa = typeof a === 'string' ? parseVersion(a) : a;
   const pb = typeof b === 'string' ? parseVersion(b) : b;
@@ -56,12 +38,6 @@ export function compareVersions(a, b) {
   return 0;
 }
 
-/**
- * Check whether `version` satisfies a constraint like ">=1.0.0", "^1.2.0".
- * @param {string} version
- * @param {string} constraint
- * @returns {boolean}
- */
 export function satisfiesVersion(version, constraint) {
   if (!constraint) return true;
 
@@ -125,14 +101,14 @@ export class ManifestValidator {
     }
 
     this.#validateIdentity(manifest, errors, warnings);
-    this.#validateVersion(manifest, errors, warnings);
-    this.#validateEntry(manifest, errors, warnings);
+    this.#validateVersion(manifest, errors);
+    this.#validateEntry(manifest, errors);
     this.#validatePermissions(manifest, errors, warnings);
     this.#validateCapabilities(manifest, errors, warnings);
-    this.#validateDependencies(manifest, errors, warnings);
-    this.#validateRoutes(manifest, errors, warnings);
-    this.#validateCompatibility(manifest, errors, warnings);
-    this.#validateLifecycle(manifest, errors, warnings);
+    this.#validateDependencies(manifest, errors);
+    this.#validateRoutes(manifest, errors);
+    this.#validateCompatibility(manifest, errors);
+    this.#validateLifecycle(manifest, errors);
 
     return { valid: errors.length === 0, errors, warnings };
   }
@@ -140,7 +116,6 @@ export class ManifestValidator {
   /* ---- private ---- */
 
   #validateIdentity(m, errors, warnings) {
-    // id
     if (typeof m.id !== 'string' || m.id.length === 0) {
       errors.push({ field: 'id', message: 'id is required and must be a non-empty string' });
     } else {
@@ -152,14 +127,12 @@ export class ManifestValidator {
       }
     }
 
-    // name
     if (typeof m.name !== 'string' || m.name.trim().length === 0) {
       errors.push({ field: 'name', message: 'name is required and must be a non-empty string' });
     } else if (m.name.length > MAX_NAME_LENGTH) {
       errors.push({ field: 'name', message: `name exceeds ${MAX_NAME_LENGTH} characters` });
     }
 
-    // description (optional)
     if (m.description !== undefined) {
       if (typeof m.description !== 'string') {
         errors.push({ field: 'description', message: 'description must be a string' });
@@ -181,7 +154,6 @@ export class ManifestValidator {
 
   /**
    * Entry point security validation (§39, §40, §83).
-   * Rejects remote URLs, path traversal, absolute paths, non-modules.
    */
   #validateEntry(m, errors) {
     const entry = m.entry;
@@ -221,8 +193,7 @@ export class ManifestValidator {
         errors.push({ field: 'permissions', message: 'each permission must be a string' });
         continue;
       }
-      if (!KNOWN_PERMISSIONS.has(p)) {
-        // Unknown capability: warn but do not block (§61 extensibility).
+      if (!KNOWN_PERMISSION_SET.has(p)) {
         warnings.push({ field: 'permissions', message: `unknown permission "${p}"` });
       }
     }
@@ -241,7 +212,7 @@ export class ManifestValidator {
         errors.push({ field: 'capabilities', message: 'each capability must be a string' });
         continue;
       }
-      if (!KNOWN_PERMISSIONS.has(c)) {
+      if (!KNOWN_PERMISSION_SET.has(c)) {
         warnings.push({ field: 'capabilities', message: `unknown capability "${c}"` });
       }
     }
@@ -324,4 +295,4 @@ export class ManifestValidator {
       errors.push({ field: 'lifecycle.autoStart', message: 'autoStart must be a boolean' });
     }
   }
-} 
+}

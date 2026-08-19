@@ -1,9 +1,8 @@
 /**
  * Diagnostics Service (§25, §48)
  *
- * OS observability infrastructure. Exposes applications (including
- * installation + activation state §84), services, events, errors,
- * boot, memory, and cache usage.
+ * OS observability infrastructure. Exposes applications, services, events,
+ * errors, boot, memory, cache, and permission grants/audit (§48, §92).
  *
  * This service COLLECTS and EXPOSES data only. It contains NO UI (§48).
  */
@@ -47,6 +46,7 @@ export class DiagnosticsService {
         : {},
       memory: this.#getMemory(),
       cache: this.#getCacheStats(),
+      permissions: this.#getPermissionStats(),
     };
   }
 
@@ -101,7 +101,6 @@ export class DiagnosticsService {
     this.#notifyListeners();
   }
 
-  /** Applications with installation + activation state (§84). */
   #getApplications() {
     if (!this.#registry) return [];
     return this.#registry.getAll().map((entry) => ({
@@ -136,6 +135,22 @@ export class DiagnosticsService {
       return this.#services.get('cache').getGlobalStats();
     } catch (err) {
       this.#logger?.warn('diagnostics', 'Failed to read cache stats', { error: err.message });
+      return null;
+    }
+  }
+
+  /** Permission grants + recent audit (§48, §92). */
+  #getPermissionStats() {
+    if (!this.#services || !this.#services.has('permissions')) return null;
+    try {
+      const permissions = this.#services.get('permissions');
+      return {
+        known: permissions.getKnownPermissions(),
+        grants: permissions.getAllGrants(),
+        recentAudit: permissions.getAuditLog().slice(-20),
+      };
+    } catch (err) {
+      this.#logger?.warn('diagnostics', 'Failed to read permission stats', { error: err.message });
       return null;
     }
   }

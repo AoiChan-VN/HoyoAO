@@ -1,11 +1,9 @@
 /**
  * OS Kernel — Boot Orchestrator
  *
- * Boot order (§7, §42):
- *   Config → Branding → Core → Cache → Theme/Localization → Notification
- *   → Network → Icons → Assets → Settings
- *   → Runtime (Registry → Installer → Diagnostics → Lifecycle)
- *   → Routing → Discovery (via Installer) → Shell → Initial nav → Dev Telemetry
+ * Adds the Permission Service as the central authority for application
+ * capabilities (§91, §92). Installed applications have their permissions
+ * registered via the Installer; the Lifecycle enforces them at start time.
  */
 
 import { ConfigService } from './config.js';
@@ -31,6 +29,7 @@ import { AssetRegistry } from './services/asset-registry.js';
 import { SettingsService } from './services/settings.js';
 import { NavigationService } from './services/navigation.js';
 import { NetworkService } from './services/network.js';
+import { PermissionService } from './services/permission.js';
 import { DevelopmentTelemetryService } from './services/dev-telemetry.js';
 import { DEFAULT_ICONS } from '../platform/icons/default-icons.js';
 import { OS_SETTINGS_SECTIONS, createOSSettingsDefaults } from './settings/os-settings.js';
@@ -77,23 +76,26 @@ export class Kernel {
       /* Phase 4 — Cache Service */
       this.#initCacheService();
 
-      /* Phase 5 — Theme & Localization */
+      /* Phase 5 — Permission Service (§91, §92) */
+      this.#initPermissionService();
+
+      /* Phase 6 — Theme & Localization */
       await this.#initThemeAndLocalization();
 
-      /* Phase 6 — Notification Service */
+      /* Phase 7 — Notification Service */
       this.#initNotificationService();
 
-      /* Phase 7 — Network Service */
+      /* Phase 8 — Network Service */
       this.#initNetworkService();
 
-      /* Phase 8 — Icon & Asset Registries */
+      /* Phase 9 — Icon & Asset Registries */
       this.#initIconRegistry();
       await this.#initAssetRegistry();
 
-      /* Phase 9 — Settings Framework */
+      /* Phase 10 — Settings Framework */
       await this.#initSettings();
 
-      /* Phase 10 — Runtime */
+      /* Phase 11 — Runtime */
       this.#registry = new ApplicationRegistry(this.#logger);
       this.#initInstaller();
       this.#initDiagnosticsService();
@@ -105,14 +107,14 @@ export class Kernel {
       );
       this.#logger.info('boot', 'Runtime initialised');
 
-      /* Phase 11 — Routing */
+      /* Phase 12 — Routing */
       this.#initRouting();
 
-      /* Phase 12 — Discovery via Installer */
+      /* Phase 13 — Discovery via Installer */
       await this.#discoverApplications();
       this.#registerApplicationRoutes();
 
-      /* Phase 13 — Mount Shell */
+      /* Phase 14 — Mount Shell */
       const root = document.getElementById('os-root');
       if (!root) throw new Error('Fatal: #os-root element not found');
 
@@ -138,13 +140,13 @@ export class Kernel {
       await this.#shell.mount();
       this.#logger.info('boot', 'Shell mounted');
 
-      /* Phase 14 — Initial navigation */
+      /* Phase 15 — Initial navigation */
       this.#navigateInitial();
 
-      /* Phase 15 — Development telemetry (SIMULATED, dev-mode only) */
+      /* Phase 16 — Development telemetry (SIMULATED, dev-mode only) */
       this.#startDevTelemetryIfEnabled();
 
-      /* Phase 16 — Done */
+      /* Phase 17 — Done */
       this.#bootState = 'RUNNING';
       this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
@@ -192,6 +194,16 @@ export class Kernel {
     });
     this.#services.register('cache', cache);
     this.#logger.info('boot', 'Cache service initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Permission Service (§91, §92)                            */
+  /* ------------------------------------------------------------------ */
+
+  #initPermissionService() {
+    const permissions = new PermissionService(this.#eventBus, this.#logger);
+    this.#services.register('permissions', permissions);
+    this.#logger.info('boot', 'Permission service initialised');
   }
 
   /* ------------------------------------------------------------------ */
@@ -302,7 +314,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Installer (§40, §84)                                     */
+  /*  PRIVATE — Installer (§40, §84) + Permission registration           */
   /* ------------------------------------------------------------------ */
 
   #initInstaller() {
@@ -313,6 +325,7 @@ export class Kernel {
       config: this.#config,
       eventBus: this.#eventBus,
       logger: this.#logger,
+      permissions: this.#services.get('permissions'),
     });
 
     this.#installer = installer;

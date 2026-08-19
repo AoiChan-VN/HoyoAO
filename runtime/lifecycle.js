@@ -1,10 +1,8 @@
 /**
  * Application Lifecycle Manager (§32, §33)
  *
- * ServiceContext is built with least privilege (§92):
- * gated services are granted only when PermissionService.has(appId, perm)
- * returns true. Falls back to manifest inspection if the Permission
- * Service is unavailable (§60 backward compatibility).
+ * ServiceContext is built with least privilege (§92). Adds the `resources`
+ * capability mapping so applications declaring it receive ResourceService.
  */
 
 const VALID_STATES = new Set([
@@ -31,7 +29,6 @@ export class ApplicationLifecycle {
     const entry = this.#registry.get(appId);
     if (!entry) throw new Error(`Application "${appId}" not in registry`);
 
-    // §84 — installation/usage separately controlled.
     if (entry.activation === 'disabled') {
       const err = new Error(`Application "${appId}" is disabled`);
       this.#eventBus.emit('application:error', { appId, error: err.message });
@@ -62,9 +59,7 @@ export class ApplicationLifecycle {
     } catch (err) {
       this.#transition(appId, 'FAILED');
       this.#eventBus.emit('application:error', { appId, error: err.message });
-      this.#logger.error('lifecycle', `"${appId}" failed to start`, {
-        error: err.message,
-      });
+      this.#logger.error('lifecycle', `"${appId}" failed to start`, { error: err.message });
       throw err;
     }
   }
@@ -89,9 +84,7 @@ export class ApplicationLifecycle {
     } catch (err) {
       this.#transition(appId, 'FAILED');
       this.#eventBus.emit('application:error', { appId, error: err.message });
-      this.#logger.error('lifecycle', `"${appId}" error during stop`, {
-        error: err.message,
-      });
+      this.#logger.error('lifecycle', `"${appId}" error during stop`, { error: err.message });
     }
   }
 
@@ -111,10 +104,6 @@ export class ApplicationLifecycle {
   /*  PRIVATE                                                            */
   /* ------------------------------------------------------------------ */
 
-  /**
-   * Build a frozen ServiceContext with least privilege (§92).
-   * Uses the Permission Service as the authority for capability checks.
-   */
   #buildServiceContext(manifest) {
     const appId = manifest.id;
 
@@ -122,17 +111,13 @@ export class ApplicationLifecycle {
       ? this.#services.get('permissions')
       : null;
 
-    // Fallback for backward compatibility (§60): if no Permission Service,
-    // inspect manifest.permissions directly.
     const manifestPerms = new Set(manifest.permissions || []);
     const has = (perm) =>
-      permissionService
-        ? permissionService.has(appId, perm)
-        : manifestPerms.has(perm);
+      permissionService ? permissionService.has(appId, perm) : manifestPerms.has(perm);
 
     const context = {};
 
-    // Core services every application receives (no permission required).
+    // Core services every application receives.
     context.events = this.#services.get('events');
     context.logger = this.#services.get('logger');
     context.config = this.#services.get('config');
@@ -157,6 +142,10 @@ export class ApplicationLifecycle {
 
     if (has('network')) {
       context.network = this.#services.get('network');
+    }
+
+    if (has('resources')) {
+      context.resources = this.#services.get('resources');
     }
 
     if (has('system.status')) {

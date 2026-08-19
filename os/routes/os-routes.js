@@ -1,9 +1,9 @@
 /**
  * OS Route Definitions (§30)
  *
- * Routes owned by the OS (not by any Application).
- * Diagnostics is an APPLICATION (§48), so it is NOT listed here —
- * it is registered from its manifest as an application route.
+ * Routes owned by the OS. Application routes are registered separately
+ * from manifests. Adding an OS view here automatically surfaces it in
+ * the OS navigation (§89 — no hardcoded menu logic).
  */
 export const OS_ROUTES = [
   {
@@ -15,4 +15,13 @@ export const OS_ROUTES = [
     icon: 'settings',
     order: 1,
   },
-]; 
+  {
+    path: '/os/applications',
+    scope: 'os',
+    kind: 'os',
+    viewId: 'applications',
+    titleKey: 'os.applications',
+    icon: 'app',
+    order: 2,
+  },
+];

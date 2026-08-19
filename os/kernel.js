@@ -1,9 +1,10 @@
 /**
  * OS Kernel — Boot Orchestrator
  *
- * Adds the Permission Service as the central authority for application
- * capabilities (§91, §92). Installed applications have their permissions
- * registered via the Installer; the Lifecycle enforces them at start time.
+ * Adds the Resource System (§35) and Extension System foundation (§61, §62).
+ * Core OS resources (themes, locales) are registered with ResourceService;
+ * a real resource-pack extension is registered and activated to demonstrate
+ * the Extension System end-to-end.
  */
 
 import { ConfigService } from './config.js';
@@ -15,6 +16,8 @@ import { ApplicationLifecycle } from '../runtime/lifecycle.js';
 import { RouteRegistry } from '../runtime/route-registry.js';
 import { ManifestValidator } from '../runtime/manifest-validator.js';
 import { ApplicationInstaller } from '../runtime/application-installer.js';
+import { ResourceRegistry } from '../runtime/resource-registry.js';
+import { ExtensionRegistry } from '../runtime/extension-registry.js';
 import { Shell } from '../shell/shell.js';
 import { StorageService } from './services/storage.js';
 import { Indexer } from './services/indexer.js';
@@ -30,10 +33,13 @@ import { SettingsService } from './services/settings.js';
 import { NavigationService } from './services/navigation.js';
 import { NetworkService } from './services/network.js';
 import { PermissionService } from './services/permission.js';
+import { ResourceService } from './services/resource.js';
+import { ExtensionService } from './services/extension.js';
 import { DevelopmentTelemetryService } from './services/dev-telemetry.js';
 import { DEFAULT_ICONS } from '../platform/icons/default-icons.js';
 import { OS_SETTINGS_SECTIONS, createOSSettingsDefaults } from './settings/os-settings.js';
 import { OS_ROUTES } from './routes/os-routes.js';
+import { documentTemplatesPack } from './extensions/document-templates-pack.js';
 
 export class Kernel {
   /** @type {'UNINITIALIZED'|'BOOTING'|'RUNNING'|'FAILED'} */
@@ -76,26 +82,30 @@ export class Kernel {
       /* Phase 4 — Cache Service */
       this.#initCacheService();
 
-      /* Phase 5 — Permission Service (§91, §92) */
+      /* Phase 5 — Resource System (§35) + core resources */
+      this.#initResourceService();
+      this.#registerCoreResources();
+
+      /* Phase 6 — Permission Service (§91, §92) */
       this.#initPermissionService();
 
-      /* Phase 6 — Theme & Localization */
+      /* Phase 7 — Theme & Localization */
       await this.#initThemeAndLocalization();
 
-      /* Phase 7 — Notification Service */
+      /* Phase 8 — Notification Service */
       this.#initNotificationService();
 
-      /* Phase 8 — Network Service */
+      /* Phase 9 — Network Service */
       this.#initNetworkService();
 
-      /* Phase 9 — Icon & Asset Registries */
+      /* Phase 10 — Icon & Asset Registries */
       this.#initIconRegistry();
       await this.#initAssetRegistry();
 
-      /* Phase 10 — Settings Framework */
+      /* Phase 11 — Settings Framework */
       await this.#initSettings();
 
-      /* Phase 11 — Runtime */
+      /* Phase 12 — Runtime */
       this.#registry = new ApplicationRegistry(this.#logger);
       this.#initInstaller();
       this.#initDiagnosticsService();
@@ -107,14 +117,18 @@ export class Kernel {
       );
       this.#logger.info('boot', 'Runtime initialised');
 
-      /* Phase 12 — Routing */
+      /* Phase 13 — Routing */
       this.#initRouting();
 
-      /* Phase 13 — Discovery via Installer */
+      /* Phase 14 — Extension System foundation (§61, §62) */
+      this.#initExtensionService();
+      await this.#activateCoreExtensions();
+
+      /* Phase 15 — Discovery via Installer */
       await this.#discoverApplications();
       this.#registerApplicationRoutes();
 
-      /* Phase 14 — Mount Shell */
+      /* Phase 16 — Mount Shell */
       const root = document.getElementById('os-root');
       if (!root) throw new Error('Fatal: #os-root element not found');
 
@@ -140,13 +154,13 @@ export class Kernel {
       await this.#shell.mount();
       this.#logger.info('boot', 'Shell mounted');
 
-      /* Phase 15 — Initial navigation */
+      /* Phase 17 — Initial navigation */
       this.#navigateInitial();
 
-      /* Phase 16 — Development telemetry (SIMULATED, dev-mode only) */
+      /* Phase 18 — Development telemetry (SIMULATED, dev-mode only) */
       this.#startDevTelemetryIfEnabled();
 
-      /* Phase 17 — Done */
+      /* Phase 19 — Done */
       this.#bootState = 'RUNNING';
       this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
@@ -194,6 +208,81 @@ export class Kernel {
     });
     this.#services.register('cache', cache);
     this.#logger.info('boot', 'Cache service initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Resource System (§35, §84)                               */
+  /* ------------------------------------------------------------------ */
+
+  #initResourceService() {
+    const resourceRegistry = new ResourceRegistry(this.#logger);
+    const resourceService = new ResourceService({
+      registry: resourceRegistry,
+      eventBus: this.#eventBus,
+      logger: this.#logger,
+      cache: this.#services.get('cache'),
+    });
+
+    this.#services.register('resourceRegistry', resourceRegistry);
+    this.#services.register('resources', resourceService);
+    this.#logger.info('boot', 'Resource service initialised');
+  }
+
+  /**
+   * Register core OS resources (real files) with the Resource System.
+   * Icons stay in IconRegistry and brand assets in AssetRegistry (§64).
+   */
+  #registerCoreResources() {
+    const resources = this.#services.get('resources');
+
+    const coreResources = [
+      {
+        id: 'res-theme-dark',
+        name: 'Dark Theme',
+        type: 'theme',
+        version: '1.0.0',
+        url: 'platform/themes/dark.json',
+        mimeType: 'application/json',
+        owner: 'os',
+        tags: ['theme', 'dark'],
+      },
+      {
+        id: 'res-theme-light',
+        name: 'Light Theme',
+        type: 'theme',
+        version: '1.0.0',
+        url: 'platform/themes/light.json',
+        mimeType: 'application/json',
+        owner: 'os',
+        tags: ['theme', 'light'],
+      },
+      {
+        id: 'res-locale-en',
+        name: 'English Locale',
+        type: 'data',
+        version: '1.0.0',
+        url: 'platform/locales/en.json',
+        mimeType: 'application/json',
+        owner: 'os',
+        tags: ['locale', 'en'],
+      },
+      {
+        id: 'res-locale-vi',
+        name: 'Vietnamese Locale',
+        type: 'data',
+        version: '1.0.0',
+        url: 'platform/locales/vi.json',
+        mimeType: 'application/json',
+        owner: 'os',
+        tags: ['locale', 'vi'],
+      },
+    ];
+
+    for (const res of coreResources) {
+      resources.registerResource(res);
+    }
+
+    this.#logger.info('boot', `Registered ${coreResources.length} core OS resources`);
   }
 
   /* ------------------------------------------------------------------ */
@@ -271,9 +360,7 @@ export class Kernel {
         this.#logger.warn('boot', `Asset manifest not found (HTTP ${res.status})`);
       }
     } catch (err) {
-      this.#logger.warn('boot', 'Failed to load asset manifest', {
-        error: err.message,
-      });
+      this.#logger.warn('boot', 'Failed to load asset manifest', { error: err.message });
     }
 
     this.#services.register('assets', assets);
@@ -314,7 +401,7 @@ export class Kernel {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Installer (§40, §84) + Permission registration           */
+  /*  PRIVATE — Installer (§40, §84)                                     */
   /* ------------------------------------------------------------------ */
 
   #initInstaller() {
@@ -371,29 +458,48 @@ export class Kernel {
     this.#logger.info('boot', 'Routing initialised');
   }
 
-  #registerApplicationRoutes() {
-    for (const entry of this.#registry.getAll()) {
-      const manifest = entry.manifest;
-      const appId = manifest.id;
-      const routes = Array.isArray(manifest.routes) ? manifest.routes : [];
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Extension System foundation (§61, §62)                   */
+  /* ------------------------------------------------------------------ */
 
-      for (const r of routes) {
-        this.#routeRegistry.register({
-          path: r.path,
-          scope: appId,
-          kind: 'application',
-          title: r.name,
-          titleKey: r.nameKey,
-          icon: manifest.icon || 'app',
-          appId,
-        });
+  #initExtensionService() {
+    const extensionRegistry = new ExtensionRegistry(this.#logger);
+    const extensionService = new ExtensionService({
+      registry: extensionRegistry,
+      eventBus: this.#eventBus,
+      logger: this.#logger,
+      services: this.#services,
+      permissions: this.#services.get('permissions'),
+    });
+
+    this.#services.register('extensionRegistry', extensionRegistry);
+    this.#services.register('extensions', extensionService);
+    this.#logger.info('boot', 'Extension service initialised');
+  }
+
+  /**
+   * Register and activate OS-provided extensions. Registration happens at
+   * boot (trusted source §40); runtime registration of arbitrary external
+   * code is not enabled in this foundation.
+   */
+  async #activateCoreExtensions() {
+    const extensions = this.#services.get('extensions');
+
+    const coreExtensions = [documentTemplatesPack];
+
+    for (const ext of coreExtensions) {
+      const reg = extensions.registerExtension(ext);
+      if (!reg.success) {
+        this.#logger.warn('boot', `Extension registration skipped: ${reg.reason}`);
+        continue;
+      }
+      const act = await extensions.activateExtension(ext.id);
+      if (!act.success) {
+        this.#logger.warn('boot', `Extension activation failed for "${ext.id}": ${act.reason}`);
       }
     }
 
-    this.#logger.info(
-      'boot',
-      `Registered application routes (total routes: ${this.#routeRegistry.getAll().length})`,
-    );
+    this.#logger.info('boot', `Core extensions processed (${coreExtensions.length})`);
   }
 
   /* ------------------------------------------------------------------ */
@@ -425,13 +531,36 @@ export class Kernel {
         }
       } catch (err) {
         failed++;
-        this.#logger.warn('boot', `Manifest load error: ${path}`, {
-          error: err.message,
-        });
+        this.#logger.warn('boot', `Manifest load error: ${path}`, { error: err.message });
       }
     }
 
     this.#logger.info('boot', `Discovery complete — ${installed} installed, ${failed} skipped/failed`);
+  }
+
+  #registerApplicationRoutes() {
+    for (const entry of this.#registry.getAll()) {
+      const manifest = entry.manifest;
+      const appId = manifest.id;
+      const routes = Array.isArray(manifest.routes) ? manifest.routes : [];
+
+      for (const r of routes) {
+        this.#routeRegistry.register({
+          path: r.path,
+          scope: appId,
+          kind: 'application',
+          title: r.name,
+          titleKey: r.nameKey,
+          icon: manifest.icon || 'app',
+          appId,
+        });
+      }
+    }
+
+    this.#logger.info(
+      'boot',
+      `Registered application routes (total routes: ${this.#routeRegistry.getAll().length})`,
+    );
   }
 
   /* ------------------------------------------------------------------ */
@@ -483,9 +612,7 @@ export class Kernel {
       this.#brand = await res.json();
       this.#logger.info('boot', 'Branding loaded');
     } catch (err) {
-      this.#logger.warn('boot', 'Branding unavailable — using defaults', {
-        error: err.message,
-      });
+      this.#logger.warn('boot', 'Branding unavailable — using defaults', { error: err.message });
       this.#brand = {
         name: 'WEB ADMIN OS',
         owner: 'HoyoAO',

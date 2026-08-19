@@ -1,8 +1,9 @@
 /**
  * OS Kernel — Boot Orchestrator
  *
- * Updates: NotificationService now receives storage for persistent history,
- * and the Shell receives PermissionService for the Applications view.
+ * Adds SearchService (indexes resources + applications) and
+ * SchedulerService (background jobs). Both registered in ServiceRegistry,
+ * exposed via ServiceContext, and observable via DiagnosticsService.
  */
 
 import { ConfigService } from './config.js';
@@ -36,6 +37,8 @@ import { ResourceService } from './services/resource.js';
 import { ExtensionService } from './services/extension.js';
 import { SchemaService } from './services/schema.js';
 import { OfflineSyncService } from './services/offline-sync.js';
+import { SearchService } from './services/search.js';
+import { SchedulerService } from './services/scheduler.js';
 import { DevelopmentTelemetryService } from './services/dev-telemetry.js';
 import { DEFAULT_ICONS } from '../platform/icons/default-icons.js';
 import { OS_SETTINGS_SECTIONS, createOSSettingsDefaults } from './settings/os-settings.js';
@@ -90,9 +93,15 @@ export class Kernel {
       /* Phase 4 — Cache Service */
       this.#initCacheService();
 
+      /* Phase 4b — Scheduler Service (§25, §94) */
+      this.#initSchedulerService();
+
       /* Phase 5 — Resource System (§35) + core resources */
       this.#initResourceService();
       this.#registerCoreResources();
+
+      /* Phase 5b — Search Service (§64) + index resources */
+      this.#initSearchService();
 
       /* Phase 6 — Permission Service (§91, §92) */
       this.#initPermissionService();
@@ -138,6 +147,9 @@ export class Kernel {
       /* Phase 15 — Discovery via Installer */
       await this.#discoverApplications();
       this.#registerApplicationRoutes();
+
+      /* Phase 15b — Index installed applications into Search (§64) */
+      this.#indexApplicationsToSearch();
 
       /* Phase 16 — Mount Shell */
       const root = document.getElementById('os-root');
@@ -258,6 +270,20 @@ export class Kernel {
     this.#logger.info('boot', 'Cache service initialised');
   }
 
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Scheduler Service (§25, §94)                             */
+  /* ------------------------------------------------------------------ */
+
+  #initSchedulerService() {
+    const scheduler = new SchedulerService(this.#logger, this.#eventBus);
+    this.#services.register('scheduler', scheduler);
+    this.#logger.info('boot', 'Scheduler service initialised');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Resource System (§35, §84)                               */
+  /* ------------------------------------------------------------------ */
+
   #initResourceService() {
     const resourceRegistry = new ResourceRegistry(this.#logger);
     const resourceService = new ResourceService({
@@ -289,6 +315,62 @@ export class Kernel {
     this.#logger.info('boot', `Registered ${coreResources.length} core OS resources`);
   }
 
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Search Service (§64) + index resources                   */
+  /* ------------------------------------------------------------------ */
+
+  #initSearchService() {
+    const search = new SearchService(this.#logger, this.#eventBus);
+
+    // Source: resources (§35).
+    search.registerSource('resources', { label: 'Resources' });
+    const resources = this.#services.get('resources').getResources();
+    search.indexMany(
+      resources.map((r) => ({
+        id: r.id,
+        source: 'resources',
+        type: r.type,
+        title: r.name,
+        body: r.id,
+        tags: Array.isArray(r.tags) ? r.tags : [],
+        route: null,
+        meta: { owner: r.owner, version: r.version },
+      })),
+    );
+
+    this.#services.register('search', search);
+    this.#logger.info('boot', `Search service initialised (${resources.length} resources indexed)`);
+  }
+
+  /** Called after discovery so installed applications become searchable. */
+  #indexApplicationsToSearch() {
+    const search = this.#services.get('search');
+    if (!search) return;
+
+    search.registerSource('applications', { label: 'Applications' });
+
+    const items = this.#registry.getAll().map((entry) => {
+      const m = entry.manifest;
+      return {
+        id: `app-${m.id}`,
+        source: 'applications',
+        type: 'application',
+        title: m.name,
+        body: m.description || '',
+        tags: [m.id],
+        route: `/apps/${m.id}`,
+        meta: { version: m.version },
+      };
+    });
+
+    const count = search.indexMany(items);
+    this.#logger.info('boot', `Indexed ${count} application(s) into search`);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  PRIVATE — Permission Service (§91, §92)                            */
+  /* ------------------------------------------------------------------ */
+
   #initPermissionService() {
     const permissions = new PermissionService(this.#eventBus, this.#logger);
     this.#services.register('permissions', permissions);
@@ -306,10 +388,6 @@ export class Kernel {
 
     this.#logger.info('boot', 'Theme & Localization services initialised');
   }
-
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE — Notification Service (persistent history §34)            */
-  /* ------------------------------------------------------------------ */
 
   async #initNotificationService() {
     const notifications = new NotificationService(this.#eventBus, this.#logger, {

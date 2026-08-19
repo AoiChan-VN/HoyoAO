@@ -1,0 +1,193 @@
+/* ================================================================== */
+/*  DATA / STRUCTURE COMPONENTS — Table, List, Tabs (§50, §21, §52)   */
+/*  Part of the UI component system. Modular stylesheet (§52).        */
+/* ================================================================== */
+
+/* ---- Table ---- */
+
+.ui-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+}
+
+.ui-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.ui-table__th {
+  text-align: left;
+  padding: var(--space-sm) var(--space-md);
+  color: var(--color-text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.ui-table__th[data-align="right"],
+.ui-table__td[data-align="right"] { text-align: right; }
+
+.ui-table__th[data-align="center"],
+.ui-table__td[data-align="center"] { text-align: center; }
+
+.ui-table__sort-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.ui-table__sort-btn::after {
+  content: '';
+  display: inline-block;
+  width: 0.5em;
+}
+
+.ui-table__sort-btn.is-asc::after { content: '▲'; font-size: 0.7em; }
+.ui-table__sort-btn.is-desc::after { content: '▼'; font-size: 0.7em; }
+
+.ui-table__sort-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.ui-table__td {
+  padding: var(--space-sm) var(--space-md);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ui-table__row:last-child .ui-table__td {
+  border-bottom: none;
+}
+
+.ui-table__row.is-clickable {
+  cursor: pointer;
+}
+
+.ui-table__row.is-clickable:hover .ui-table__td {
+  background: var(--color-bg-tertiary);
+}
+
+.ui-table__row.is-clickable:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.ui-table__empty {
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* ---- List ---- */
+
+.ui-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.ui-list__item {
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+.ui-list__item.is-selectable {
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.ui-list__item.is-selectable:hover {
+  border-color: var(--color-accent);
+}
+
+.ui-list__item.is-selected {
+  border-color: var(--color-accent);
+  background: var(--color-bg-tertiary);
+}
+
+.ui-list__item.is-selectable:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.ui-list__empty {
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* ---- Tabs ---- */
+
+.ui-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.ui-tabs__tablist {
+  display: flex;
+  gap: var(--space-xs);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.ui-tabs__tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.ui-tabs__tab:hover {
+  color: var(--color-text-primary);
+}
+
+.ui-tabs__tab.is-active {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-accent);
+  font-weight: 600;
+}
+
+.ui-tabs__tab:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.ui-tabs__panel {
+  padding: var(--space-sm) 0;
+}
+
+/* ---- Responsive (§22) ---- */
+
+@media (max-width: 600px) {
+  .ui-table__th,
+  .ui-table__td {
+    padding: var(--space-xs) var(--space-sm);
+  }
+} 

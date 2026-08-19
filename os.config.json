@@ -23,5 +23,10 @@
   },
   "localization": {
     "defaultLocale": "en"
+  },
+  "storage": {
+    "databaseName": "hoyo-db",
+    "storeName": "kv",
+    "localPrefix": "webos:"
   }
 }

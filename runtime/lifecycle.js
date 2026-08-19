@@ -1,8 +1,10 @@
 /**
  * Application Lifecycle Manager (§32, §33)
  *
- * Runtime lifecycle only. Installation/activation are controlled by the
- * ApplicationInstaller (§84). start() refuses disabled applications.
+ * ServiceContext is built with least privilege (§92):
+ * gated services are granted only when PermissionService.has(appId, perm)
+ * returns true. Falls back to manifest inspection if the Permission
+ * Service is unavailable (§60 backward compatibility).
  */
 
 const VALID_STATES = new Set([
@@ -109,11 +111,28 @@ export class ApplicationLifecycle {
   /*  PRIVATE                                                            */
   /* ------------------------------------------------------------------ */
 
+  /**
+   * Build a frozen ServiceContext with least privilege (§92).
+   * Uses the Permission Service as the authority for capability checks.
+   */
   #buildServiceContext(manifest) {
-    const permissions = new Set(manifest.permissions || []);
+    const appId = manifest.id;
+
+    const permissionService = this.#services.has('permissions')
+      ? this.#services.get('permissions')
+      : null;
+
+    // Fallback for backward compatibility (§60): if no Permission Service,
+    // inspect manifest.permissions directly.
+    const manifestPerms = new Set(manifest.permissions || []);
+    const has = (perm) =>
+      permissionService
+        ? permissionService.has(appId, perm)
+        : manifestPerms.has(perm);
+
     const context = {};
 
-    // Core services every application receives.
+    // Core services every application receives (no permission required).
     context.events = this.#services.get('events');
     context.logger = this.#services.get('logger');
     context.config = this.#services.get('config');
@@ -126,20 +145,21 @@ export class ApplicationLifecycle {
     context.navigation = this.#services.get('navigation');
     context.cache = this.#services.get('cache');
 
-    if (permissions.has('data.read')) {
+    // Gated services — least privilege (§92).
+    if (has('data.read')) {
       context.data = this.#services.get('data');
       context.indexer = this.#services.get('indexer');
     }
 
-    if (permissions.has('storage.read') || permissions.has('storage.write')) {
+    if (has('storage.read') || has('storage.write')) {
       context.storage = this.#services.get('storage');
     }
 
-    if (permissions.has('network')) {
+    if (has('network')) {
       context.network = this.#services.get('network');
     }
 
-    if (permissions.has('system.status')) {
+    if (has('system.status')) {
       context.registry = this.#registry;
       context.diagnostics = this.#services.get('diagnostics');
     }

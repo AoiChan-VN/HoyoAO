@@ -1,15 +1,17 @@
 /**
  * OS Shell (§87, §88)
  *
- * Common environment + rendering side of navigation.
- * Provides the Settings OS view with access to Settings, Installer,
- * Lifecycle, and EventBus so it can manage application activation (§84).
+ * Common environment: navigation, global notifications (toasts + center),
+ * application switching, system status, settings + applications access.
+ * Contains NO application business logic.
  */
 
 import { ShellNavigation } from './navigation.js';
 import { ShellFooter } from './footer.js';
 import { NotificationHost } from './notification-host.js';
 import { SettingsView } from './settings-view.js';
+import { ApplicationsView } from './applications-view.js';
+import { createNotificationCenter } from './notification-center.js';
 import { createNetworkIndicator } from './network-indicator.js';
 
 export class Shell {
@@ -30,23 +32,28 @@ export class Shell {
   #network;
   #installer;
   #lifecycle;
+  #permissions;
 
   #contentArea = null;
   #navigationUI = null;
   #footer = null;
   #notificationHost = null;
+  #notificationCenter = null;
+  #notificationBadge = null;
   #settingsView = null;
+  #applicationsView = null;
   #networkIndicator = null;
 
   #currentAppId = null;
   #currentOSView = null;
   #abortController;
   #networkHandlers = [];
+  #notificationHandlers = [];
 
   constructor({
     container, config, registry, routeRegistry, eventBus, logger, brand,
     theme, localization, notifications, icons, assets, settings, navigation,
-    network, installer, lifecycle,
+    network, installer, lifecycle, permissions,
   }) {
     this.#container = container;
     this.#config = config;
@@ -65,6 +72,7 @@ export class Shell {
     this.#network = network;
     this.#installer = installer;
     this.#lifecycle = lifecycle;
+    this.#permissions = permissions;
     this.#abortController = new AbortController();
   }
 
@@ -72,10 +80,8 @@ export class Shell {
     this.#container.innerHTML = '';
     this.#container.classList.add('os-shell');
 
-    /* Header */
     const header = this.#buildHeader();
 
-    /* Body = Sidebar + Content */
     const body = document.createElement('div');
     body.className = 'os-shell__body';
 
@@ -93,14 +99,12 @@ export class Shell {
 
     body.append(sidebar, this.#contentArea);
 
-    /* Footer */
     this.#footer = new ShellFooter(this.#brand, this.#localization, this.#assets);
     const footer = this.#footer.render();
 
-    /* Assemble */
     this.#container.append(header, body, footer);
 
-    /* Global notifications (§87) */
+    // Toast notifications (§87).
     this.#notificationHost = new NotificationHost({
       container: this.#container,
       notifications: this.#notifications,
@@ -109,11 +113,17 @@ export class Shell {
     });
     this.#notificationHost.mount();
 
-    /* Navigation wiring (§30, §88) */
-    this.#subscribeNavigation();
+    // Notification Center drawer.
+    this.#notificationCenter = createNotificationCenter({
+      notifications: this.#notifications,
+      localization: this.#localization,
+      icons: this.#icons,
+      eventBus: this.#eventBus,
+    });
 
-    /* Network status announcements (§24, §87) */
+    this.#subscribeNavigation();
     this.#subscribeNetwork();
+    this.#subscribeNotificationBadge();
 
     this.#logger.info('shell', 'Shell DOM assembled');
   }
@@ -130,13 +140,26 @@ export class Shell {
     }
     this.#networkHandlers = [];
 
+    for (const { event, handler } of this.#notificationHandlers) {
+      this.#eventBus.off(event, handler);
+    }
+    this.#notificationHandlers = [];
+
     if (this.#networkIndicator) {
       this.#networkIndicator.destroy();
       this.#networkIndicator = null;
     }
+    if (this.#notificationCenter) {
+      this.#notificationCenter.destroy();
+      this.#notificationCenter = null;
+    }
     if (this.#settingsView) {
       this.#settingsView.destroy();
       this.#settingsView = null;
+    }
+    if (this.#applicationsView) {
+      this.#applicationsView.destroy();
+      this.#applicationsView = null;
     }
     if (this.#notificationHost) {
       this.#notificationHost.destroy();
@@ -145,6 +168,87 @@ export class Shell {
   }
 
   /* ---- private ---- */
+
+  #buildHeader() {
+    const header = document.createElement('header');
+    header.className = 'os-shell__header';
+
+    const logoWrap = document.createElement('div');
+    logoWrap.className = 'os-shell__logo';
+
+    const logoUrl = this.#brand.logoAsset
+      ? this.#assets.resolve(this.#brand.logoAsset)
+      : null;
+
+    if (logoUrl) {
+      const img = document.createElement('img');
+      img.src = logoUrl;
+      img.alt = this.#brand.name || 'OS';
+      img.className = 'os-shell__logo-img';
+      logoWrap.appendChild(img);
+    }
+
+    const title = document.createElement('div');
+    title.className = 'os-shell__title';
+    title.textContent = this.#config.get('os.name', 'WEB ADMIN OS');
+
+    const context = document.createElement('div');
+    context.className = 'os-shell__context';
+
+    // Notification bell button + unread badge.
+    const notifBtn = document.createElement('button');
+    notifBtn.type = 'button';
+    notifBtn.className = 'os-shell__notification-btn';
+    notifBtn.setAttribute('aria-label', this.#localization.t('notifications.title'));
+
+    if (this.#icons) {
+      const bellIcon = this.#icons.resolve('bell');
+      bellIcon.classList.add('ui-icon--sm');
+      notifBtn.appendChild(bellIcon);
+    }
+
+    this.#notificationBadge = document.createElement('span');
+    this.#notificationBadge.className = 'os-shell__notification-badge';
+    this.#notificationBadge.hidden = true;
+    notifBtn.appendChild(this.#notificationBadge);
+
+    notifBtn.addEventListener('click', () => {
+      if (this.#notificationCenter) this.#notificationCenter.toggle();
+    });
+
+    context.appendChild(notifBtn);
+
+    // Network indicator.
+    this.#networkIndicator = createNetworkIndicator({
+      network: this.#network,
+      localization: this.#localization,
+    });
+    context.appendChild(this.#networkIndicator.element);
+
+    header.append(logoWrap, title, context);
+    return header;
+  }
+
+  #subscribeNotificationBadge() {
+    const update = () => {
+      if (!this.#notificationBadge) return;
+      const count = this.#notifications.getUnreadCount();
+      if (count > 0) {
+        this.#notificationBadge.hidden = false;
+        this.#notificationBadge.textContent = count > 99 ? '99+' : String(count);
+      } else {
+        this.#notificationBadge.hidden = true;
+      }
+    };
+
+    const events = ['notification:received', 'notification:read', 'notification:removed', 'notification:cleared'];
+    for (const evt of events) {
+      const handler = () => update();
+      this.#eventBus.on(evt, handler);
+      this.#notificationHandlers.push({ event: evt, handler });
+    }
+    update();
+  }
 
   #subscribeNavigation() {
     this.#eventBus.on('navigation:selected', (payload) => {
@@ -202,12 +306,26 @@ export class Shell {
   }
 
   #showOSView(viewId) {
-    if (viewId === 'settings') {
-      if (this.#currentOSView === 'settings') return;
-      this.#clearCurrentView();
-      this.#currentOSView = 'settings';
+    // Tear down whichever OS view is currently mounted.
+    if (this.#currentOSView !== viewId) {
+      if (this.#settingsView) {
+        this.#settingsView.destroy();
+        this.#settingsView = null;
+      }
+      if (this.#applicationsView) {
+        this.#applicationsView.destroy();
+        this.#applicationsView = null;
+      }
+      if (this.#currentAppId && this.#lifecycle.isRunning(this.#currentAppId)) {
+        this.#lifecycle.stop(this.#currentAppId);
+      }
       this.#currentAppId = null;
+      this.#contentArea.innerHTML = '';
+    }
 
+    this.#currentOSView = viewId;
+
+    if (viewId === 'settings') {
       this.#settingsView = new SettingsView({
         container: this.#contentArea,
         settings: this.#settings,
@@ -217,8 +335,23 @@ export class Shell {
         eventBus: this.#eventBus,
       });
       this.#settingsView.mount();
-
       this.#navigationUI.setActivePath('/os/settings');
+      return;
+    }
+
+    if (viewId === 'applications') {
+      this.#applicationsView = new ApplicationsView({
+        container: this.#contentArea,
+        installer: this.#installer,
+        registry: this.#registry,
+        permissions: this.#permissions,
+        lifecycle: this.#lifecycle,
+        localization: this.#localization,
+        icons: this.#icons,
+        eventBus: this.#eventBus,
+      });
+      this.#applicationsView.mount();
+      this.#navigationUI.setActivePath('/os/applications');
       return;
     }
 
@@ -228,67 +361,29 @@ export class Shell {
   async #switchApplication(appId) {
     if (this.#currentAppId === appId) return;
 
-    this.#clearCurrentView();
+    // Tear down OS views.
+    if (this.#settingsView) {
+      this.#settingsView.destroy();
+      this.#settingsView = null;
+    }
+    if (this.#applicationsView) {
+      this.#applicationsView.destroy();
+      this.#applicationsView = null;
+    }
+    this.#currentOSView = null;
+
+    if (this.#currentAppId && this.#lifecycle.isRunning(this.#currentAppId)) {
+      this.#lifecycle.stop(this.#currentAppId);
+    }
+    this.#currentAppId = null;
+    this.#contentArea.innerHTML = '';
 
     try {
       await this.#lifecycle.start(appId, this.#contentArea);
       this.#currentAppId = appId;
       this.#navigationUI.setActivePath(`/apps/${appId}`);
     } catch (err) {
-      this.#logger.error('shell', `Failed to start "${appId}"`, {
-        error: err.message,
-      });
+      this.#logger.error('shell', `Failed to start "${appId}"`, { error: err.message });
     }
-  }
-
-  #clearCurrentView() {
-    if (this.#currentAppId && this.#lifecycle.isRunning(this.#currentAppId)) {
-      this.#lifecycle.stop(this.#currentAppId);
-    }
-    this.#currentAppId = null;
-
-    if (this.#settingsView) {
-      this.#settingsView.destroy();
-      this.#settingsView = null;
-    }
-    this.#currentOSView = null;
-
-    this.#contentArea.innerHTML = '';
-  }
-
-  #buildHeader() {
-    const header = document.createElement('header');
-    header.className = 'os-shell__header';
-
-    const logoWrap = document.createElement('div');
-    logoWrap.className = 'os-shell__logo';
-
-    const logoUrl = this.#brand.logoAsset
-      ? this.#assets.resolve(this.#brand.logoAsset)
-      : null;
-
-    if (logoUrl) {
-      const img = document.createElement('img');
-      img.src = logoUrl;
-      img.alt = this.#brand.name || 'OS';
-      img.className = 'os-shell__logo-img';
-      logoWrap.appendChild(img);
-    }
-
-    const title = document.createElement('div');
-    title.className = 'os-shell__title';
-    title.textContent = this.#config.get('os.name', 'WEB ADMIN OS');
-
-    const context = document.createElement('div');
-    context.className = 'os-shell__context';
-
-    this.#networkIndicator = createNetworkIndicator({
-      network: this.#network,
-      localization: this.#localization,
-    });
-    context.appendChild(this.#networkIndicator.element);
-
-    header.append(logoWrap, title, context);
-    return header;
   }
 }

@@ -131,26 +131,24 @@ export class ApplicationLifecycle {
     context.navigation = this.#services.get('navigation');
     context.cache = this.#services.get('cache');
     context.schemas = this.#services.get('schemas');
+    context.search = this.#services.get('search');
+    context.scheduler = this.#services.get('scheduler');
 
     // Gated services — least privilege (§92).
     if (has('data.read')) {
       context.data = this.#services.get('data');
       context.indexer = this.#services.get('indexer');
     }
-
     if (has('storage.read') || has('storage.write')) {
       context.storage = this.#services.get('storage');
     }
-
     if (has('network')) {
       context.network = this.#services.get('network');
       context.sync = this.#services.get('sync');
     }
-
     if (has('resources')) {
       context.resources = this.#services.get('resources');
     }
-
     if (has('system.status')) {
       context.registry = this.#registry;
       context.diagnostics = this.#services.get('diagnostics');

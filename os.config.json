@@ -14,7 +14,8 @@
       "applications/dashboard/manifest.json",
       "applications/diagnostics/manifest.json",
       "applications/server/manifest.json",
-      "applications/content/manifest.json"
+      "applications/content/manifest.json",
+      "applications/file-manager/manifest.json"
     ]
   },
   "theme": {
@@ -23,4 +24,4 @@
   "localization": {
     "defaultLocale": "en"
   }
-} 
+}

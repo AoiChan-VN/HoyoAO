@@ -1,12 +1,9 @@
 /**
  * Application Installer (§40, §84, §31)
  *
- * Controlled installation orchestration. Never blindly registers or
- * executes an application (§40). Steps:
+ * Controlled installation orchestration. Steps:
  *   validate → duplicate check → compatibility → dependencies → register
- *
- * Installation state is separate from activation state (§84), and both
- * are separate from runtime lifecycle state (§32).
+ *   → register permissions with PermissionService (§91, §92)
  */
 
 import { satisfiesVersion } from './manifest-validator.js';
@@ -17,14 +14,16 @@ export class ApplicationInstaller {
   #config;
   #eventBus;
   #logger;
+  #permissions;
   #osVersion;
 
-  constructor({ registry, validator, config, eventBus, logger }) {
+  constructor({ registry, validator, config, eventBus, logger, permissions }) {
     this.#registry = registry;
     this.#validator = validator;
     this.#config = config;
     this.#eventBus = eventBus;
     this.#logger = logger;
+    this.#permissions = permissions || null;
     this.#osVersion = this.#config.get('os.version', '0.0.0');
   }
 
@@ -32,7 +31,6 @@ export class ApplicationInstaller {
    * Install an application from a manifest object.
    * @param {object} manifest
    * @param {{force?:boolean}} options
-   * @returns {Promise<{success:boolean, appId?:string, reason?:string, errors?:Array, warnings?:Array, missing?:Array}>}
    */
   async install(manifest, options = {}) {
     const rawId = manifest && typeof manifest.id === 'string' ? manifest.id : null;
@@ -109,7 +107,12 @@ export class ApplicationInstaller {
       return { success: false, appId, reason: 'registration-error' };
     }
 
-    // 6. Announce.
+    // 6. Register permissions with the Permission Service (§91, §92).
+    if (this.#permissions) {
+      this.#permissions.registerApp(appId, manifest.permissions);
+    }
+
+    // 7. Announce.
     this.#eventBus.emit('application:installed', {
       appId,
       version: manifest.version,
@@ -123,8 +126,7 @@ export class ApplicationInstaller {
   }
 
   /**
-   * Uninstall an application. Refuses if the app is still running (§84 —
-   * installation and usage are separately controlled; stop it first).
+   * Uninstall an application. Refuses if still running (§84).
    * @param {string} appId
    */
   uninstall(appId) {
@@ -139,6 +141,12 @@ export class ApplicationInstaller {
     }
 
     this.#registry.unregister(appId);
+
+    // Remove permissions (§92).
+    if (this.#permissions) {
+      this.#permissions.unregisterApp(appId);
+    }
+
     this.#eventBus.emit('application:uninstalled', { appId });
     this.#logger.info('installer', `Uninstalled "${appId}"`);
 
@@ -146,7 +154,7 @@ export class ApplicationInstaller {
   }
 
   /**
-   * Enable or disable an installed application without uninstalling (§84).
+   * Enable or disable an installed application (§84).
    * @param {string} appId
    * @param {'enabled'|'disabled'} activation
    */
@@ -165,15 +173,10 @@ export class ApplicationInstaller {
     return { success: true, appId, activation };
   }
 
-  /** @returns {Array<object>} installed application entries */
   listInstalled() {
     return this.#registry.getAll();
   }
 
-  /**
-   * @param {string} appId
-   * @returns {{installed:boolean, activation?:string, state?:string}}
-   */
   getInstallationState(appId) {
     const entry = this.#registry.get(appId);
     if (!entry) return { installed: false };
@@ -206,4 +209,4 @@ export class ApplicationInstaller {
 
     return missing;
   }
-} 
+}

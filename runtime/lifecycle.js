@@ -1,8 +1,9 @@
 /**
  * Application Lifecycle Manager (§32, §33)
  *
- * ServiceContext is built with least privilege (§92). Adds the `resources`
- * capability mapping so applications declaring it receive ResourceService.
+ * ServiceContext is built with least privilege (§92). Adds:
+ *   - schemas  → core service (non-privileged validation utility)
+ *   - sync     → gated by the "network" capability (sync performs network ops)
  */
 
 const VALID_STATES = new Set([
@@ -129,6 +130,7 @@ export class ApplicationLifecycle {
     context.settings = this.#services.get('settings');
     context.navigation = this.#services.get('navigation');
     context.cache = this.#services.get('cache');
+    context.schemas = this.#services.get('schemas');
 
     // Gated services — least privilege (§92).
     if (has('data.read')) {
@@ -142,6 +144,7 @@ export class ApplicationLifecycle {
 
     if (has('network')) {
       context.network = this.#services.get('network');
+      context.sync = this.#services.get('sync');
     }
 
     if (has('resources')) {

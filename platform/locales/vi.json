@@ -38,6 +38,14 @@
     "applications.uninstallConfirm": "Bạn có chắc muốn gỡ \"{app}\"? Ứng dụng sẽ bị xóa khỏi hệ điều hành.",
     "applications.uninstallSuccess": "Đã gỡ cài đặt {app}.",
     "applications.uninstallFailed": "Gỡ cài đặt thất bại: {reason}"
+    "search.open": "Tìm kiếm",
+    "search.title": "Tìm kiếm toàn hệ thống",
+    "search.label": "Từ khóa tìm kiếm",
+    "search.placeholder": "Tìm tài nguyên, ứng dụng, cài đặt…",
+    "search.close": "Đóng",
+    "search.empty": "Nhập để tìm kiếm.",
+    "search.noResults": "Không có kết quả.",
+    "search.count": "{count} kết quả"
     "settings.title": "Cài đặt",
     "settings.section.appearance": "Giao diện",
     "settings.section.language": "Ngôn ngữ",

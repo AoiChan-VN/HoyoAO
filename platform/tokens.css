@@ -95,3 +95,20 @@ body {
     transition-duration: 0.01ms !important;
   }
 } 
+
+/* Font scale for accessibility settings (§38, §49) */
+:root {
+  --font-scale: 1;
+}
+
+html {
+  font-size: calc(16px * var(--font-scale, 1));
+}
+
+/* Reduced motion override via settings (§38, §49) */
+[data-reduced-motion="true"] *,
+[data-reduced-motion="true"] *::before,
+[data-reduced-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}

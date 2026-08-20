@@ -1,20 +1,15 @@
-/**
- * Diagnostics Application — Entry Point (§4, §48)
- *
- * Self-contained Application Package. NOT part of OS Core.
- * Consumes the OS DiagnosticsService through the ServiceContext.
- * Contract (§5): mount(container, serviceContext), unmount().
- */
-
 import { DiagnosticsController } from './src/diagnostics-controller.js';
+import diagnosticsEn from './localization/diagnostics.en.js';
+import diagnosticsVi from './localization/diagnostics.vi.js';
 
 let controller = null;
 
-/**
- * @param {HTMLElement} container - mount point provided by OS Shell
- * @param {Readonly<object>} services - permission-filtered OS services
- */
 export function mount(container, services) {
+  if (services.localization) {
+    services.localization.register('en', diagnosticsEn);
+    services.localization.register('vi', diagnosticsVi);
+  }
+
   controller = new DiagnosticsController(container, services);
   controller.start();
 }
@@ -24,4 +19,4 @@ export function unmount() {
     controller.destroy();
     controller = null;
   }
-} 
+}

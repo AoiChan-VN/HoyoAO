@@ -191,3 +191,144 @@
     padding: var(--space-xs) var(--space-sm);
   }
 } 
+
+/* ================================================================== */
+/*  TOOLTIP (§50, §38)                                                 */
+/* ================================================================== */
+
+.ui-tooltip {
+  position: absolute;
+  z-index: 9999;
+  pointer-events: none;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-bg-tertiary, #2a2a2e);
+  color: var(--color-text-primary, #e6e6e6);
+  font-size: var(--font-size-xs, 12px);
+  border-radius: var(--radius-sm, 4px);
+  border: 1px solid var(--color-border, #3a3a3f);
+  box-shadow: var(--shadow-md, 0 4px 8px rgba(0,0,0,0.25));
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 120ms ease, transform 120ms ease;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-tooltip.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tooltip {
+    transition: none;
+  }
+}
+
+/* ================================================================== */
+/*  BREADCRUMB (§50, §38)                                              */
+/* ================================================================== */
+
+.ui-breadcrumb {
+  margin: 0;
+}
+
+.ui-breadcrumb__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs, 4px);
+  font-size: var(--font-size-sm, 14px);
+}
+
+.ui-breadcrumb__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs, 4px);
+}
+
+.ui-breadcrumb__link {
+  background: transparent;
+  border: none;
+  color: var(--color-accent, #4a9eff);
+  font: inherit;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm, 4px);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.ui-breadcrumb__link:hover {
+  text-decoration: underline;
+  background: var(--color-bg-tertiary, rgba(255,255,255,0.05));
+}
+
+.ui-breadcrumb__link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.ui-breadcrumb__sep {
+  color: var(--color-text-muted, #888);
+  user-select: none;
+}
+
+.ui-breadcrumb__current {
+  color: var(--color-text-primary, #e6e6e6);
+  font-weight: 600;
+}
+
+/* ================================================================== */
+/*  VIRTUALIZED TABLE & LIST (§94 performance)                         */
+/* ================================================================== */
+
+.ui-table-wrapper--virtual {
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.ui-table__virtual-wrap td,
+.ui-table__spacer td {
+  border: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.ui-table__virtual-inner {
+  contain: strict;
+}
+
+.ui-table__virtual-content .ui-table__row {
+  height: 44px;
+}
+
+.ui-list--virtual {
+  contain: content;
+  scroll-behavior: smooth;
+}
+
+.ui-list__virtual-wrap {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.ui-list__virtual-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  contain: content;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-list--virtual {
+    scroll-behavior: auto;
+  }
+}

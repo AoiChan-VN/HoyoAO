@@ -1,13 +1,9 @@
 /**
  * Applications View (§87, §30, §84)
  *
- * OS view at /os/applications. Lists installed applications from the
- * Installer/Registry (NO hardcoded app logic §89) and allows activation
- * toggling and uninstallation. Permissions are read from PermissionService.
- *
- * Uninstall is a destructive action → confirmed via Modal (§97).
+ * OS view at /os/applications. FIX B2: uninstall feedback now goes through
+ * the NotificationService (real toasts) instead of emitting an empty event.
  */
-
 import { createBadge } from '../platform/ui/badge.js';
 import { createToggle } from '../platform/ui/toggle.js';
 import { createModal } from '../platform/ui/modal.js';
@@ -21,12 +17,16 @@ export class ApplicationsView {
   #localization;
   #icons;
   #eventBus;
+  #notifications;
 
   #root = null;
   #listEl = null;
   #unsubscribers = [];
 
-  constructor({ container, installer, registry, permissions, lifecycle, localization, icons, eventBus }) {
+  constructor({
+    container, installer, registry, permissions, lifecycle,
+    localization, icons, eventBus, notifications,
+  }) {
     this.#container = container;
     this.#installer = installer;
     this.#registry = registry;
@@ -35,6 +35,7 @@ export class ApplicationsView {
     this.#localization = localization;
     this.#icons = icons;
     this.#eventBus = eventBus;
+    this.#notifications = notifications;
   }
 
   mount() {
@@ -57,8 +58,13 @@ export class ApplicationsView {
 
     this.#render();
 
-    // Refresh on application lifecycle events (§29).
-    const events = ['application:installed', 'application:uninstalled', 'application:activation-changed', 'application:started', 'application:stopped'];
+    const events = [
+      'application:installed',
+      'application:uninstalled',
+      'application:activation-changed',
+      'application:started',
+      'application:stopped',
+    ];
     for (const evt of events) {
       const handler = () => this.#render();
       this.#eventBus.on(evt, handler);
@@ -104,14 +110,12 @@ export class ApplicationsView {
     const card = document.createElement('div');
     card.className = 'applications-view__card';
 
-    // Icon
     if (this.#icons) {
       const iconEl = this.#icons.resolve(manifest.icon || 'app');
       iconEl.classList.add('ui-icon--lg', 'applications-view__icon');
       card.appendChild(iconEl);
     }
 
-    // Info
     const info = document.createElement('div');
     info.className = 'applications-view__info';
 
@@ -134,10 +138,13 @@ export class ApplicationsView {
 
     info.append(nameRow, desc);
 
-    // Permissions badges
+    // Permissions badges (§92 visibility).
     const permsWrap = document.createElement('div');
     permsWrap.className = 'applications-view__perms';
-    const granted = this.#permissions ? this.#permissions.getPermissions(appId) : (manifest.permissions || []);
+    const granted = this.#permissions
+      ? this.#permissions.getPermissions(appId)
+      : (manifest.permissions || []);
+
     if (granted.length === 0) {
       const none = document.createElement('span');
       none.className = 'applications-view__perm-none';
@@ -153,18 +160,16 @@ export class ApplicationsView {
     info.appendChild(permsWrap);
     card.appendChild(info);
 
-    // Controls
+    // Controls.
     const controls = document.createElement('div');
     controls.className = 'applications-view__controls';
 
-    // State badge
     const stateBadge = createBadge({
       label: this.#localization.t(`applications.state.${entry.activation}`) || entry.activation,
       variant: entry.activation === 'enabled' ? 'success' : 'neutral',
     });
     controls.appendChild(stateBadge.element);
 
-    // Activation toggle (§84)
     const toggle = createToggle({
       label: '',
       checked: entry.activation !== 'disabled',
@@ -179,7 +184,6 @@ export class ApplicationsView {
     toggle.element.setAttribute('aria-label', this.#localization.t('applications.activation'));
     controls.appendChild(toggle.element);
 
-    // Uninstall button (§97 Modal confirmation)
     const uninstallBtn = document.createElement('button');
     uninstallBtn.type = 'button';
     uninstallBtn.className = 'applications-view__uninstall';
@@ -200,6 +204,7 @@ export class ApplicationsView {
     confirmBtn.className = 'applications-view__confirm-btn';
     confirmBtn.textContent = this.#localization.t('applications.uninstall');
 
+    // Requires modal footer support (FIX B5).
     const modal = createModal({
       title: this.#localization.t('applications.uninstallTitle'),
       content: message,
@@ -208,22 +213,34 @@ export class ApplicationsView {
     });
 
     confirmBtn.addEventListener('click', () => {
-      // Stop if running, then uninstall (§84).
       if (this.#lifecycle && this.#lifecycle.isRunning(appId)) {
         this.#lifecycle.stop(appId);
       }
       const result = this.#installer.uninstall(appId);
       modal.close();
-      if (!result.success) {
-        this.#eventBus.emit('notification:received', {});
-        this.#localization && this.#eventBus.emit('application:error', {
-          appId,
-          error: `Uninstall failed: ${result.reason}`,
-        });
+
+      // FIX B2: real user feedback through NotificationService.
+      if (this.#notifications) {
+        if (result.success) {
+          this.#notifications.notify({
+            type: 'success',
+            title: this.#localization.t('applications.uninstallTitle'),
+            message: this.#localization.t('applications.uninstallSuccess', { app: appName }),
+            source: 'applications-view',
+          });
+        } else {
+          this.#notifications.notify({
+            type: 'error',
+            title: this.#localization.t('applications.uninstallTitle'),
+            message: this.#localization.t('applications.uninstallFailed', { reason: result.reason }),
+            source: 'applications-view',
+          });
+        }
       }
+
       this.#render();
     });
 
     modal.open();
   }
-} 
+}

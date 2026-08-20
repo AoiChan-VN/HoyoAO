@@ -1,20 +1,15 @@
-/**
- * File Manager Application — Entry Point (§4, §17)
- *
- * Self-contained Application Package. NOT part of OS Core.
- * Uses the standard Application Runtime contract — no special privileges (§89, §90).
- * Contract (§5): mount(container, serviceContext), unmount().
- */
-
 import { FileManagerController } from './src/file-manager-controller.js';
+import fileManagerEn from './localization/file-manager.en.js';
+import fileManagerVi from './localization/file-manager.vi.js';
 
 let controller = null;
 
-/**
- * @param {HTMLElement} container - mount point provided by OS Shell
- * @param {Readonly<object>} services - permission-filtered OS services
- */
 export function mount(container, services) {
+  if (services.localization) {
+    services.localization.register('en', fileManagerEn);
+    services.localization.register('vi', fileManagerVi);
+  }
+
   controller = new FileManagerController(container, services);
   controller.start();
 }
@@ -24,4 +19,4 @@ export function unmount() {
     controller.destroy();
     controller = null;
   }
-} 
+}

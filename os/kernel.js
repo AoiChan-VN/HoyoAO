@@ -71,7 +71,7 @@ export class Kernel {
   async boot() {
     try {
       this.#bootState = 'BOOTING';
-      this.#logger.info('boot', 'HoyoAO-OS — boot sequence initiated');
+      this.#logger.info('boot', 'HoyoAO — boot sequence initiated');
 
       /* Phase 1 — Configuration */
       await this.#config.load('os.config.json');
@@ -186,7 +186,7 @@ export class Kernel {
 
       /* Phase 19 — Done */
       this.#bootState = 'RUNNING';
-      this.#logger.info('boot', 'HoyoAO-OS — boot sequence completed');
+      this.#logger.info('boot', 'HoyoAO — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
 
     } catch (error) {
@@ -652,8 +652,8 @@ export class Kernel {
     } catch (err) {
       this.#logger.warn('boot', 'Branding unavailable — using defaults', { error: err.message });
       this.#brand = {
-        name: 'WEB ADMIN OS',
-        owner: 'HoyoAO',
+        name: 'HoyoAO',
+        owner: 'AoiChan-VN',
         copyright: '© 2026 HoyoAO. All Rights Reserved',
         logoAsset: 'brand.logo',
         faviconAsset: 'brand.favicon',

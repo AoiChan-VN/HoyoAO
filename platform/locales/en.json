@@ -38,6 +38,14 @@
     "applications.uninstallConfirm": "Are you sure you want to uninstall \"{app}\"? This removes it from the OS.",
     "applications.uninstallSuccess": "Uninstall Success {app}.",
     "applications.uninstallFailed": "Uninstall Faile: {reason}"
+    "search.open": "Search",
+    "search.title": "Global Search",
+    "search.label": "Search query",
+    "search.placeholder": "Search resources, applications, settings…",
+    "search.close": "Close",
+    "search.empty": "Type to search.",
+    "search.noResults": "No results found.",
+    "search.count": "{count} result(s)"
     "settings.title": "Settings",
     "settings.section.appearance": "Appearance",
     "settings.section.language": "Language",

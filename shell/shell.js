@@ -37,6 +37,7 @@ export class Shell {
   #contentArea = null;
   #navigationUI = null;
   #footer = null;
+  #globalSearch = null;
   #notificationHost = null;
   #notificationCenter = null;
   #notificationBadge = null;

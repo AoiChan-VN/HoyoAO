@@ -1,6 +1,6 @@
 {
   "os": {
-    "name": "HoyoAO-OS",
+    "name": "HoyoAO",
     "version": "1.0.0",
     "mode": "development",
     "logLevel": "debug"

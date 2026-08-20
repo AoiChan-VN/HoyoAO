@@ -1,0 +1,30 @@
+{
+  "id": "web",
+  "name": "Web",
+  "version": "1.0.0",
+  "description": "Web content management: pages, sites, SEO, and publishing.",
+  "entry": "applications/web/app.js",
+  "icon": "app",
+  "permissions": [
+    "data.read",
+    "data.write",
+    "storage.read",
+    "storage.write"
+  ],
+  "dependencies": [],
+  "routes": [
+    { "path": "/apps/web", "name": "Web", "nameKey": "web.title" }
+  ],
+  "capabilities": [
+    "data.read",
+    "data.write",
+    "storage.read",
+    "storage.write"
+  ],
+  "compatibility": {
+    "osVersion": ">=1.0.0"
+  },
+  "lifecycle": {
+    "autoStart": false
+  }
+} 

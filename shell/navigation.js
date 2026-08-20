@@ -1,13 +1,11 @@
 /**
- * Shell Navigation (§15, §20, §64)
+ * Shell Navigation (§15, §64)
  *
- * Menu items are GENERATED from the RouteRegistry (§15, §64).
- *   - OS section: routes with kind 'os'
- *   - Applications section: routes with kind 'application' (one per app)
- * Icons resolved BY NAME through IconRegistry (§20).
- * Items emit "navigation:selected" with a path; the Shell navigates.
+ * Menu items are generated from the RouteRegistry (single source of truth).
+ * Each item carries data-path = route.path so the Shell can highlight the
+ * active route via setActivePath(path). FIX B1: previously items used a
+ * target id that did not match the route path, breaking the highlight.
  */
-
 export class ShellNavigation {
   #routeRegistry;
   #eventBus;
@@ -27,31 +25,28 @@ export class ShellNavigation {
     this.#element.className = 'os-shell__sidebar';
     this.#element.setAttribute('aria-label', this.#localization.t('nav.os'));
 
-    /* OS section — from RouteRegistry */
-    const osRoutes = this.#routeRegistry.getOSRoutes();
-    const osSection = this.#buildSection(
-      this.#localization.t('nav.os'),
-      osRoutes,
-    );
+    // OS section (§30 OS routes), sorted by order.
+    const osRoutes = [...this.#routeRegistry.getOSRoutes()]
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+    const osSection = this.#buildSection(this.#localization.t('nav.os'), osRoutes);
 
-    /* Applications section — one entry per application */
-    const appRoutes = this.#primaryAppRoutes();
-    const appSection = this.#buildSection(
-      this.#localization.t('nav.applications'),
-      appRoutes,
-    );
+    // Applications section — one item per app (§89, no per-app conditionals).
+    const appItems = this.#buildAppItems();
+    const appSection = this.#buildSection(this.#localization.t('nav.applications'), appItems);
 
     this.#element.append(osSection, appSection);
     return this.#element;
   }
 
   /**
-   * Highlight the item matching a path (called by Shell after navigation).
+   * Highlight the nav item whose route path matches.
+   * FIX B1: matches on data-path (route path), not an id.
    * @param {string} path
    */
   setActivePath(path) {
-    if (!this.#element) return;
-    const btn = this.#element.querySelector(`[data-path="${path}"]`);
+    if (!this.#element || typeof path !== 'string') return;
+    const selector = `[data-path="${CSS.escape(path)}"]`;
+    const btn = this.#element.querySelector(selector);
     if (!btn) return;
 
     this.#element
@@ -62,17 +57,17 @@ export class ShellNavigation {
 
   /* ---- private ---- */
 
-  /** One primary route per application (the "/apps/{id}" route). */
-  #primaryAppRoutes() {
+  // One nav item per application: prefer the primary route /apps/{appId}.
+  #buildAppItems() {
     const appRoutes = this.#routeRegistry.getApplicationRoutes();
     const byApp = new Map();
 
     for (const route of appRoutes) {
-      const appId = route.scope;
-      const preferred = `/apps/${appId}`;
+      const appId = route.appId || route.scope;
+      if (!appId) continue;
       if (!byApp.has(appId)) {
         byApp.set(appId, route);
-      } else if (route.path === preferred) {
+      } else if (route.path === `/apps/${appId}`) {
         byApp.set(appId, route);
       }
     }
@@ -92,7 +87,6 @@ export class ShellNavigation {
     for (const route of routes) {
       section.appendChild(this.#buildItem(route));
     }
-
     return section;
   }
 
@@ -100,6 +94,7 @@ export class ShellNavigation {
     const btn = document.createElement('button');
     btn.className = 'os-shell__nav-item';
     btn.type = 'button';
+    // FIX B1: key the item by its route path.
     btn.dataset.path = route.path;
 
     if (route.icon && this.#icons) {
@@ -118,7 +113,6 @@ export class ShellNavigation {
     btn.appendChild(labelSpan);
 
     btn.setAttribute('aria-label', label);
-
     btn.addEventListener('click', () => {
       this.#eventBus.emit('navigation:selected', { path: route.path });
     });

@@ -1,22 +1,16 @@
-/**
- * Dashboard Application — Entry Point (§4, §12)
- *
- * Self-contained Application Package. NOT part of OS Core.
- * Contract (§5): mount(container, serviceContext), unmount().
- *
- * The Dashboard CONSUMES OS APIs and indexed data (§12).
- * It does NOT generate or fabricate data (§45).
- */
-
 import { DashboardController } from './src/dashboard-controller.js';
+import dashboardEn from './localization/dashboard.en.js';
+import dashboardVi from './localization/dashboard.vi.js';
 
 let controller = null;
 
-/**
- * @param {HTMLElement} container - mount point provided by OS Shell
- * @param {Readonly<object>} services - permission-filtered OS services
- */
 export function mount(container, services) {
+  // Register both locales (§37)
+  if (services.localization) {
+    services.localization.register('en', dashboardEn);
+    services.localization.register('vi', dashboardVi);
+  }
+
   controller = new DashboardController(container, services);
   controller.start();
 }
@@ -26,4 +20,4 @@ export function unmount() {
     controller.destroy();
     controller = null;
   }
-} 
+}

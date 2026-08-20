@@ -149,6 +149,10 @@ export class Shell {
       this.#networkIndicator.destroy();
       this.#networkIndicator = null;
     }
+    if (this.#globalSearch) {
+      this.#globalSearch.destroy();
+      this.#globalSearch = null;
+    }
     if (this.#notificationCenter) {
       this.#notificationCenter.destroy();
       this.#notificationCenter = null;
@@ -194,6 +198,19 @@ export class Shell {
 
     const context = document.createElement('div');
     context.className = 'os-shell__context';
+
+        const context = document.createElement('div');
+    context.className = 'os-shell__context';
+
+    // Global Search button + dialog (M3).
+    this.#globalSearch = new GlobalSearch({
+      searchService: this.#services ? this.#services.get('search') : null,
+      eventBus: this.#eventBus,
+      localization: this.#localization,
+      icons: this.#icons,
+    });
+    context.appendChild(this.#globalSearch.buildButton());
+    this.#globalSearch.buildDialog();
 
     // Notification bell button + unread badge.
     const notifBtn = document.createElement('button');

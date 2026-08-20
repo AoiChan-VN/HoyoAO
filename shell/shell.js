@@ -358,6 +358,14 @@ export class Shell {
     this.#logger.info('shell', `OS view "${viewId}" not available yet`);
   }
   
+  /**
+   * Switch to an Application (§88).
+   *
+   * Tears down the current OS view or Application, clears the content area,
+   * and starts the requested Application. If the Application fails to start,
+   * an ErrorState is rendered in the content area (§33 failure isolation,
+   * §76 error state) so the user sees an explanation instead of a blank page.
+   */
   async #switchApplication(appId) {
     if (this.#currentAppId === appId) return;
 
@@ -383,7 +391,62 @@ export class Shell {
       this.#currentAppId = appId;
       this.#navigationUI.setActivePath(`/apps/${appId}`);
     } catch (err) {
+      // M4: render an explicit ErrorState instead of leaving a blank page.
       this.#logger.error('shell', `Failed to start "${appId}"`, { error: err.message });
+      this.#renderAppError(appId, err);
     }
   }
-}
+
+  /**
+   * Render an ErrorState in the content area when an Application fails to
+   * start. The Shell remains alive, other Applications remain available,
+   * and the user can navigate away (§33 failure isolation).
+   * @param {string} appId
+   * @param {Error} err
+   */
+  #renderAppError(appId, err) {
+    this.#contentArea.innerHTML = '';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'ui-error-state';
+
+    const icon = document.createElement('div');
+    icon.className = 'ui-error-state__icon';
+    if (this.#icons) {
+      const errorIcon = this.#icons.resolve('error');
+      errorIcon.classList.add('ui-icon--xl');
+      icon.appendChild(errorIcon);
+    }
+
+    const title = document.createElement('h2');
+    title.className = 'ui-error-state__title';
+    const appName = this.#registry.get(appId)?.manifest?.name || appId;
+    title.textContent = this.#localization.t('notification.appError.title', { app: appName });
+
+    const desc = document.createElement('p');
+    desc.className = 'ui-error-state__description';
+    desc.textContent = err?.message || this.#localization.t('state.error');
+
+    // Action: retry.
+    const retryBtn = document.createElement('button');
+    retryBtn.type = 'button';
+    retryBtn.className = 'ui-error-state__action';
+    retryBtn.textContent = this.#localization.t('applications.retry') || 'Retry';
+    retryBtn.addEventListener('click', () => this.#switchApplication(appId));
+
+    // Action: back to Dashboard.
+    const homeBtn = document.createElement('button');
+    homeBtn.type = 'button';
+    homeBtn.className = 'ui-error-state__action ui-error-state__action--secondary';
+    homeBtn.textContent = this.#localization.t('applications.backToDashboard') || 'Back to Dashboard';
+    homeBtn.addEventListener('click', () => {
+      this.#eventBus.emit('navigation:selected', { path: '/apps/dashboard' });
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'ui-error-state__actions';
+    actions.append(retryBtn, homeBtn);
+
+    wrap.append(icon, title, desc, actions);
+    this.#contentArea.appendChild(wrap);
+  }

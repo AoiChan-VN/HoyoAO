@@ -457,6 +457,8 @@ export class Kernel {
       theme: this.#services.get('theme'),
       localization: this.#services.get('localization'),
       notifications: this.#services.get('notifications'),
+      config: this.#config,
+      eventBus: this.#eventBus,
     });
 
     for (const section of OS_SETTINGS_SECTIONS) {
@@ -474,7 +476,7 @@ export class Kernel {
     this.#services.register('settings', settings);
     this.#logger.info('boot', 'Settings framework initialised');
   }
-
+  
   #initInstaller() {
     const validator = new ManifestValidator(this.#logger);
     const installer = new ApplicationInstaller({

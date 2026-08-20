@@ -34,6 +34,8 @@
     "applications.uninstall": "Gỡ cài đặt",
     "applications.uninstallTitle": "Gỡ cài đặt ứng dụng",
     "applications.uninstallConfirm": "Bạn có chắc muốn gỡ \"{app}\"? Ứng dụng sẽ bị xóa khỏi hệ điều hành.",
+    "applications.uninstallSuccess": "Đã gỡ cài đặt {app}.",
+    "applications.uninstallFailed": "Gỡ cài đặt thất bại: {reason}"
     "settings.title": "Cài đặt",
     "settings.section.appearance": "Giao diện",
     "settings.section.language": "Ngôn ngữ",

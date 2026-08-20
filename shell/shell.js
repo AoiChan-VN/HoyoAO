@@ -306,7 +306,6 @@ export class Shell {
   }
 
   #showOSView(viewId) {
-    // Tear down whichever OS view is currently mounted.
     if (this.#currentOSView !== viewId) {
       if (this.#settingsView) {
         this.#settingsView.destroy();
@@ -349,6 +348,7 @@ export class Shell {
         localization: this.#localization,
         icons: this.#icons,
         eventBus: this.#eventBus,
+        notifications: this.#notifications, // ← FIX B2
       });
       this.#applicationsView.mount();
       this.#navigationUI.setActivePath('/os/applications');
@@ -357,7 +357,7 @@ export class Shell {
 
     this.#logger.info('shell', `OS view "${viewId}" not available yet`);
   }
-
+  
   async #switchApplication(appId) {
     if (this.#currentAppId === appId) return;
 

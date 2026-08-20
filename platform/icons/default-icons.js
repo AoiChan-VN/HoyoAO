@@ -53,6 +53,8 @@ export const DEFAULT_ICONS = {
   'chevron-right': icon('<polyline points="9 18 15 12 9 6"/>'),
   'chevron-down': icon('<polyline points="6 9 12 15 18 9"/>'),
 
+  'search': icon('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'),
+  
   // Notification bell (§87 global notifications).
   'bell': icon(
     '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>' +

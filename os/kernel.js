@@ -71,7 +71,7 @@ export class Kernel {
   async boot() {
     try {
       this.#bootState = 'BOOTING';
-      this.#logger.info('boot', 'WEB ADMIN OS — boot sequence initiated');
+      this.#logger.info('boot', 'HoyoAO-OS — boot sequence initiated');
 
       /* Phase 1 — Configuration */
       await this.#config.load('os.config.json');
@@ -186,7 +186,7 @@ export class Kernel {
 
       /* Phase 19 — Done */
       this.#bootState = 'RUNNING';
-      this.#logger.info('boot', 'WEB ADMIN OS — boot sequence completed');
+      this.#logger.info('boot', 'HoyoAO-OS — boot sequence completed');
       this.#eventBus.emit('os:booted', { timestamp: Date.now() });
 
     } catch (error) {

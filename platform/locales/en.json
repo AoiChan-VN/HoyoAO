@@ -34,6 +34,8 @@
     "applications.uninstall": "Uninstall",
     "applications.uninstallTitle": "Uninstall application",
     "applications.uninstallConfirm": "Are you sure you want to uninstall \"{app}\"? This removes it from the OS.",
+    "applications.uninstallSuccess": "Uninstall Success {app}.",
+    "applications.uninstallFailed": "Uninstall Faile: {reason}"
     "settings.title": "Settings",
     "settings.section.appearance": "Appearance",
     "settings.section.language": "Language",

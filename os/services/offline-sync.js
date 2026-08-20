@@ -1,12 +1,10 @@
 /**
  * Offline Sync Service (§24, §29, §25)
  *
- * Queues operations that require network while offline, persists the queue
- * across reloads, and synchronizes when connectivity returns. Triggered by
- * the "network:online" event (§29) — never by polling (§94).
- *
- * OS provides the queue + dispatch infrastructure only. Sync HANDLERS are
- * registered by Applications (§100 — business logic stays out of OS Core).
+ * FIX B3: a missing handler is NOT counted as a failed attempt. The
+ * operation stays "pending" until an Application registers a handler for
+ * that type (registerHandler re-triggers sync). This prevents persisted
+ * operations from being marked failed before apps finish mounting.
  */
 
 let opCounter = 0;
@@ -22,9 +20,7 @@ export class OfflineSyncService {
   #logger;
   #partition;
 
-  /** @type {Array<object>} pending + failed operations */
   #queue = [];
-  /** @type {Map<string, Function>} operation type → handler */
   #handlers = new Map();
 
   #isSyncing = false;
@@ -38,13 +34,9 @@ export class OfflineSyncService {
     this.#eventBus = eventBus;
     this.#logger = logger;
     this.#maxAttempts = options.maxAttempts || 5;
-    // Persistent queue so offline operations survive reload (§24).
     this.#partition = storage.getPartition('os:sync', ['indexeddb', 'local', 'memory']);
   }
 
-  /**
-   * Load persisted queue and subscribe to connectivity events.
-   */
   async init() {
     try {
       const stored = await this.#partition.get('queue');
@@ -54,7 +46,6 @@ export class OfflineSyncService {
       this.#queue = [];
     }
 
-    // Auto-sync when connectivity returns (§29 event-driven, §94 no polling).
     this.#unsubscribeNetwork = this.#eventBus.on('network:online', () => {
       this.sync();
     });
@@ -62,15 +53,6 @@ export class OfflineSyncService {
     this.#logger.info('sync', `Offline sync initialised (${this.#queue.length} persisted operation(s))`);
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  Handler registration (called by Applications §100)                 */
-  /* ------------------------------------------------------------------ */
-
-  /**
-   * Register a sync handler for an operation type.
-   * @param {string} type
-   * @param {Function} handler - async (payload, operation) => void
-   */
   registerHandler(type, handler) {
     if (typeof type !== 'string' || typeof handler !== 'function') {
       this.#logger.warn('sync', 'registerHandler: invalid arguments');
@@ -90,15 +72,6 @@ export class OfflineSyncService {
     this.#handlers.delete(type);
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  Enqueue                                                            */
-  /* ------------------------------------------------------------------ */
-
-  /**
-   * Enqueue an operation. Syncs immediately if online; otherwise persists
-   * for later synchronization.
-   * @param {{type:string, payload?:*, id?:string}} operation
-   */
   async enqueue(operation) {
     if (!operation || typeof operation.type !== 'string') {
       this.#logger.warn('sync', 'enqueue: operation.type is required');
@@ -119,7 +92,6 @@ export class OfflineSyncService {
     await this.#persist();
     this.#eventBus.emit('sync:queued', { id: op.id, type: op.type, pending: this.getPendingCount() });
 
-    // Optimistic immediate sync when online.
     if (!this.#network || this.#network.isOnline()) {
       this.sync();
     }
@@ -127,16 +99,10 @@ export class OfflineSyncService {
     return { success: true, id: op.id };
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  Sync                                                               */
-  /* ------------------------------------------------------------------ */
-
-  /**
-   * Process pending operations. Safe to call repeatedly (guarded).
-   * @returns {Promise<{synced:number, failed:number, pending:number, reason?:string}>}
-   */
   async sync() {
-    if (this.#isSyncing) return { synced: 0, failed: 0, pending: this.getPendingCount(), reason: 'already-syncing' };
+    if (this.#isSyncing) {
+      return { synced: 0, failed: 0, pending: this.getPendingCount(), reason: 'already-syncing' };
+    }
     if (this.#network && !this.#network.isOnline()) {
       return { synced: 0, failed: 0, pending: this.getPendingCount(), reason: 'offline' };
     }
@@ -155,10 +121,9 @@ export class OfflineSyncService {
       const handler = this.#handlers.get(op.type);
 
       if (!handler) {
-        op.attempts += 1;
+        // FIX B3: a missing handler is NOT a failure. Keep the operation
+        // pending until a handler is registered; do not count attempts.
         op.lastError = 'no-handler';
-        if (op.attempts >= this.#maxAttempts) op.status = 'failed';
-        this.#eventBus.emit('sync:progress', { id: op.id, type: op.type, ok: false, error: 'no-handler' });
         continue;
       }
 
@@ -170,7 +135,9 @@ export class OfflineSyncService {
       } catch (err) {
         op.attempts += 1;
         op.lastError = err && err.message ? err.message : String(err);
-        if (op.attempts >= this.#maxAttempts) op.status = 'failed';
+        if (op.attempts >= this.#maxAttempts) {
+          op.status = 'failed';
+        }
         this.#eventBus.emit('sync:progress', { id: op.id, type: op.type, ok: false, error: op.lastError });
       }
     }
@@ -196,10 +163,6 @@ export class OfflineSyncService {
     return { synced, failed, pending: remaining };
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  Queue inspection / management                                      */
-  /* ------------------------------------------------------------------ */
-
   getPending() {
     return this.#queue.filter((op) => op.status === 'pending').map((op) => ({ ...op }));
   }
@@ -216,7 +179,6 @@ export class OfflineSyncService {
     return this.#queue.filter((op) => op.status === 'failed').length;
   }
 
-  /** Reset a failed/pending operation for retry. */
   retryOperation(id) {
     const op = this.#queue.find((o) => o.id === id);
     if (!op) return false;
@@ -227,7 +189,6 @@ export class OfflineSyncService {
     return true;
   }
 
-  /** Remove an operation from the queue. */
   removeOperation(id) {
     const idx = this.#queue.findIndex((o) => o.id === id);
     if (idx === -1) return false;
@@ -236,13 +197,11 @@ export class OfflineSyncService {
     return true;
   }
 
-  /** Discard all failed operations. */
   clearFailed() {
     this.#queue = this.#queue.filter((op) => op.status !== 'failed');
     this.#persist();
   }
 
-  /** Overall status for observability (§48). */
   getStatus() {
     return {
       online: this.#network ? this.#network.isOnline() : true,
@@ -254,10 +213,6 @@ export class OfflineSyncService {
     };
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  Cleanup (§74)                                                      */
-  /* ------------------------------------------------------------------ */
-
   destroy() {
     if (this.#unsubscribeNetwork) {
       this.#unsubscribeNetwork();
@@ -267,15 +222,10 @@ export class OfflineSyncService {
     this.#queue = [];
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  PRIVATE                                                            */
-  /* ------------------------------------------------------------------ */
-
   async #persist() {
     try {
       await this.#partition.set('queue', this.#queue);
     } catch (err) {
-      // Persistence failure must not lose in-memory queue (§75), but log it.
       this.#logger.error('sync', 'Failed to persist sync queue', { error: err.message });
     }
   }

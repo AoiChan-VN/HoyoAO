@@ -209,7 +209,7 @@ export class Kernel {
 
   #initCoreServices() {
     const storage = new StorageService(this.#logger, {
-      databaseName: this.#config.get('storage.databaseName', 'web-admin-os'),
+      databaseName: this.#config.get('storage.databaseName', 'hoyo-db'),
       localPrefix: this.#config.get('storage.localPrefix', 'webos:'),
       storeName: this.#config.get('storage.storeName', 'kv'),
     });

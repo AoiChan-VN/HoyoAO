@@ -1,32 +1,13 @@
 /**
  * Global Search (§87, §19, §64)
- *
- * Shell-level search over the OS SearchService. Triggered by clicking the
- * search icon in the Shell header or pressing Cmd/Ctrl+K. Results are
- * grouped by source (resources, applications, …) and navigating to an item
- * emits a navigation event.
- *
- * Accessibility (§38): role=dialog, Escape closes, focus auto on input,
- * ArrowUp/Down keyboard navigation, Enter to activate.
- *
- * Cleanup (§74): listeners + keyboard shortcut are removed on destroy().
+ * Shell-level search over the OS SearchService.
+ * Triggered by Cmd/Ctrl+K or clicking the search icon.
  */
 export class GlobalSearch {
-  #searchService;
-  #eventBus;
-  #localization;
-  #icons;
-
-  #container = null;
-  #input = null;
-  #results = null;
-  #counter = null;
-  #debounceTimer = null;
-  #selectedIdx = -1;
-  #lastResults = [];
-
-  #onKeydownGlobal = null;
-  #onKeydownDialog = null;
+  #searchService; #eventBus; #localization; #icons;
+  #container = null; #input = null; #results = null; #counter = null;
+  #debounceTimer = null; #selectedIdx = -1; #lastResults = [];
+  #onKeydownGlobal = null; #onKeydownDialog = null;
 
   constructor({ searchService, eventBus, localization, icons }) {
     this.#searchService = searchService;
@@ -35,27 +16,20 @@ export class GlobalSearch {
     this.#icons = icons;
   }
 
-  /**
-   * Build the DOM. Call mount(container) to insert into the Shell header.
-   */
   buildButton() {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'os-shell__search-btn';
     btn.setAttribute('aria-label', this.#localization.t('search.open'));
-
     if (this.#icons) {
       const icon = this.#icons.resolve('search');
       icon.classList.add('ui-icon--sm');
       btn.appendChild(icon);
     }
-
     const hint = document.createElement('kbd');
     hint.className = 'os-shell__search-hint';
-    const isMac = /Mac|iPhone|iPad/.test(navigator.platform || '');
-    hint.textContent = isMac ? '⌘K' : 'Ctrl+K';
+    hint.textContent = /Mac|iPhone|iPad/.test(navigator.platform || '') ? '⌘K' : 'Ctrl+K';
     btn.appendChild(hint);
-
     btn.addEventListener('click', () => this.open());
     return btn;
   }
@@ -113,11 +87,9 @@ export class GlobalSearch {
     panel.append(header, this.#results);
     this.#container.appendChild(panel);
 
-    // Events.
     this.#input.addEventListener('input', () => this.#onInput());
     this.#onKeydownDialog = (e) => this.#handleDialogKeydown(e);
     this.#input.addEventListener('keydown', this.#onKeydownDialog);
-
     this.#container.addEventListener('click', (e) => {
       if (e.target === this.#container) this.close();
     });
@@ -134,8 +106,6 @@ export class GlobalSearch {
     this.#lastResults = [];
     this.#selectedIdx = -1;
     this.#results.innerHTML = '';
-
-    // Global keyboard shortcut.
     this.#onKeydownGlobal = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -143,7 +113,6 @@ export class GlobalSearch {
       }
     };
     document.addEventListener('keydown', this.#onKeydownGlobal);
-
     requestAnimationFrame(() => this.#input.focus());
   }
 
@@ -166,36 +135,23 @@ export class GlobalSearch {
     this.#stopDebounce();
   }
 
-  /* ---- private ---- */
-
   #stopDebounce() {
-    if (this.#debounceTimer) {
-      clearTimeout(this.#debounceTimer);
-      this.#debounceTimer = null;
-    }
+    if (this.#debounceTimer) { clearTimeout(this.#debounceTimer); this.#debounceTimer = null; }
   }
 
   #onInput() {
     this.#stopDebounce();
     const value = this.#input.value.trim();
-    if (!value) {
-      this.#renderEmpty();
-      return;
-    }
+    if (!value) { this.#renderEmpty(); return; }
     this.#debounceTimer = setTimeout(() => this.#runSearch(value), 150);
   }
 
   #runSearch(query) {
-    if (!this.#searchService) {
-      this.#renderEmpty();
-      return;
-    }
+    if (!this.#searchService) { this.#renderEmpty(); return; }
     const results = this.#searchService.query(query, { limit: 50 });
     this.#lastResults = results;
     this.#selectedIdx = -1;
-    this.#counter.textContent = this.#localization.t('search.count', {
-      count: results.length,
-    });
+    this.#counter.textContent = this.#localization.t('search.count', { count: results.length });
     this.#renderResults(results);
   }
 
@@ -211,7 +167,6 @@ export class GlobalSearch {
 
   #renderResults(results) {
     this.#results.innerHTML = '';
-
     if (results.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'global-search__empty';
@@ -219,64 +174,48 @@ export class GlobalSearch {
       this.#results.appendChild(empty);
       return;
     }
-
-    // Group by source for clear presentation (§19 discoverability).
     const grouped = new Map();
     for (const r of results) {
       if (!grouped.has(r.source)) grouped.set(r.source, []);
       grouped.get(r.source).push(r);
     }
-
     let flatIndex = 0;
     for (const [source, items] of grouped) {
       const group = document.createElement('div');
       group.className = 'global-search__group';
-
       const heading = document.createElement('div');
       heading.className = 'global-search__group-title';
       heading.textContent = source.charAt(0).toUpperCase() + source.slice(1);
       group.appendChild(heading);
-
       for (const item of items) {
         const row = document.createElement('button');
         row.type = 'button';
         row.className = 'global-search__row';
         row.setAttribute('role', 'option');
         row.dataset.index = String(flatIndex++);
-
         if (this.#icons) {
           const icon = this.#icons.resolve(this.#iconFor(item.type));
           icon.classList.add('ui-icon--sm', 'global-search__row-icon');
           row.appendChild(icon);
         }
-
         const body = document.createElement('div');
         body.className = 'global-search__row-body';
-
         const title = document.createElement('div');
         title.className = 'global-search__row-title';
         title.textContent = item.title;
-
         const meta = document.createElement('div');
         meta.className = 'global-search__row-meta';
         meta.textContent = item.body || item.route || '';
-
         body.append(title, meta);
         row.appendChild(body);
-
         const score = document.createElement('span');
         score.className = 'global-search__row-score';
         score.textContent = `+${item.score}`;
         row.appendChild(score);
-
         row.addEventListener('click', () => this.#activate(item));
-        row.addEventListener('mouseenter', () => {
-          this.#setSelected(Number(row.dataset.index));
-        });
-
+        row.addEventListener('mouseenter', () => this.#setSelected(Number(row.dataset.index)));
         group.appendChild(row);
       }
-
       this.#results.appendChild(group);
     }
   }
@@ -299,21 +238,9 @@ export class GlobalSearch {
 
   #handleDialogKeydown(e) {
     const total = this.#lastResults.length;
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      this.close();
-      return;
-    }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (total > 0) this.#setSelected(Math.min(total - 1, this.#selectedIdx + 1));
-      return;
-    }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (total > 0) this.#setSelected(Math.max(0, this.#selectedIdx - 1));
-      return;
-    }
+    if (e.key === 'Escape') { e.preventDefault(); this.close(); return; }
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (total > 0) this.#setSelected(Math.min(total - 1, this.#selectedIdx + 1)); return; }
+    if (e.key === 'ArrowUp') { e.preventDefault(); if (total > 0) this.#setSelected(Math.max(0, this.#selectedIdx - 1)); return; }
     if (e.key === 'Enter') {
       e.preventDefault();
       if (this.#selectedIdx >= 0 && this.#lastResults[this.#selectedIdx]) {
@@ -323,9 +250,7 @@ export class GlobalSearch {
   }
 
   #activate(item) {
-    if (item.route) {
-      this.#eventBus.emit('navigation:selected', { path: item.route });
-    }
+    if (item.route) this.#eventBus.emit('navigation:selected', { path: item.route });
     this.close();
   }
-} 
+}

@@ -9,7 +9,6 @@ export function mount(container, services) {
     services.localization.register('en', webEn);
     services.localization.register('vi', webVi);
   }
-
   controller = new WebController(container, services);
   controller.start();
 }
@@ -19,4 +18,4 @@ export function unmount() {
     controller.destroy();
     controller = null;
   }
-} 
+}
